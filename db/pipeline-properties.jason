@@ -16,13 +16,13 @@
     }],
   "pipeline":
   {
-      "pipeline_name"="XXX"
+      "pipeline_name":"XXX"
   },
    "rule": 
     { 
       "attribute_id":["XXX","XXX","XXX"],
       "logic":"AND/OR"
-    }
+    },
   "attributes": [
     {
       "Name":"XXX",
