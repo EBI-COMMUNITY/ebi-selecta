@@ -1,0 +1,76 @@
+import base64
+import mysql.connector
+import ftplib
+import os
+import ast
+
+
+
+
+
+
+
+def get_connection(db_user,db_password,db_host,db_database):
+    conn = mysql.connector.connect(user=db_user, password=db_password, host=db_host,database=db_database)
+    return conn
+   
+
+def get_datahub_accounts(conn,account_type):
+    query='select account_id,password from account where account_type="%s"'%account_type
+    cursor = conn.cursor()
+    cursor.execute(query)
+    account=dict()
+    accounts=list()
+    for (account_id, password) in cursor:
+         #print(account_id)
+         account['account_id']=account_id
+         account['password']=base64.b64decode(password[::-1])
+         accounts.append(account)
+         account=dict()
+    return accounts
+
+    
+
+def download_datahub_metadatafile(account):
+	account_id=account['account_id']
+	password=account['password']
+	inputfile=account_id.replace('dcc_','')+"_run_metadata_*.tsv"
+	outputfile=account_id.replace("dcc_", "")+'_run_metadata.tsv'
+	url="ftp://%s:%s@ftp.dcc-private.ebi.ac.uk/meta/%s/reports/%s"%(account_id,password,account_id,inputfile)
+	command="wget %s -O %s"%(url,outputfile)
+	os.system(command)
+	return outputfile
+
+    
+def get_selection_to_attributes_accounts(conn,pipeline_name):
+    query='select distinct account_id from process_selection where pipeline_name="%s" and public="NO" and selection_to_info_start is NULL'%pipeline_name
+    cursor = conn.cursor()
+    cursor.execute(query)
+    #data=cursor.fetchall()
+    #print(data)
+    #print(data[0][0])
+    selections=list()
+    for account_id in cursor:
+         #print(str(account_id))
+         print(account_id[0])
+         selections.append(account_id[0])
+    return selections
+
+
+
+if __name__ == '__main__':
+  conn=get_connection('selectauser','selectapass','localhost','selectadb')
+  accounts=get_datahub_accounts(conn,"datahub")
+  selections=get_selection_to_attributes_accounts(conn,"DTU_CGE")
+  for account in accounts:
+  	  id=account['account_id']
+  	  a=[1,2,3,'nima']
+  	  for select in selections:
+  	   	  #print(selections[0])
+  	   	  #print(id)
+  	   	if selections[0]==id:
+  	   	   print ('nimaaaaaaaaaaaaaaaaaaa')
+  	   #download_datahub_metadatafile(account)
+
+
+
