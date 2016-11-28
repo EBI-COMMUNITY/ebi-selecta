@@ -4,7 +4,10 @@ import ftplib
 import os
 import ast
 import re
+import sys
 import time
+from selectadb import selection
+from PipelineAttributes import dtu_cge_attributes
 
 
 def get_connection(db_user,db_password,db_host,db_database):
@@ -28,51 +31,170 @@ def get_datahub_accounts(conn,account_type):
 		
 
 def download_datahub_metadatafile(account):
-		account_id=account['account_id']
+		datahub=account['account_id']
 		password=account['password']
-		inputfile=account_id.replace('dcc_','')+"_run_metadata_*.tsv"
-		outputfile=account_id.replace("dcc_", "")+'_run_metadata.tsv'
-		url="ftp://%s:%s@ftp.dcc-private.ebi.ac.uk/meta/%s/reports/%s"%(account_id,password,account_id,inputfile)
+		inputfile=datahub.replace('dcc_','')+"_run_metadata_*.tsv"
+		outputfile=datahub.replace("dcc_", "")+'_run_metadata.tsv'
+		url="ftp://%s:%s@ftp.dcc-private.ebi.ac.uk/meta/%s/reports/%s"%(datahub,password,datahub,inputfile)
 		command="wget -t 2 %s -O %s"%(url,outputfile)
-		#print(command)
+		#TODO: You need to check to see if the file has been downloaded or not here or somewhere else in the code
 		os.system(command)
 		return outputfile
 
 		
 def get_selection_to_attributes_accounts(conn,pipeline_name):
-		query='select distinct account_id from process_selection where pipeline_name="%s" and public="NO" and selection_to_info_start is NULL'%pipeline_name
+		query='select distinct datahub from process_selection where pipeline_name="%s" and public="NO" and selection_to_info_start is NULL'%pipeline_name
 		cursor = conn.cursor()
 		cursor.execute(query)
 		selections=list()
-		for account_id in cursor:
-				 selections.append(account_id[0])
+		for datahub in cursor:
+				 selections.append(datahub[0])
 		return selections
 
+def get_selection_info(conn,pipeline_name,datahub):
+		query='select selection_id,tax_id,study_accession,run_accession,analysis_id,public,webin from process_selection where pipeline_name="%s" and datahub="%s" and public="NO" and selection_to_info_start is NULL'%(pipeline_name,datahub)
+		cursor = conn.cursor()
+		cursor.execute(query)
+		selection_all=list()
+		for (selection_id,tax_id,study_accession,run_accession,analysis_id,public,webin) in cursor:
+				 selectatb=selection(selection_id, datahub,tax_id,study_accession,run_accession,pipeline_name,analysis_id,public,webin)
+				 selection_all.append(selectatb)
+		return selection_all
 
-def log_error(message, message_type,log_file)
-     red = '\033[01;31m'
-     green = '\033[01;32m'
-     if message_type=='error':
-     	  sys.stderr.write(red+"world!")
-     elif message_type=='warnning':
-     	  sys.stdout.write(green+"Hello ")
-     elif message_type=='info':
-     	  sys.stdout.write(green+"Hello ")
-     else:
-     	  print "wrong log_file"
+
+def log_error(message, message_type,log_file):
+	 red = '\033[01;31m'
+	 green = '\033[01;32m'
+	 file = open(log_file, "w")
+	 if message_type=='error':
+		  sys.stderr.write('ERROR: '+message+'\n')
+		  file.write('ERROR: '+message+'\n')
+	 elif message_type=='warnning':
+		  sys.stdout.write('WARNNING: '+message+'\n')
+		  file.write('WARNNING: '+message+'\n')
+	 elif message_type=='info':
+		  sys.stdout.write(message+'\n')
+		  file.write(message+'\n')
+	 else:
+		  print "wrong message type"
+	 file.close()
+
+
+def get_dtu_cge_attributes(tsv_file):
+	with open(tsv_file) as f:
+		lines = f.readlines()
+	values = lines[0].strip().split("\t")
+	header_len=len(values)
+		
+	tax_id_index=values.index("tax_id")
+	scientific_name_index=values.index("scientific_name")
+	sample_accession_index=values.index("sample_accession")
+	secondary_sample_acc_index=values.index("secondary_sample_acc")
+	experiment_accession_index=values.index("experiment_accession")
+	study_accession_index=values.index("study_accession")
+	secondary_study_acc_index=values.index("secondary_study_acc")
+	run_accession_index=values.index("run_accession")
+	center_name_index=values.index("center_name")
+	provider_webin_id_index=values.index("submission_account_id")
+	fastq_files_index=values.index("fastq_files")
+	print fastq_files_index
+	fastq_md5_index=values.index("fastq_md5")
+
+	attributes_all=list()
+	i=1
+	for line in lines:
+		val = line.strip().split("\t")
+		if i>1:
+			if len(val)!=header_len:
+				message="Line number:%s has wrong number of column"%i
+				log_error(message,'error',log_file)
+			else:
+				selection_id=''
+				process_id=''
+				datahub=''
+				tax_id=val[tax_id_index]
+				scientific_name=val[scientific_name_index]
+				sample_accession=val[sample_accession_index]
+				secondary_sample_acc=val[secondary_sample_acc_index]
+				experiment_accession=val[experiment_accession_index]
+				study_accession=val[study_accession_index]
+				secondary_study_acc=val[secondary_study_acc_index]
+				run_accession=val[run_accession_index]
+				pipeline_name=''
+				provider_center_name=val[center_name_index]
+				provider_webin_id=val[provider_webin_id_index]
+				fastq_files=val[fastq_files_index]
+				fastq_md5=val[fastq_md5_index]
+				public=''
+				analyst_webin_id=''
+
+				attr=dtu_cge_attributes(process_id,selection_id,datahub,tax_id,scientific_name,
+					sample_accession,secondary_sample_acc,experiment_accession,
+					study_accession,secondary_study_acc,run_accession,pipeline_name,
+					provider_center_name,provider_webin_id,fastq_files,fastq_md5,
+					public,analyst_webin_id)
+
+				attributes_all.append(attr)
+		i += 1
+	
+	return attributes_all
+
+def get_list_of_study(selections):
+	studies=list()
+	for select in selections:
+		studies.append(select.study_accession)
+	return studies
+
+def get_process_id(id):
+	return id+"-"+str(time.strftime("%d%m%Y%H%M%S"))
 
 
 
 
 if __name__ == '__main__':
-
+   
 	conn=get_connection('selectauser','selectapass','localhost','selectadb')
 	accounts=get_datahub_accounts(conn,"datahub")
 	selections=get_selection_to_attributes_accounts(conn,"DTU_CGE")
+	global log_file
+	log_file='log.txt'
+	selected_to_process_info=list()
 	for account in accounts:
 			id=account['account_id']
-			if id in selections:
-				 download_datahub_metadatafile(account)
+			if id in selections and id !='dcc_fake':
+				
+				#outputfile=download_datahub_metadatafile(account)
+				outputfile='vivaldi_run_metadata.tsv' #TODO: to be commented and above be uncommented
+				if os.stat(outputfile).st_size == 0:
+				   message="Failed to downlowed the metadata file %s from account %s"%(outputfile,id)
+				   log_error(message,'error')
+				else:
+				   print id
+				   attributes_all=get_dtu_cge_attributes(outputfile)
+				   selection_all=get_selection_info(conn,"DTU_CGE",id)
+				   #studies=get_list_of_study(selection_all)
+				   #print studies
+
+				   
+				   for attr in attributes_all:
+				       #if attr.study_accession in studies:
+				       	   for select in selection_all:
+				       	       if select.study_accession==attr.study_accession: 
+				                  attr.selection_id=select.selection_id
+				                  attr.datahub=select.datahub
+				                  attr.pipeline_name=select.pipeline_name
+				                  attr.public=select.public
+				                  attr.analyst_webin_id=select.analyst_webin_id
+				               
+				           attr.process_id=get_process_id(attr.run_accession)
+				           attr.insert_all_into_process_attributes(conn)
+				           
+
+				   #attributes_all=get_dtu_cge_attributes('vivaldi_run_metadata.tsv')
+				
+
+	
+	
 
 
 
