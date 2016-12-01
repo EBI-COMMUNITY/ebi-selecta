@@ -164,7 +164,7 @@ def insert_default_stages(conn,process_id,selection_id):
 if __name__ == '__main__':
    
 	conn=get_connection('selectauser','selectapass','localhost','selectadb')
-	#conn=get_connection('root','BlueSky78','localhost','selectadb')
+	
 	accounts=get_datahub_accounts(conn,"datahub")
 	selections=get_selection_to_attributes_accounts(conn,"DTU_CGE")
 	global log_file
