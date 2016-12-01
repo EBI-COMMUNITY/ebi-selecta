@@ -1,4 +1,4 @@
-from nose.plugins.attrib import attr
+
 import sys
 import time
 
