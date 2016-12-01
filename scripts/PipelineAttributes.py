@@ -86,7 +86,7 @@ class default_attributes:
 				print "Exception: %s"%message
 				conn.rollback()
 			
-	def insert_all_into_process_attributes(self,conn):
+	def insert_all_into_process_stages(self,conn):
 
 		self.insert_into_process_attributes(conn,self.process_id,selection_id_key,self.selection_id)
 		self.insert_into_process_attributes(conn,self.process_id,datahub_key,self.datahub)
@@ -130,24 +130,40 @@ class stages:
 		
 	def insert_into_process_stages(self,conn,process_id,selection_id,stage_name):
 		
-		#if process_id!="" and selection_id!="" and stage_name!="":
-			print "insert_into_process_stages:",process_id,selection_id,stage_name
-			query="INSERT INTO process_stages (process_id,selection_id,stage_name) values('%s','%s','%s')"%(process_id,selection_id,stage_name)
-			cursor = conn.cursor()
+		print "Insert to process_stages:",process_id,selection_id,stage_name
+		query="INSERT INTO process_stages (process_id,selection_id,stage_name) values('%s','%s','%s')"%(process_id,selection_id,stage_name)
+		cursor = conn.cursor()
 			
-			try:
-				cursor.execute(query)
-				conn.commit()
+		try:
+			cursor.execute(query)
+			conn.commit()
 		 
-			except:
-				print "Cannot insert:"
-				message=str(sys.exc_info()[1])
-				print "Exception: %s"%message
-				conn.rollback()
+		except:
+			print "Cannot insert:"
+			message=str(sys.exc_info()[1])
+			print "Exception: %s"%message
+			conn.rollback()
 		
 		
-	def insert_all_into_process_attributes(self,conn):
+	def insert_all_into_process_stages(self,conn):
 		
 		for stage in self.stage_list:
 			self.insert_into_process_stages(conn,self.process_id,self.selection_id,stage)
+			
+	
+	def check_started(self):
+		print "Check process_stages status:",self.process_id,self.stage_name
+		stage_name='data_provider'
+		query="select process_id,selection_id from process_stages where stage_start is null and stage_name='%s'"%stage_name
+		cursor = conn.cursor()
+		cursor.execute(query)
+		return True
+	
+	def set_started(self):
+		print "Update process_stages set start:",process_id,stage_name
+		return True
+
+	def set_finished(self):
+		print "Update process_stages set end:",process_id,stage_name
+		return True
    
