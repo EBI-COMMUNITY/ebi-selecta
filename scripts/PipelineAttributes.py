@@ -1,8 +1,6 @@
 from nose.plugins.attrib import attr
-import sys
-import time
 
-class default_attributes:
+class dtu_cge_attributes:
 	
 	global selection_id_key
 	global process_id_key
@@ -69,25 +67,19 @@ class default_attributes:
 		
 
    
-	def insert_into_process_attributes(self,conn,process_id,attribute_key,attribute_value):
-		
+	def insert_into_process_attributes(conn,process_id,attribute_key,attribute_value):
 		if process_id!="" and attribute_value!="":
-			query="INSERT INTO process_attributes (process_id,attribute_key,attribute_value) values('%s','%s','%s')"%(process_id,attribute_key,attribute_value)
-			cursor = conn.cursor()
-			
-			try:
-				cursor.execute(query)
-				#time.sleep(1)
-				conn.commit()
-		 
-			except:
-				print "Cannot insert:"
-				message=str(sys.exc_info()[1])
-				print "Exception: %s"%message
-				conn.rollback()
+		    query="INSERT INTO process_attributes values(%s,%s,%s)"%(process_id,attribute_key,attribute_value)
+		    cursor = conn.cursor()
+		    try:
+			    cursor.execute(query)
+			    conn.commit
+		    except:
+			    conn.rollback()
 			
 	def insert_all_into_process_attributes(self,conn):
-
+		
+		
 		self.insert_into_process_attributes(conn,self.process_id,selection_id_key,self.selection_id)
 		self.insert_into_process_attributes(conn,self.process_id,datahub_key,self.datahub)
 		self.insert_into_process_attributes(conn,self.process_id,tax_id_key,self.tax_id)
@@ -106,48 +98,4 @@ class default_attributes:
 		self.insert_into_process_attributes(conn,self.process_id,public_key,self.public)
 		self.insert_into_process_attributes(conn,self.process_id,analyst_webin_id_key,self.analyst_webin_id)
 		
-		
-class stages:
-	global selection_id_key
-	global process_id_key
-	global stage_name_key
-	
-		
-	selection_id_key='selection_id'
-	process_id_key='process_id'
-	stage_name_key='stage_name'
-	
-	data_provider_stage_name='data_provider'
-	core_executor_stage_name='core_executor'
-	analysis_reporter_stage_name='analysis_reporter'
-	process_archival_stage_name='process_archival'
-	
-	
-	def __init__(self,process_id,selection_id,stage_list):
-		self.process_id=process_id
-		self.selection_id = selection_id
-		self.stage_list=stage_list
-		
-	def insert_into_process_stages(self,conn,process_id,selection_id,stage_name):
-		
-		#if process_id!="" and selection_id!="" and stage_name!="":
-			print "insert_into_process_stages:",process_id,selection_id,stage_name
-			query="INSERT INTO process_stages (process_id,selection_id,stage_name) values('%s','%s','%s')"%(process_id,selection_id,stage_name)
-			cursor = conn.cursor()
-			
-			try:
-				cursor.execute(query)
-				conn.commit()
-		 
-			except:
-				print "Cannot insert:"
-				message=str(sys.exc_info()[1])
-				print "Exception: %s"%message
-				conn.rollback()
-		
-		
-	def insert_all_into_process_attributes(self,conn):
-		
-		for stage in self.stage_list:
-			self.insert_into_process_stages(conn,self.process_id,self.selection_id,stage)
    
