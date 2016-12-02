@@ -106,6 +106,19 @@ class default_attributes:
 		self.insert_into_process_attributes(conn,self.process_id,public_key,self.public)
 		self.insert_into_process_attributes(conn,self.process_id,analyst_webin_id_key,self.analyst_webin_id)
 		
+	@staticmethod	
+	def get_attribute_value(conn,attribute_key,process_id):
+		query="select attribute_value from process_attributes where attribute_key='%s' and process_id='%s' "%(attribute_key,process_id)
+		cursor = conn.cursor()
+		cursor.execute(query)
+	
+		for attribute_value in cursor:
+			value=attribute_value
+		return value
+		
+		
+		
+		
 		
 class stages:
 	global selection_id_key
@@ -139,7 +152,7 @@ class stages:
 			conn.commit()
 		 
 		except:
-			print "Cannot insert:"
+			print "ERROR: INSERT INTO process_stages table:"
 			message=str(sys.exc_info()[1])
 			print "Exception: %s"%message
 			conn.rollback()
@@ -151,19 +164,45 @@ class stages:
 			self.insert_into_process_stages(conn,self.process_id,self.selection_id,stage)
 			
 	
-	def check_started(self):
-		print "Check process_stages status:",self.process_id,self.stage_name
-		stage_name='data_provider'
-		query="select process_id,selection_id from process_stages where stage_start is null and stage_name='%s'"%stage_name
+	def check_started(self,conn):
+		
+		query="select distinct process_id from process_stages where stage_start is null and stage_name='%s'"%self.stage_list
 		cursor = conn.cursor()
 		cursor.execute(query)
-		return True
+		process_id_all=list()
+		for row in cursor:
+			process_id_all.append(row[0])
+		
+		if self.process_id in process_id_all:
+		   return False
+		else:
+			return True
+		
 	
-	def set_started(self):
-		print "Update process_stages set start:",process_id,stage_name
-		return True
+	def set_started(self,conn):
+		query="update process_stages set stage_start=CURDATE() where process_id='%s' and stage_name='%s'"%(self.process_id,self.stage_list)
+		cursor = conn.cursor()
+		try:
+			cursor.execute(query)
+			conn.commit()
+		 
+		except:
+			print "ERROR: Cannot update process_stages set stage_start=CURDATE():"
+			message=str(sys.exc_info()[1])
+			print "Exception: %s"%message
+			conn.rollback()
+		
 
-	def set_finished(self):
-		print "Update process_stages set end:",process_id,stage_name
-		return True
+	def set_finished(self,conn):
+		query="update process_stages set stage_end=CURDATE() where process_id='%s' and stage_name='%s'"%(self.process_id,self.stage_list)
+		cursor = conn.cursor()
+		try:
+			cursor.execute(query)
+			conn.commit()
+		 
+		except:
+			print "ERROR: Cannot update process_stages set stage_end=CURDATE():"
+			message=str(sys.exc_info()[1])
+			print "Exception: %s"%message
+			conn.rollback()
    
