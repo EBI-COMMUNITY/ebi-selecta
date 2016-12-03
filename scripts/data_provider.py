@@ -64,7 +64,8 @@ def download_datahub_file(account_name,password,files,outdir):
 		    url="ftp://%s:%s@ftp.dcc-private.ebi.ac.uk/data/%s"%(account_name,password,file)
 		    command="wget -t 2 %s -O %s"%(url,outputfile)
 		    #TODO: You need to check to see if the file has been downloaded or not here or somewhere else in the code /data/fastq
-		    os.system(command)
+		    print command
+		    #os.system(command)
 
 if __name__ == '__main__':
 	prop=properties('properties.txt')
