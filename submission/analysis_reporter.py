@@ -10,7 +10,25 @@ import ftplib
 
 __author__ = 'Nima Pakseresht'
 
+def get_list(conn):
+    stage_name='core_executor'
+    
+    query="select process_id,selection_id from process_stages where stage_start is null and stage_name='%s' and process_id not in \
+          (select distinct(process_id) from process_stages where  (stage_start is not null or stage_end is not null) and stage_name in \
+          ('analysis_reporter','process_archival')) and process_id in \
+          (select distinct(process_id) from process_stages where stage_start is not null and \
+          stage_end is not null and stage_error is null)"%stage_name
 
+    cursor = conn.cursor()
+    cursor.execute(query)
+    
+    analysis_reporter_list=list()
+    for (process_id, selection_id) in cursor:
+         
+         stage=stages(process_id,selection_id,stage_name)
+         analysis_reporter_list.append(stage)
+        
+    return analysis_reporter_list
 
 
 def get_args():
@@ -126,6 +144,9 @@ def uploadFileToEna(file):
 
 if __name__ == '__main__':
     
+     prop=properties('properties.txt')
+     conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
+     analysis_reporter_list=get_list(conn)
      global dateTime
      global submissionXmlFile
      global analysisXmlFile
