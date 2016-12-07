@@ -28,6 +28,8 @@ class properties:
 		dbpassword_provided=False
 		dbhost_provided=False
 		dbname_provided=False
+		dtu_cge_databases_provided=False
+		
 		
 		for l in lines:
 			pair=l.strip().split(":")
@@ -49,6 +51,9 @@ class properties:
 			elif pair[0].lower()=='dbname':
 				self.dbname=pair[1]
 				dbname_provided=True
+			elif pair[0].lower()=='dtu_cge_databases':
+				self.dtu_cge_databases=pair[1]
+				dtu_cge_databases_provided=True
 				
 		
 		if workdir_provided==False:
@@ -63,6 +68,9 @@ class properties:
 		   self.dbhost=''
 		if dbname_provided==False:
 		   self.dbname=''
+		if dtu_cge_databases_provided==False:
+		   self.dtu_cge_databases=''
+		  
 		
 		
 		

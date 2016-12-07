@@ -19,9 +19,13 @@ class default_attributes:
 	global provider_center_name_key
 	global provider_webin_id_key
 	global fastq_files_key
-	global fastq_md5_key
+	global fastq1_key
+	global fastq2_key
+	global fastq1_md5_key
+	global fastq2_md5_key
 	global public_key
 	global analyst_webin_id_key
+	global pair_key
 	
 	selection_id_key='selection_id'
 	process_id_key='process_id'
@@ -38,9 +42,13 @@ class default_attributes:
 	provider_center_name_key='provider_center_name'
 	provider_webin_id_key='provider_webin_id'
 	fastq_files_key='fastq_files'
-	fastq_md5_key='fastq_md5'
+	fastq1_key='fastq1'
+	fastq2_key='fastq2'
+	fastq1_md5_key='fastq1_md5'
+	fastq2_md5_key='fastq2_md5'
 	public_key='public'
 	analyst_webin_id_key='analyst_webin'
+	pair_key='pair'
 	
 
 	def __init__(self,process_id,selection_id, datahub,tax_id,scientific_name,sample_accession,secondary_sample_acc,experiment_accession,study_accession,secondary_study_acc,run_accession,pipeline_name,provider_center_name,provider_webin_id,fastq_files,fastq_md5,public,analyst_webin_id):
@@ -58,8 +66,28 @@ class default_attributes:
 		self.pipeline_name=pipeline_name
 		self.provider_center_name=provider_center_name
 		self.provider_webin_id=provider_webin_id
+		files=list()
+		if ";" in fastq_files:
+			files=fastq_files.split(";")
+			self.fastq1=files[0]
+			self.fastq2=files[1]
+			self.pair=True
+		else:
+			files.append(fastq_files)
+			self.fastq1=files[0]
+			self.fastq2=""
+			self.pair=False
+		
 		self.fastq_files=fastq_files
-		self.fastq_md5=fastq_md5
+		md5s=list()
+		if ";" in fastq_md5:
+			md5s=fastq_md5.split(";")
+			self.fastq1_md5=md5s[0]
+			self.fastq2_md5=md5s[1]
+		else:
+			files.append(fastq_md5)
+			self.fastq1_md5=md5s[0]
+			self.fastq2_md5=""
 		self.public=public
 		self.analyst_webin_id=analyst_webin_id
 
@@ -102,9 +130,13 @@ class default_attributes:
 		self.insert_into_process_attributes(conn,self.process_id,provider_center_name_key,self.provider_center_name)
 		self.insert_into_process_attributes(conn,self.process_id,provider_webin_id_key,self.provider_webin_id)
 		self.insert_into_process_attributes(conn,self.process_id,fastq_files_key,self.fastq_files)
-		self.insert_into_process_attributes(conn,self.process_id,fastq_md5_key,self.fastq_md5)
+		self.insert_into_process_attributes(conn,self.process_id,fastq1_key,self.fastq1)
+		self.insert_into_process_attributes(conn,self.process_id,fastq2_key,self.fastq2)
+		self.insert_into_process_attributes(conn,self.process_id,fastq1_md5_key,self.fastq1_md5)
+		self.insert_into_process_attributes(conn,self.process_id,fastq2_md5_key,self.fastq2_md5)
 		self.insert_into_process_attributes(conn,self.process_id,public_key,self.public)
 		self.insert_into_process_attributes(conn,self.process_id,analyst_webin_id_key,self.analyst_webin_id)
+		self.insert_into_process_attributes(conn,self.process_id,pair_key,self.pair)
 		
 	@staticmethod	
 	def get_attribute_value(conn,attribute_key,process_id):
@@ -114,9 +146,9 @@ class default_attributes:
 	
 		for attribute_value in cursor:
 			value=attribute_value
-		return value
+		return value[0]
 		
-		
+	
 		
 		
 		

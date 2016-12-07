@@ -29,18 +29,19 @@ def get_list(conn):
 	return data_provider_list
 
 
-def get_datahub_file():
-	print "test"
-	
 def get_file_names(conn,process_id):
 	value=default_attributes.get_attribute_value(conn,'fastq_files',stage.process_id)
-	files=value[0].split(";")
-	return files
+	files=list()
+	if ";" in value:
+		files=value.split(";")
+	else:
+		files.append(value)
 	
+	return files
 	
 def get_datahub_names(conn,process_id):
 	value=default_attributes.get_attribute_value(conn,'datahub',stage.process_id)
-	return value[0]
+	return value
 	
 	
 def create_processing_dir(directory):
@@ -53,19 +54,19 @@ def get_datahub_account_password(conn,account_id):
 		cursor = conn.cursor()
 		cursor.execute(query)
 		for password in cursor:
-		    passw=password[0]
+			passw=password[0]
 		return base64.b64decode(passw[::-1])
 	
 
 
 def download_datahub_file(account_name,password,files,outdir):
-	    for file in files:
-		    outputfile=outdir+'/'+os.path.basename(file)
-		    url="ftp://%s:%s@ftp.dcc-private.ebi.ac.uk/data/%s"%(account_name,password,file)
-		    command="wget -t 2 %s -O %s"%(url,outputfile)
-		    #TODO: You need to check to see if the file has been downloaded or not here or somewhere else in the code /data/fastq
-		    print command
-		    #os.system(command)
+		for file in files:
+			outputfile=outdir+'/'+os.path.basename(file)
+			url="ftp://%s:%s@ftp.dcc-private.ebi.ac.uk/data/%s"%(account_name,password,file)
+			command="wget -t 2 %s -O %s"%(url,outputfile)
+			#TODO: You need to check to see if the file has been downloaded or not here or somewhere else in the code /data/fastq
+			print command
+			#os.system(command)
 
 if __name__ == '__main__':
 	prop=properties('properties.txt')
