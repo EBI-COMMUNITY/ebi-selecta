@@ -1,6 +1,5 @@
 from lxml import etree
 import lxml.builder 
-from django.template.defaultfilters import title
 
 #sudo pip install --upgrade setuptools
 #wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python
@@ -9,11 +8,11 @@ from django.template.defaultfilters import title
 class analysis_pathogen_analysis:
 	
 	
-	def __init__(self,alias,analysis_centre,submission_centre,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml_file):
+	def __init__(self,alias,centre_name,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml_file):
 		self.alias=alias
 		self.analysis_xml_file=analysis_xml_file
-		self.analysis_centre=analysis_centre
-		self.submission_centre=submission_centre
+		#self.analysis_centre=analysis_centre
+		self.centre_name=centre_name
 		self.run_accession=run_accession
 		self.study_accession=study_accession
 		self.pipeline_name=pipeline_name
@@ -26,7 +25,7 @@ class analysis_pathogen_analysis:
 	def build_analysis(self):
 		analysis_set = etree.Element('ANALYSIS_SET')
 		analysis_xml = etree.ElementTree(analysis_set)
-		analysisElt = etree.SubElement(analysis_set, 'ANALYSIS', alias=self.alias , center_name=self.submission_centre, analysis_center=self.analysis_centre ,analysis_date=self.analysis_date)
+		analysisElt = etree.SubElement(analysis_set, 'ANALYSIS', alias=self.alias , center_name=self.centre_name,analysis_date=self.analysis_date)
 		title = etree.SubElement(analysisElt, 'TITLE')
 		title.text = self.title
 		description = etree.SubElement(analysisElt, 'DESCRIPTION')
@@ -47,11 +46,21 @@ class analysis_pathogen_analysis:
 class submission:
 	
 	
-	def __init__(self,analysis_centre,uniqu_name):
-		self.analysis_centre=analysis_centre
-		self.uniqu_name=uniqu_name
+	def __init__(self,alias,submission_centre,action,submission_xml_file,source_xml):
+		self.submission_centre=submission_centre
+		self.action=action
+		self.source_xml=source_xml
+		self.alias=alias
+		self.submission_xml_file=submission_xml_file
 	
-	
+	def build_submission(self):
+		submission_set = etree.Element('SUBMISSION_SET')
+		submission_xml = etree.ElementTree(submission_set)
+		submissionElt = etree.SubElement(submission_set, 'SUBMISSION', alias=self.alias , center_name=self.submission_centre)
+		actionsElt=etree.SubElement(submissionElt, 'ACTIONS')
+		actionElt=etree.SubElement(actionsElt,'ACTION')
+		print lxml.etree.tostring(submission_xml, pretty_print=True,xml_declaration = True, encoding='UTF-8')
+		submission_xml.write(self.submission_xml_file,pretty_print=True,xml_declaration = True, encoding='UTF-8')
 	
 	
 class analysis_file:
