@@ -11,13 +11,24 @@ def get_connection(db_user,db_password,db_host,db_database):
         return conn
 
 def get_list(conn):
-    stage_name='core_executor'
+    #stage_name='core_executor'
+    data_provider_stage='data_provider'
+    core_executor_stage='core_executor'
+    analysis_reporter_stage='analysis_reporter'
+    process_archival_stage='process_archival'
     
-    query="select process_id,selection_id from process_stages where stage_start is null and stage_name='%s' and process_id not in \
-          (select distinct(process_id) from process_stages where  (stage_start is not null or stage_end is not null) and stage_name in \
-          ('analysis_reporter','process_archival')) and process_id in \
-          (select distinct(process_id) from process_stages where stage_start is not null and \
-          stage_end is not null and stage_error is null)"%stage_name
+    
+    #query="select process_id,selection_id from process_stages where stage_start is null and stage_name='%s' and process_id not in \
+    #      (select distinct(process_id) from process_stages where  (stage_start is not null or stage_end is not null) and stage_name in \
+    #      ('analysis_reporter','process_archival')) and process_id in \
+    #      (select distinct(process_id) from process_stages where stage_start is not null and \
+    #      stage_end is not null and stage_error is null)"%stage_name
+          
+    query="select process_id,selection_id from process_stages where stage_start is null and stage_end is null and stage_error is \
+           null and stage_name='%s' and process_id not in (select distinct(process_id) from process_stages where \
+          (stage_start is not null or stage_end is not null) and stage_name in ('%s','%s')) \
+           and process_id in (select distinct(process_id) from process_stages where stage_start is not null and stage_end \
+            is not null and stage_error is null and stage_name='%s')"%(core_executor_stage,analysis_reporter_stage,process_archival_stage,data_provider_stage)
 
     cursor = conn.cursor()
     cursor.execute(query)
@@ -25,7 +36,7 @@ def get_list(conn):
     core_executor_list=list()
     for (process_id, selection_id) in cursor:
          
-         stage=stages(process_id,selection_id,stage_name)
+         stage=stages(process_id,selection_id,core_executor_stage)
          core_executor_list.append(stage)
         
     return core_executor_list
@@ -80,3 +91,5 @@ if __name__ == '__main__':
     core_executor_list=get_list(conn)
     for exe in core_executor_list:
         execute(conn,exe.process_id,exe.selection_id,prop)
+        
+        

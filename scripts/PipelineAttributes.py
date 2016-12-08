@@ -147,6 +147,17 @@ class default_attributes:
 		for attribute_value in cursor:
 			value=attribute_value
 		return value[0]
+	
+	@staticmethod	
+	def get_all_attributes(conn,process_id):
+		query="select attribute_key,attribute_value from process_attributes where process_id='%s' "%process_id
+		cursor = conn.cursor()
+		cursor.execute(query)
+		key_value=dict()
+		for attribute_key,attribute_value in cursor:
+			key_value[attribute_key] = attribute_value
+			#print attribute_key,attribute_value
+		return key_value
 		
 	
 		

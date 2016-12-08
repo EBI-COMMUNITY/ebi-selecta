@@ -1,163 +1,107 @@
 #!/usr/bin/python
-
-
-import argparse
-import xml.etree.ElementTree as ET
+import sys
+#sys.path.append('../resources'
 import time
-import hashlib
-import ftplib
-
+import os
+from _ast import alias
+sys.path.append('../scripts')
+import mysql.connector
+from selectadb import properties
+from sra_objects import analysis_pathogen_analysis
+from sra_objects import analysis_file
+from PipelineAttributes import stages
+from PipelineAttributes import default_attributes
 
 __author__ = 'Nima Pakseresht'
 
 def get_list(conn):
-    stage_name='core_executor'
-    
-    query="select process_id,selection_id from process_stages where stage_start is null and stage_name='%s' and process_id not in \
-          (select distinct(process_id) from process_stages where  (stage_start is not null or stage_end is not null) and stage_name in \
-          ('analysis_reporter','process_archival')) and process_id in \
-          (select distinct(process_id) from process_stages where stage_start is not null and \
-          stage_end is not null and stage_error is null)"%stage_name
+	
+	data_provider_stage='data_provider'
+	core_executor_stage='core_executor'
+	analysis_reporter_stage='analysis_reporter'
+	process_archival_stage='process_archival'
+	
+	query="select process_id,selection_id from process_stages where stage_start is null and stage_end is null and stage_error \
+		   is null and stage_name='%s' and process_id not in (select distinct(process_id) from process_stages where \
+		   (stage_start is not null or stage_end is not null) and stage_name='%s') and process_id in \
+			(select distinct(process_id) from process_stages where stage_start is not null and stage_end is not null \
+			 and stage_error is null and stage_name='%s') and process_id in  (select distinct(process_id) \
+			  from process_stages where stage_start is not null and stage_end is not null and stage_error is \
+			   null and stage_name='%s')"%(analysis_reporter_stage,process_archival_stage,data_provider_stage,core_executor_stage)
 
-    cursor = conn.cursor()
-    cursor.execute(query)
-    
-    analysis_reporter_list=list()
-    for (process_id, selection_id) in cursor:
-         
-         stage=stages(process_id,selection_id,stage_name)
-         analysis_reporter_list.append(stage)
-        
-    return analysis_reporter_list
+	cursor = conn.cursor()
+	cursor.execute(query)
+	
+	analysis_reporter_list=list()
+	for (process_id, selection_id) in cursor:
+		 
+		 stage=stages(process_id,selection_id,analysis_reporter_stage)
+		 analysis_reporter_list.append(stage)
+		
+	return analysis_reporter_list
 
 
-def get_args():
-    
-    global runid
-    global studyid
-    global analysis_temp
-    global submission_temp
-    global program_name
-    global sampleid
-    global file_name
-    global action
-    global analysis_centre
-    global submission_centre
-    # Assign description to the help doc
-    parser = argparse.ArgumentParser(
-        description='Script retrieves schedules from a given server')
-    # Add arguments
-    parser.add_argument('-anacentre', '--analysis-centre', type=str, help='Run Id of the reads', required=False)
-    parser.add_argument('-subcentre', '--submission-centre', type=str, help='Run Id of the reads', required=False)
-    parser.add_argument('-run', '--runid', type=str, help='Run Id of the reads', required=True)
-    parser.add_argument('-study', '--studyid', type=str, help='Run Id of the reads', required=True)
-    parser.add_argument('-analysistemp', '--analysis-temp', type=str, help='Run Id of the reads', required=True)
-    parser.add_argument('-subtemp', '--submission-temp', type=str, help='Run Id of the reads', required=True)
-    parser.add_argument('-program', '--program-name', type=str, help='Run Id of the reads', required=True)
-    parser.add_argument('-sample', '--sampleid', type=str, help='Sample id of the reads', required=True)    #, nargs='+' 
-    parser.add_argument('-file', '--file-name', type=str, help='Sample id of the reads', required=True)
-    parser.add_argument('-account', '--ENA-account', type=str, help='Sample id of the reads', required=True)
-    parser.add_argument('-pass', '--password', type=str, help='Sample id of the reads', required=True)
-    parser.add_argument('-action', '--action', type=str, help='The action that need to be taken: assembly,annotation,quality,contamination,submission', required=True, default=None)
 
-    args = parser.parse_args()
-    
-    if args.analysis_centre is None:
-       analysis_centre="EMBL-EBI"
-    else:
-       analysis_centre=args.analysis_centre
 
-    if args.submission_centre is None:
-       submission_centre="EMBL-EBI"
-    else:
-       submission_centre=args.submission_centre
-    runid=args.runid
-    studyid=args.studyid
-    analysis_temp=args.analysis_temp
-    submission_temp=args.submission_temp
-    program_name=args.program_name
-    sampleid=args.sampleid
-    file_name=args.file_name
-    action=args.action
-    # Match return values from get_arguments()
-    # and assign to their respective variables
-    
-    
-def convertAnalysisTemp(tempAnalysisFile):
-    with open(tempAnalysisFile, 'r') as template_file:
-         content = template_file.read() 
-          
-   
-    content=content.replace("TODO1:FILENAE-DATE-TIME",getAlias("analysis"))
-    content=content.replace("TODO2:DATA-CENTRE-NAME",submission_centre)
-    content=content.replace("TODO3:ANALYSIS-CENTRE-NAME",analysis_centre)
-    content=content.replace("TODO4:ANALYSIS-DATE-TIME",dateTime)  #2015-12-28T00:00:00
-    content=content.replace("TODO5:TITLE-RUNID","ERASMUS Virus Discovery")
-    content=content.replace("TODO6:ANALYSIS-DESCRIPTION","ERASMUS Virus Discovery on Read data")
-    content=content.replace("TODO7:STUDYID",studyid)
-    content=content.replace("TODO8:SAMPLEID",sampleid[0])
-    content=content.replace("TODO9:RUNID",runid)
-    content=content.replace("TODO10:FILE-TO-SUBMIT",file_name)
-    content=content.replace("TODO11:FILE-CHECKSUM", calculateMd5(file_name))
-    
-    f = open(analysisXmlFile,"w")
-    f.write(content)
-    f.close
-    print content
-    
-    
-def convertSubmissionTemp(tempSubmissionFile):
-    with open(tempSubmissionFile, 'r') as template_file:
-         content = template_file.read() 
-    
-    content=content.replace("TODO1:UNIQUE_NAME",getAlias("submission"))
-    content=content.replace("TODO2:CENTER_NAME",analysis_centre)
-    content=content.replace("TODO3:ACTION","ADD")
-    content=content.replace("TODO4:ANALYSIS_FILE",analysisXmlFile)
-    
-    f = open(submissionXmlFile,"w")
-    f.write(content)
-    f.close  
-    print content
+def get_connection(db_user,db_password,db_host,db_database):
+		conn = mysql.connector.connect(user=db_user, password=db_password, host=db_host,database=db_database)
+		return conn
 
-def getDateTime():
-    return time.strftime("%Y-%m-%dT%H:%M:%S")
-    
-
-def getAlias(type):
-           
-    alias=file_name+"-"+type+"-"+getDateTime()
-    return alias
-    
 def calculateMd5(file):
-    return  hashlib.md5(open(file, 'rb').read()).hexdigest()
-    
-    
+	return  hashlib.md5(open(file, 'rb').read()).hexdigest()
+	
+	
 def uploadFileToEna(file):
-    ftp = ftplib.FTP("xx.xx.xx.xx")
-    ftp.login("UID", "PSW")
-    myfile = open(filename, 'r')
-    ftp.storlines('STOR ' + filename, myfile)
-    myfile.close()
-        
+	ftp = ftplib.FTP("xx.xx.xx.xx")
+	ftp.login("UID", "PSW")
+	myfile = open(filename, 'r')
+	ftp.storlines('STOR ' + filename, myfile)
+	myfile.close()
+		
 #curl -F "SUBMISSION=@submission.xml"  -F "ANALYSIS=@analysis.xml" "https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20USERNAME%20PASSWORD
 
 if __name__ == '__main__':
-    
-     prop=properties('properties.txt')
-     conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
-     analysis_reporter_list=get_list(conn)
-     global dateTime
-     global submissionXmlFile
-     global analysisXmlFile
-     
-     get_args()
-     dateTime=time.strftime("%Y-%m-%dT%H:%M:%S")
-     submissionXmlFile=file_name+"-submission.xml"
-     analysisXmlFile=file_name+"-analysis.xml"
-     convertAnalysisTemp(analysis_temp)
-     convertSubmissionTemp(submission_temp)
-     uploadFileToEna(file_name)
-     
-    
+	
+	 prop=properties('../resources/properties.txt')
+	 conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
+	 analysis_reporter_list=get_list(conn)
+	 for analysis in analysis_reporter_list:
+		 print analysis.process_id,analysis.selection_id
+	
+
+	 analysis_xml=prop.workdir+analysis.process_id+'/analysis.xml'
+	 submission_xml=prop.workdir+analysis.process_id+'/submission.xml'
+	 attributes=default_attributes.get_all_attributes(conn,analysis.process_id)
+	 run_accession=attributes['run_accession']   
+	 gzip_analysis_file=attributes['gzip_analysis_file']
+	 tab_analysis_file=attributes['tab_analysis_file']
+	 gzip_analysis_file_md5=attributes['gzip_analysis_file_md5']
+	 tab_analysis_file_md5=attributes['tab_analysis_file_md5']
+	 analyst_webin=attributes['analyst_webin']
+	 pipeline_name=attributes['pipeline_name']
+	 study_accession=attributes['study_accession']
+	 scientific_name=attributes['scientific_name']
+
+	 print run_accession,gzip_analysis_file,gzip_analysis_file_md5,tab_analysis_file,tab_analysis_file_md5
+	 
+	 #map=default_attributes.get_all_attributes(conn,analysis.process_id)
+	 analysis_files=list()
+	 file1=analysis_file(os.path.basename(tab_analysis_file),'tab',tab_analysis_file_md5)
+	 file2=analysis_file(os.path.basename(gzip_analysis_file),'other',gzip_analysis_file_md5)
+	 analysis_files.append(file1)
+	 analysis_files.append(file2)
+	 
+	 
+	 analysis_centre="COMPARE"
+	 submission_centre="EBI"
+	 alias=pipeline_name.lower()+"_"+analysis.process_id.lower()+"-"+str(analysis.selection_id)
+	 print 'alias:',alias
+	 analysis_date=time.strftime("%Y-%m-%dT%H:%M:%S")
+	 title="COMPARE project pathogen analysis using %s pipeline on read data %s"%(pipeline_name,run_accession)
+	 description="As part of the COMPARE project submitted data %s organism name '%s' has been processed by %s pipeline and result has been submitted to ENA archive."%(run_accession,scientific_name,pipeline_name)
+	 
+	 analysis_obj=analysis_pathogen_analysis(alias,analysis_centre,submission_centre,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml)
+	 analysis_obj.build_analysis()
+	 
+	
    
