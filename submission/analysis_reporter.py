@@ -67,41 +67,38 @@ if __name__ == '__main__':
 	 analysis_reporter_list=get_list(conn)
 	 for analysis in analysis_reporter_list:
 		 print analysis.process_id,analysis.selection_id
-	
-
-	 analysis_xml=prop.workdir+analysis.process_id+'/analysis.xml'
-	 submission_xml=prop.workdir+analysis.process_id+'/submission.xml'
-	 attributes=default_attributes.get_all_attributes(conn,analysis.process_id)
-	 run_accession=attributes['run_accession']   
-	 gzip_analysis_file=attributes['gzip_analysis_file']
-	 tab_analysis_file=attributes['tab_analysis_file']
-	 gzip_analysis_file_md5=attributes['gzip_analysis_file_md5']
-	 tab_analysis_file_md5=attributes['tab_analysis_file_md5']
-	 analyst_webin=attributes['analyst_webin']
-	 pipeline_name=attributes['pipeline_name']
-	 study_accession=attributes['study_accession']
-	 scientific_name=attributes['scientific_name']
-
-	 print run_accession,gzip_analysis_file,gzip_analysis_file_md5,tab_analysis_file,tab_analysis_file_md5
+	     analysis_xml=prop.workdir+analysis.process_id+'/analysis.xml'
+	     submission_xml=prop.workdir+analysis.process_id+'/submission.xml'
+	     attributes=default_attributes.get_all_attributes(conn,analysis.process_id)
+	     run_accession=attributes['run_accession']   
+	     gzip_analysis_file=attributes['gzip_analysis_file']
+	     tab_analysis_file=attributes['tab_analysis_file']
+	     gzip_analysis_file_md5=attributes['gzip_analysis_file_md5']
+	     tab_analysis_file_md5=attributes['tab_analysis_file_md5']
+	     analyst_webin=attributes['analyst_webin']
+	     pipeline_name=attributes['pipeline_name']
+	     study_accession=attributes['study_accession']
+	     scientific_name=attributes['scientific_name']
+         print run_accession,gzip_analysis_file,gzip_analysis_file_md5,tab_analysis_file,tab_analysis_file_md5
 	 
-	 #map=default_attributes.get_all_attributes(conn,analysis.process_id)
-	 analysis_files=list()
-	 file1=analysis_file(os.path.basename(tab_analysis_file),'tab',tab_analysis_file_md5)
-	 file2=analysis_file(os.path.basename(gzip_analysis_file),'other',gzip_analysis_file_md5)
-	 analysis_files.append(file1)
-	 analysis_files.append(file2)
+	     #map=default_attributes.get_all_attributes(conn,analysis.process_id)
+	     analysis_files=list()
+	     file1=analysis_file(os.path.basename(tab_analysis_file),'tab',tab_analysis_file_md5)
+	     file2=analysis_file(os.path.basename(gzip_analysis_file),'other',gzip_analysis_file_md5)
+	     analysis_files.append(file1)
+	     analysis_files.append(file2)
 	 
 	 
-	 analysis_centre="COMPARE"
-	 submission_centre="EBI"
-	 alias=pipeline_name.lower()+"_"+analysis.process_id.lower()+"-"+str(analysis.selection_id)
-	 print 'alias:',alias
-	 analysis_date=time.strftime("%Y-%m-%dT%H:%M:%S")
-	 title="COMPARE project pathogen analysis using %s pipeline on read data %s"%(pipeline_name,run_accession)
-	 description="As part of the COMPARE project submitted data %s organism name '%s' has been processed by %s pipeline and result has been submitted to ENA archive."%(run_accession,scientific_name,pipeline_name)
+	     analysis_centre="COMPARE"
+	     submission_centre="EBI"
+	     alias=pipeline_name.lower()+"_"+analysis.process_id.lower()+"-"+str(analysis.selection_id)
+	     print 'alias:',alias
+	     analysis_date=time.strftime("%Y-%m-%dT%H:%M:%S")
+	     title="COMPARE project pathogen analysis using %s pipeline on read data %s"%(pipeline_name,run_accession)
+	     description="As part of the COMPARE project submitted data %s organism name '%s' has been processed by %s pipeline and result has been submitted to ENA archive."%(run_accession,scientific_name,pipeline_name)
 	 
-	 analysis_obj=analysis_pathogen_analysis(alias,analysis_centre,submission_centre,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml)
-	 analysis_obj.build_analysis()
+	     analysis_obj=analysis_pathogen_analysis(alias,analysis_centre,submission_centre,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml)
+	     analysis_obj.build_analysis()
 	 
 	
    
