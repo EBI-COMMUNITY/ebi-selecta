@@ -6,6 +6,7 @@ import subprocess
 import base64
 import os
 from _ast import alias
+from matplotlib.sphinxext.plot_directive import out_of_date
 sys.path.append('../scripts')
 import mysql.connector
 import ftplib
@@ -19,6 +20,17 @@ from lxml import etree
 
 
 __author__ = 'Nima Pakseresht'
+
+global error_list
+global log_file
+
+
+error_list=''
+log_file='analysis_reporter.log'
+
+
+#TODO: Code will get benefit from writing a log file
+#TODO: Code also get benefit from checking the checksum of uploaded file.
 
 def get_list(conn):
 	
@@ -61,7 +73,6 @@ def calculateMd5(file):
 		
 def create_analysis_xml(conn,analysis,prop,attributes,analysis_xml):
 		 print analysis.process_id,analysis.selection_id
-		 #attributes=default_attributes.get_all_attributes(conn,analysis_reporter_stage.process_id)
 		 run_accession=attributes['run_accession']   
 		 gzip_analysis_file=attributes['gzip_analysis_file']
 		 tab_analysis_file=attributes['tab_analysis_file']
@@ -93,11 +104,9 @@ def create_submission_xml(conn,analysis,analysis_xml,submission_xml,action):
 		 
 		 alias="sub_"+analysis.process_id.lower()+"-"+str(analysis.selection_id)
 		 centre_name='COMPARE'
-		 schema='analysis_reporter_stage'
+		 schema='analysis'
 		 submission_obj=submission(alias,centre_name,action,submission_xml,analysis_xml,schema)
 		 submission_obj.build_submission()
-
-#curl -F "SUBMISSION=@submission.xml"  -F "ANALYSIS=@analysis_reporter_stage.xml" "https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20USERNAME%20PASSWORD
 
 def get_account_pass(conn,user):
 		query="select password from account where account_id='%s'"%user
@@ -118,14 +127,19 @@ def uploadFileToEna(filename,user,passw):
 		if err:
 		   print "standard error of subprocess:"
 		   print err
-		print "returncode of subprocess:"
-		print sp.returncode
+		if sp.returncode!=0:
+		   error_list.append(err)
+		   print >> sys.stderr, err
+		
+		print "returncode of subprocess:",sp.returncode
+		return err
+		
 	
 	
 		
 def submitAnalysis(submission_xml,analysis_xml,user,passw):
 		print "Analysis submission started:"
-		command="curl -k -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'
+		command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'
 		
 		
 		sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -139,6 +153,9 @@ def submitAnalysis(submission_xml,analysis_xml,user,passw):
 				for mess in messages.findall('ERROR'):
 					submission_error_messages.append('ERROR:'+mess.text)
 		
+		print out
+		print err
+		print "returncode of subprocess:",sp.returncode
 		return submission_error_messages,sp.returncode,out,err
 		
 	
@@ -147,62 +164,30 @@ def post_submission(submission_error_messages,returncode,out,err):
 	curl_error=""
 	if len(submission_error_messages)!=0:
 		submission_error='\n'.join(submission_error_messages)+"\n"
-		#print >> sys.stderr, submission_error 
 	if returncode!=0:
 		curl_error=err
-		#print >> sys.stderr, curl_error 
 		
 	error=submission_error+curl_error
 	print >> sys.stderr, error 
+	return error
 	
-def set_submission_started(conn,process_id):
-	stage_name='analysis_reporter'
-	query="update process_stages set stage_start=CURDATE() where process_id='%s' and stage_name='%s'"%(process_id,stage_name)
-	cursor = conn.cursor()
-	try:
-		cursor.execute(query)
-		conn.commit()
-		 
-	except:
-		print >> sys.stderr, "ERROR: Cannot update process_stages set stage_start=CURDATE():"
-		message=str(sys.exc_info()[1])
-		print >> sys.stderr, "Exception: %s"%message
-		conn.rollback()
+def terminate(conn,analysis_reporter_stage):
+	print "Termination:"
+	if len(error_list)!=0:
+		final_errors='\n'.join(submission_error_messages)
+		analysis_reporter_stage.set_error(conn,final_errors.replace("'",""))
+	else:
+	    analysis_reporter_stage.set_finished(conn)
+	
+	
 
-
-def terminate_submission(conn,error,process_id):
-	stage_name='analysis_reporter'
-	query="update process_stages set stage_error='%s' where process_id='%s' and stage_name='%s'"%(error,process_id,stage_name)
-	cursor = conn.cursor()
-	try:
-		cursor.execute(query)
-		conn.commit()
-		 
-	except:
-		print >> sys.stderr, "ERROR: Cannot update process_stages set stage_error=CURDATE():"
-		message=str(sys.exc_info()[1])
-		print >> sys.stderr, "Exception: %s"%message
-		conn.rollback()	
-		
-def set_submission_completed(process_id):
-	stage_name='analysis_reporter'
-	query="update process_stages set stage_end=CURDATE() where process_id='%s'  and stage_name='%s'"%(process_id,stage_name)
-	cursor = conn.cursor()
-	try:
-		cursor.execute(query)
-		conn.commit()
-		 
-	except:
-		print >> sys.stderr, "ERROR: Cannot update process_stages set stage_end=CURDATE():"
-		message=str(sys.exc_info()[1])
-		print >> sys.stderr, "Exception: %s"%message
-		conn.rollback()
 
 if __name__ == '__main__':
 	
 	 prop=properties('../resources/properties.txt')
 	 conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
 	 analysis_reporter_list=get_list(conn)
+	 error_list=list()
 	 for analysis_reporter_stage in analysis_reporter_list:
 	 	if analysis_reporter_stage.check_started(conn)==False:
 	 		 print "\nTo be started job: process_id:", analysis_reporter_stage.process_id,'collection id:',analysis_reporter_stage.selection_id,'stage name:',analysis_reporter_stage.stage_list
@@ -214,16 +199,19 @@ if __name__ == '__main__':
 			 tab_analysis_file=attributes['tab_analysis_file']
 			 uploadFileToEna(gzip_analysis_file,analyst_webin,passw)
 			 uploadFileToEna(tab_analysis_file,analyst_webin,passw)
-	 		 '''
-	 		 analysis_xml=prop.workdir+analysis_reporter_stage.process_id+'/analysis_reporter_stage.xml'
+	 		 analysis_xml=prop.workdir+analysis_reporter_stage.process_id+'/analysis.xml'
 	 		 submission_xml=prop.workdir+analysis_reporter_stage.process_id+'/submission.xml'
 	 		 create_analysis_xml(conn,analysis_reporter_stage,prop,attributes,analysis_xml)
 	 		 action='VALIDATE'
 	 		 analysis_xml_name=os.path.basename(analysis_xml)
 	 		 create_submission_xml(conn,analysis_reporter_stage,analysis_xml_name,submission_xml,action)
 	 		 submission_error_messages,returncode,out,err=submitAnalysis(submission_xml,analysis_xml,analyst_webin,passw)
-	 		 post_submission(submission_error_messages,returncode,out,err)
-	 		 '''
+	 		 post_submission_error=post_submission(submission_error_messages,returncode,out,err)
+	 		 if post_submission_error!='':
+	 		 	error_list.append(post_submission_error)
+	 		 terminate(conn,analysis_reporter_stage)
+	 		 error_list=list()
+	 		 
 		
 	 
 	

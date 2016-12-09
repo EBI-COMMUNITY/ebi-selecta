@@ -251,13 +251,14 @@ class stages:
    
 	def set_error(self,conn,error):
 		query="update process_stages set stage_error='%s' where process_id='%s' and stage_name='%s'"%(error,self.process_id,self.stage_list)
+		
 		cursor = conn.cursor()
 		try:
 			cursor.execute(query)
 			conn.commit()
 		 
 		except:
-			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_error=CURDATE():"
+			print >> sys.stderr, "ERROR: Cannot %s"%query
 			message=str(sys.exc_info()[1])
 			print >> sys.stderr, "Exception: %s"%message
 			conn.rollback()	
