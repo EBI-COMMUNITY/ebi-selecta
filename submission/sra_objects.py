@@ -46,12 +46,13 @@ class analysis_pathogen_analysis:
 class submission:
 	
 	
-	def __init__(self,alias,submission_centre,action,submission_xml_file,source_xml):
+	def __init__(self,alias,submission_centre,action,submission_xml_file,source_xml,schema):
 		self.submission_centre=submission_centre
 		self.action=action
 		self.source_xml=source_xml
 		self.alias=alias
 		self.submission_xml_file=submission_xml_file
+		self.schema=schema
 	
 	def build_submission(self):
 		submission_set = etree.Element('SUBMISSION_SET')
@@ -59,6 +60,7 @@ class submission:
 		submissionElt = etree.SubElement(submission_set, 'SUBMISSION', alias=self.alias , center_name=self.submission_centre)
 		actionsElt=etree.SubElement(submissionElt, 'ACTIONS')
 		actionElt=etree.SubElement(actionsElt,'ACTION')
+		actionSub=etree.SubElement(actionElt,self.action,source=self.source_xml,schema=self.schema)
 		print lxml.etree.tostring(submission_xml, pretty_print=True,xml_declaration = True, encoding='UTF-8')
 		submission_xml.write(self.submission_xml_file,pretty_print=True,xml_declaration = True, encoding='UTF-8')
 	
