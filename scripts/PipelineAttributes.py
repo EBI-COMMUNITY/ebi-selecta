@@ -109,9 +109,9 @@ class default_attributes:
 				conn.commit()
 		 
 			except:
-				print "Cannot insert:"
+				print >> sys.stderr, "ERROR: Cannot insert:"
 				message=str(sys.exc_info()[1])
-				print "Exception: %s"%message
+				print >> sys.stderr, "Exception: %s"%message
 				conn.rollback()
 			
 	def insert_all_into_process_stages(self,conn):
@@ -195,9 +195,9 @@ class stages:
 			conn.commit()
 		 
 		except:
-			print "ERROR: INSERT INTO process_stages table:"
+			print >> sys.stderr, "ERROR: INSERT INTO process_stages table:"
 			message=str(sys.exc_info()[1])
-			print "Exception: %s"%message
+			print >> sys.stderr, "Exception: %s"%message
 			conn.rollback()
 		
 		
@@ -230,9 +230,9 @@ class stages:
 			conn.commit()
 		 
 		except:
-			print "ERROR: Cannot update process_stages set stage_start=CURDATE():"
+			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_start=CURDATE():"
 			message=str(sys.exc_info()[1])
-			print "Exception: %s"%message
+			print >> sys.stderr, "Exception: %s"%message
 			conn.rollback()
 		
 
@@ -244,8 +244,20 @@ class stages:
 			conn.commit()
 		 
 		except:
-			print "ERROR: Cannot update process_stages set stage_end=CURDATE():"
+			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_end=CURDATE():"
 			message=str(sys.exc_info()[1])
-			print "Exception: %s"%message
+			print >> sys.stderr, "Exception: %s"%message
 			conn.rollback()
    
+	def set_error(self,conn,error):
+		query="update process_stages set stage_error='%s' where process_id='%s' and stage_name='%s'"%(error,self.process_id,self.stage_list)
+		cursor = conn.cursor()
+		try:
+			cursor.execute(query)
+			conn.commit()
+		 
+		except:
+			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_error=CURDATE():"
+			message=str(sys.exc_info()[1])
+			print >> sys.stderr, "Exception: %s"%message
+			conn.rollback()	

@@ -73,14 +73,15 @@ if __name__ == '__main__':
 	
 	conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
 	data_provider_list=get_list(conn)
-	for stage in data_provider_list:
-		if stage.check_started(conn)==False:
-			print "\nTo be started job: process_id:", stage.process_id,'collection id:',stage.selection_id,'stage name:',stage.stage_list
-			process_dir=prop.workdir+stage.process_id
+	for data_provider_stage in data_provider_list:
+		if data_provider_stage.check_started(conn)==False:
+			print "\nTo be started job: process_id:", data_provider_stage.process_id,'collection id:',data_provider_stage.selection_id,'data_provider_stage name:',data_provider_stage.stage_list
+			data_provider_stage.set_started(conn)
+			process_dir=prop.workdir+data_provider_stage.process_id
 			print "Creating process directory:",process_dir
-			account_name=get_datahub_names(conn,stage.process_id)
+			account_name=get_datahub_names(conn,data_provider_stage.process_id)
 			print "account to be processed:",account_name
-			files=get_file_names(conn,stage.process_id)
+			files=get_file_names(conn,data_provider_stage.process_id)
 			print "Files to be downloaded:",files
 			pw=get_datahub_account_password(conn,account_name)
 			download_datahub_file(account_name,pw,files,process_dir)
