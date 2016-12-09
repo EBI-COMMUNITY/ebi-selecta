@@ -81,6 +81,7 @@ def create_analysis_xml(conn,analysis,prop,attributes,analysis_xml):
 		 pipeline_name=attributes['pipeline_name']
 		 study_accession=attributes['study_accession']
 		 scientific_name=attributes['scientific_name']
+		 sample_accession=attributes['sample_accession']
 		 print run_accession,gzip_analysis_file,gzip_analysis_file_md5,tab_analysis_file,tab_analysis_file_md5
 	 
 		 analysis_files=list()
@@ -93,8 +94,8 @@ def create_analysis_xml(conn,analysis,prop,attributes,analysis_xml):
 		 alias=pipeline_name.lower()+"_"+analysis.process_id.lower()+"-"+str(analysis.selection_id)
 		 print 'alias:',alias
 		 analysis_date=time.strftime("%Y-%m-%dT%H:%M:%S")
-		 title="COMPARE project pathogen analysis_reporter_stage using %s pipeline on read data %s"%(pipeline_name,run_accession)
-		 description="As part of the COMPARE project submitted data %s organism name '%s' has been processed by %s pipeline and result has been submitted to ENA archive."%(run_accession,scientific_name,pipeline_name)
+		 title="COMPARE project pathogen analysis, using %s pipeline on read data %s from sample %"%(pipeline_name,run_accession,sample_accession)
+		 description="As part of the COMPARE project submitted data %s from sample % organism name '%s' has been processed by %s pipeline."%(run_accession,sample_accession,scientific_name,pipeline_name)
 	 
 		 analysis_obj=analysis_pathogen_analysis(alias,centre_name,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml)
 		 analysis_obj.build_analysis()
