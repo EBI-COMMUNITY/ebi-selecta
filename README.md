@@ -20,6 +20,7 @@ process_selection table is as follow:
 'selection_to_info_end'
 'selection_to_info_error'
 
+Example of project to add to SELECTA is: 
 
 
 
