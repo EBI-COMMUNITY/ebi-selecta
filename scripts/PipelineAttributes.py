@@ -223,28 +223,28 @@ class stages:
 		
 	
 	def set_started(self,conn):
-		query="update process_stages set stage_start=CURDATE() where process_id='%s' and stage_name='%s'"%(self.process_id,self.stage_list)
+		query="update process_stages set stage_start=CURTIME() where process_id='%s' and stage_name='%s'"%(self.process_id,self.stage_list)
 		cursor = conn.cursor()
 		try:
 			cursor.execute(query)
 			conn.commit()
 		 
 		except:
-			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_start=CURDATE():"
+			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_start=CURTIME():"
 			message=str(sys.exc_info()[1])
 			print >> sys.stderr, "Exception: %s"%message
 			conn.rollback()
 		
 
 	def set_finished(self,conn):
-		query="update process_stages set stage_end=CURDATE() where process_id='%s' and stage_name='%s'"%(self.process_id,self.stage_list)
+		query="update process_stages set stage_end=CURTIME() where process_id='%s' and stage_name='%s'"%(self.process_id,self.stage_list)
 		cursor = conn.cursor()
 		try:
 			cursor.execute(query)
 			conn.commit()
 		 
 		except:
-			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_end=CURDATE():"
+			print >> sys.stderr, "ERROR: Cannot update process_stages set stage_end=CURTIME():"
 			message=str(sys.exc_info()[1])
 			print >> sys.stderr, "Exception: %s"%message
 			conn.rollback()
