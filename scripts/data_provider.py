@@ -3,12 +3,13 @@ import os
 import base64
 from PipelineAttributes import stages
 from selectadb import properties
+import subprocess
 from PipelineAttributes import default_attributes
+import sys
 
+global error_list
+error_list=''
 
-
-def copy_file(infile,outfile):
-	print "test"
 	
 def get_connection(db_user,db_password,db_host,db_database):
 		conn = mysql.connector.connect(user=db_user, password=db_password, host=db_host,database=db_database)
@@ -30,7 +31,7 @@ def get_list(conn):
 
 
 def get_file_names(conn,process_id):
-	value=default_attributes.get_attribute_value(conn,'fastq_files',stage.process_id)
+	value=default_attributes.get_attribute_value(conn,'fastq_files',process_id)
 	files=list()
 	if ";" in value:
 		files=value.split(";")
@@ -40,7 +41,7 @@ def get_file_names(conn,process_id):
 	return files
 	
 def get_datahub_names(conn,process_id):
-	value=default_attributes.get_attribute_value(conn,'datahub',stage.process_id)
+	value=default_attributes.get_attribute_value(conn,'datahub',process_id)
 	return value
 	
 	
@@ -64,13 +65,23 @@ def download_datahub_file(account_name,password,files,outdir):
 			outputfile=outdir+'/'+os.path.basename(file)
 			url="ftp://%s:%s@ftp.dcc-private.ebi.ac.uk/data/%s"%(account_name,password,file)
 			command="wget -t 2 %s -O %s"%(url,outputfile)
-			#TODO: You need to check to see if the file has been downloaded or not here or somewhere else in the code /data/fastq
-			print command
-			#os.system(command)
+			sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+			out, err = sp.communicate()
+			if out:
+				print "standard output of subprocess:"
+				print out
+			if err:
+				print "standard error of subprocess:"
+				print err
+			if sp.returncode!=0:
+				error_list.append(err)
+				print >> sys.stderr, err
+		
+		
 
 if __name__ == '__main__':
-	prop=properties('properties.txt')
-	
+	error_list=list()
+	prop=properties('../resources/properties.txt')
 	conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
 	data_provider_list=get_list(conn)
 	for data_provider_stage in data_provider_list:
@@ -79,15 +90,21 @@ if __name__ == '__main__':
 			data_provider_stage.set_started(conn)
 			process_dir=prop.workdir+data_provider_stage.process_id
 			print "Creating process directory:",process_dir
+			create_processing_dir(process_dir)
 			account_name=get_datahub_names(conn,data_provider_stage.process_id)
 			print "account to be processed:",account_name
 			files=get_file_names(conn,data_provider_stage.process_id)
 			print "Files to be downloaded:",files
 			pw=get_datahub_account_password(conn,account_name)
-			download_datahub_file(account_name,pw,files,process_dir) #TODO: This function need an updat to use subprocess.Popen
-			#TODO: set complete need to be done
-			#TODO: set error need to be done 
-			
+			download_datahub_file(account_name,pw,files,process_dir) 
+			if len(error_list)!=0:
+				final_errors='\n'.join(error_list) 
+				data_provider_stage.set_error(conn,final_errors)
+			else:
+				data_provider_stage.set_finished(conn)
+		error_list=list()
+				
+	conn.close()
 		
 		
 	

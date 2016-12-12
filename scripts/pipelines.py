@@ -30,6 +30,8 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
  --Ast paired
  
 	'''
+	global error_list
+	error_list=''
 	
 	def __init__(self,fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession):
 		self.fq1=fq1
@@ -42,46 +44,55 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		
 		
 	def command_builder(self):
-		#docker run -ti --rm -v /Users/nimap/Google-Drive/workspace/ebi-selecta/databases/dtu-databases:/databases -v /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-01122016100820:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/ERR029449_1.fastq.gz --fq2 /workdir/ERR029449_2.fastq.gz --Asp Illumina --Ast paired
 		command=""
 		if self.pair=='True':
-			#docker run -ti --rm -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired
 			command="docker run -ti --rm -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired"%(self.database_dir,self.workdir,self.fq1,self.fq2,self.sequencing_machine)
 		else:
-			print "Currently cannot deal with non paired fastq files in dtu_sge object"
+			message="ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
+			#print "Currently cannot deal with non paired fastq files in dtu_sge object"
+			error_list.append(message)
 		return command
 		
-	def run(self,command):
-		print "running the command"
-		#os.system(command)
-		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-		#print "stderr:",p.stderr.readlines()
-		#print "stdout:",p.stdout.readlines()
 		
-		for line in p.stdout.readlines():
-			print line
+	def run(self,command,error_list):
+		print "running the command"
+		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		
+		out, err = sp.communicate()
+		if out:
+			print "standard output of subprocess:"
+			print out
+		if err:
+			print "standard error of subprocess:"
+			print err
+		if sp.returncode!=0:
+			error_list.append(err)
+			print >> sys.stderr, err
+		
+		
 			
 
 	@staticmethod	
 	def copy_src_into_dest(src, dest):
-		#for src in files:
 			name=os.path.basename(src)
 			dest_file=os.path.join(dest, name)
 			try:
 				shutil.copytree(src, dest_file)
-			# Directories are the same
 			except shutil.Error as e:
-				print('Directory not copied. Error: %s' % e)
-			# Any error saying that the directory doesn't exist
+				message='Directory not copied. Error: %s' %e
+				error_list.append(message)
+				print(message)
 			except OSError as e:
-				print('Directory not copied. Error: %s' % e)
+				message='Directory not copied. Error: %s' %e
+				error_list.append(message)
+				print(message)
 			
 	@staticmethod	
 	def delete_empty_files(folder):
 		for root, dirs, files in os.walk(folder):
 			for file in files:
 				fullname = os.path.join(root, file)
-				#print fullname
+				
 				if os.path.getsize(fullname) == 0:
 					print 'To be deleted files:\n',fullname
 					os.remove(fullname)
@@ -140,11 +151,13 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 
 	
 	
-	def execute(self):
+	def execute(self,error_list):
+		error_list=list()
 		command=self.command_builder()
-		#self.run(command)
+		error_list=self.run(command,error_list)
 		gzip_file,tab_file=self.post_process()
-		return gzip_file,tab_file
+		error_message='\n'.join(error_list) 
+		return gzip_file,tab_file,error_message
 		
 	
 		
