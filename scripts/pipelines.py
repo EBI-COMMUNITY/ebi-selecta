@@ -1,6 +1,6 @@
 import os
 import subprocess
-import os
+import sys
 from glob import glob
 import tarfile
 import zipfile
@@ -30,8 +30,8 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
  --Ast paired
  
 	'''
-	global error_list
-	error_list=''
+	#global error_list
+	#error_list=list()
 	
 	def __init__(self,fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession):
 		self.fq1=fq1
@@ -41,50 +41,61 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		self.workdir=workdir
 		self.sequencing_machine=sequencing_machine
 		self.pair=pair
+                error_list=list()
+                self.error_list=error_list
 		
 		
 	def command_builder(self):
 		command=""
 		if self.pair=='True':
-			command="docker run -ti --rm -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired"%(self.database_dir,self.workdir,self.fq1,self.fq2,self.sequencing_machine)
+			command="docker run -ti --rm --user $(id -u) -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired"%(self.database_dir,self.workdir,self.fq1,self.fq2,self.sequencing_machine)
 		else:
 			message="ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
 			#print "Currently cannot deal with non paired fastq files in dtu_sge object"
-			error_list.append(message)
+			self.error_list.append(message.replace("'",""))
 		return command
 		
 		
-	def run(self,command,error_list):
+	def run(self,command):
 		print "running the command"
-		p = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                print command
+		sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		
 		out, err = sp.communicate()
 		if out:
 			print "standard output of subprocess:"
 			print out
-		if err:
+                        if 'error' in out.lower():
+                 #               print "error 1"
+				self.error_list.append(out.replace("'",""))
+		#print "End of standard output of subprocess"
+                if err:
 			print "standard error of subprocess:"
 			print err
-		if sp.returncode!=0:
-			error_list.append(err)
+                        if 'error' in err.lower():
+                 #               print "error 2"
+				self.error_list.append(err.replace("'",""))
+		#print "End of standard error  of subprocess"
+                if sp.returncode!=0:
+			self.error_list.append(err.replace("'",""))
 			print >> sys.stderr, err
 		
 		
 			
 
-	@staticmethod	
-	def copy_src_into_dest(src, dest):
+	#@staticmethod	
+	def copy_src_into_dest(self,src, dest):
 			name=os.path.basename(src)
 			dest_file=os.path.join(dest, name)
 			try:
 				shutil.copytree(src, dest_file)
 			except shutil.Error as e:
 				message='Directory not copied. Error: %s' %e
-				error_list.append(message)
+				self.error_list.append(message.replace("'",""))
 				print(message)
 			except OSError as e:
 				message='Directory not copied. Error: %s' %e
-				error_list.append(message)
+				self.error_list.append(message.replace("'",""))
 				print(message)
 			
 	@staticmethod	
@@ -118,30 +129,39 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		zf.close()
 		
 	
+
+        @staticmethod
+        def del_file(filename):
+            if os.path.exists(filename):
+                os.remove(filename)
+
 	def post_process(self):
 		print "doing post process:"
 		dtu_cge.delete_empty_files(self.workdir)
 		all_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_all"
-		all_result_name_gzip=self.workdir+self.run_accession+"_analysis_DTU_CGE_all.tar.gz"
-		tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summarry.tsv"
-		src_tsv_file=self.workdir+'out.tsv'
+                dtu_cge.del_file(all_result_name)
+                all_result_name_gzip=self.workdir+self.run_accession+"_analysis_DTU_CGE_all.tar.gz"
+		dtu_cge.del_file(all_result_name_gzip)
+                tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summarry.tsv"
+		dtu_cge.del_file(tab_result_name)
+                src_tsv_file=self.workdir+'out.tsv'
 		print all_result_name
 		print tab_result_name
 		if not os.path.exists(all_result_name):
 			os.makedirs(all_result_name)
 		
 		Assembler_dir=self.workdir+'Assembler'
-		dtu_cge.copy_src_into_dest(Assembler_dir, all_result_name)
+		self.copy_src_into_dest(Assembler_dir, all_result_name)
 		ContigAnalyzer_dir=self.workdir+'ContigAnalyzer'
-		dtu_cge.copy_src_into_dest(ContigAnalyzer_dir, all_result_name)
+		self.copy_src_into_dest(ContigAnalyzer_dir, all_result_name)
 		KmerFinder_dir=self.workdir+'KmerFinder'
-		dtu_cge.copy_src_into_dest(KmerFinder_dir, all_result_name)
+		self.copy_src_into_dest(KmerFinder_dir, all_result_name)
 		PlasmidFinder_dir=self.workdir+'PlasmidFinder'
-		dtu_cge.copy_src_into_dest(PlasmidFinder_dir, all_result_name)
+	        self.copy_src_into_dest(PlasmidFinder_dir, all_result_name)
 		ResFinder_dir=self.workdir+'ResFinder'
-		dtu_cge.copy_src_into_dest(ResFinder_dir, all_result_name)
+		self.copy_src_into_dest(ResFinder_dir, all_result_name)
 		VirulenceFinder_dir=self.workdir+'VirulenceFinder'
-		dtu_cge.copy_src_into_dest(VirulenceFinder_dir, all_result_name)
+		self.copy_src_into_dest(VirulenceFinder_dir, all_result_name)
 		
 		
 		dtu_cge.make_tar_gzip(all_result_name,self.workdir)
@@ -151,13 +171,15 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 
 	
 	
-	def execute(self,error_list):
-		error_list=list()
+	def execute(self):
+
 		command=self.command_builder()
-		error_list=self.run(command,error_list)
+	        print 'command:',command
+         	self.run(command)
 		gzip_file,tab_file=self.post_process()
-		error_message='\n'.join(error_list) 
-		return gzip_file,tab_file,error_message
+		error_message='\n'.join(self.error_list) 
+		print "\n\n\n\nERROR Message:",error_message,"\n\n\n\n"
+                return gzip_file,tab_file,error_message
 		
 	
 		

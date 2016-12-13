@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+import MySQLdb
 import mysql.connector
 from PipelineAttributes import stages
 from selectadb import properties
@@ -10,7 +13,7 @@ global error_list
 error_list=''
 
 def get_connection(db_user,db_password,db_host,db_database):
-        conn = mysql.connector.connect(user=db_user, password=db_password, host=db_host,database=db_database)
+        conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host,db=db_database)
         return conn
 
 def get_list(conn):
@@ -75,7 +78,7 @@ def execute_dtu_cge(process_id,selection_id,prop):
     
     cge=dtu_cge(fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession)
     print cge.fq1,cge.fq2,cge.database_dir,cge.workdir,cge.sequencing_machine,cge.pair
-    gzip_file,tab_file,error_message=cge.execute(error_list)
+    gzip_file,tab_file,error_message=cge.execute()
     if error_message!='':
         error_list.append(error_message)
     gzip_file_md5=hashlib.md5(open(gzip_file, 'rb').read()).hexdigest()

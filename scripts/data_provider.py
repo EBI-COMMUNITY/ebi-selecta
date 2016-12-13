@@ -1,3 +1,6 @@
+#!/usr/bin/python
+
+import MySQLdb
 import mysql.connector
 import os
 import base64
@@ -12,7 +15,7 @@ error_list=''
 
 	
 def get_connection(db_user,db_password,db_host,db_database):
-		conn = mysql.connector.connect(user=db_user, password=db_password, host=db_host,database=db_database)
+		conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host,db=db_database)
 		return conn
 
 def get_list(conn):
