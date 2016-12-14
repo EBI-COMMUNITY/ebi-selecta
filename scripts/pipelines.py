@@ -48,7 +48,7 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 	def command_builder(self):
 		command=""
 		if self.pair=='True':
-			command="docker run -ti --rm --user $(id -u) -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired"%(self.database_dir,self.workdir,self.fq1,self.fq2,self.sequencing_machine)
+			command="docker run -ti --rm -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired"%(self.database_dir,self.workdir,self.fq1,self.fq2,self.sequencing_machine)
 		else:
 			message="ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
 			#print "Currently cannot deal with non paired fastq files in dtu_sge object"
@@ -65,16 +65,31 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		if out:
 			print "standard output of subprocess:"
 			print out
-                        if 'error' in out.lower():
+                        data=out.split('\n')
+                        i=0
+                        for line in data:
+                            if 'error' in line.lower(): 
+                                message=data[i-1]+'    '+data[i]+'    '+data[i+1]
+                                self.error_list.append(message.replace("'",""))
+                            i=i+1
+
+                        #if 'error' in out.lower():
                  #               print "error 1"
-				self.error_list.append(out.replace("'",""))
+                 #				self.error_list.append(out.replace("'",""))
 		#print "End of standard output of subprocess"
                 if err:
 			print "standard error of subprocess:"
 			print err
-                        if 'error' in err.lower():
+                        data=err.split('\n')
+                        i=0
+                        for line in data:
+                            if 'error' in line.lower():  
+                                message=data[i-1]+'    '+data[i]+'    '+data[i+1]
+                                self.error_list.append(message.replace("'",""))
+                            i=i+1
+                 #      if 'error' in err.lower():
                  #               print "error 2"
-				self.error_list.append(err.replace("'",""))
+		 #		self.error_list.append(err.replace("'",""))
 		#print "End of standard error  of subprocess"
                 if sp.returncode!=0:
 			self.error_list.append(err.replace("'",""))
@@ -135,8 +150,14 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
             if os.path.exists(filename):
                 os.remove(filename)
 
+        #def change_permission(filename):
+
+
 	def post_process(self):
 		print "doing post process:"
+                command='chmod -R ugo+rw %s'%self.workdir
+                print command
+                self.run(command)
 		dtu_cge.delete_empty_files(self.workdir)
 		all_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_all"
                 dtu_cge.del_file(all_result_name)
@@ -149,7 +170,8 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		print tab_result_name
 		if not os.path.exists(all_result_name):
 			os.makedirs(all_result_name)
-		
+	
+                self.run(command)	
 		Assembler_dir=self.workdir+'Assembler'
 		self.copy_src_into_dest(Assembler_dir, all_result_name)
 		ContigAnalyzer_dir=self.workdir+'ContigAnalyzer'
@@ -157,11 +179,14 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		KmerFinder_dir=self.workdir+'KmerFinder'
 		self.copy_src_into_dest(KmerFinder_dir, all_result_name)
 		PlasmidFinder_dir=self.workdir+'PlasmidFinder'
-	        self.copy_src_into_dest(PlasmidFinder_dir, all_result_name)
+                if os.path.exists(PlasmidFinder_dir):
+	            self.copy_src_into_dest(PlasmidFinder_dir, all_result_name)
 		ResFinder_dir=self.workdir+'ResFinder'
-		self.copy_src_into_dest(ResFinder_dir, all_result_name)
+		if os.path.exists(ResFinder_dir):
+                    self.copy_src_into_dest(ResFinder_dir, all_result_name)
 		VirulenceFinder_dir=self.workdir+'VirulenceFinder'
-		self.copy_src_into_dest(VirulenceFinder_dir, all_result_name)
+	        if os.path.exists(VirulenceFinder_dir):
+        	    self.copy_src_into_dest(VirulenceFinder_dir, all_result_name)
 		
 		
 		dtu_cge.make_tar_gzip(all_result_name,self.workdir)
