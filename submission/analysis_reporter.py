@@ -5,9 +5,8 @@ import time
 import subprocess
 import base64
 import os
-from _ast import alias
-from matplotlib.sphinxext.plot_directive import out_of_date
 sys.path.append('../scripts')
+import MySQLdb
 import mysql.connector
 import ftplib
 from selectadb import properties
@@ -62,7 +61,7 @@ def get_list(conn):
 
 
 def get_connection(db_user,db_password,db_host,db_database):
-		conn = mysql.connector.connect(user=db_user, password=db_password, host=db_host,database=db_database)
+		conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host,db=db_database)
 		return conn
 
 def calculateMd5(file):
@@ -94,8 +93,8 @@ def create_analysis_xml(conn,analysis,prop,attributes,analysis_xml):
 		 alias=pipeline_name.lower()+"_"+analysis.process_id.lower()+"-"+str(analysis.selection_id)
 		 print 'alias:',alias
 		 analysis_date=time.strftime("%Y-%m-%dT%H:%M:%S")
-		 title="COMPARE project pathogen analysis, using %s pipeline on read data %s from sample %"%(pipeline_name,run_accession,sample_accession)
-		 description="As part of the COMPARE project submitted data %s from sample % organism name '%s' has been processed by %s pipeline."%(run_accession,sample_accession,scientific_name,pipeline_name)
+		 title="COMPARE project pathogen analysis, using %s pipeline on read data %s from sample %s"%(pipeline_name,run_accession,sample_accession)
+		 description="As part of the COMPARE project submitted data %s from sample %s organism name '%s' has been processed by %s pipeline."%(run_accession,sample_accession,scientific_name,pipeline_name)
 	 
 		 analysis_obj=analysis_pathogen_analysis(alias,centre_name,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml)
 		 analysis_obj.build_analysis()
@@ -140,8 +139,8 @@ def uploadFileToEna(filename,user,passw):
 		
 def submitAnalysis(submission_xml,analysis_xml,user,passw):
 		print "Analysis submission started:"
-		command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'
-		
+		#command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'
+	        command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'	
 		
 		sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		out, err = sp.communicate()
@@ -203,7 +202,7 @@ if __name__ == '__main__':
 	 		 analysis_xml=prop.workdir+analysis_reporter_stage.process_id+'/analysis.xml'
 	 		 submission_xml=prop.workdir+analysis_reporter_stage.process_id+'/submission.xml'
 	 		 create_analysis_xml(conn,analysis_reporter_stage,prop,attributes,analysis_xml)
-	 		 action='VALIDATE'
+	 		 action='ADD'
 	 		 analysis_xml_name=os.path.basename(analysis_xml)
 	 		 create_submission_xml(conn,analysis_reporter_stage,analysis_xml_name,submission_xml,action)
 	 		 submission_error_messages,returncode,out,err=submitAnalysis(submission_xml,analysis_xml,analyst_webin,passw)
