@@ -48,10 +48,11 @@ def execute(conn,process_id,selection_id,prop):
         execute_dtu_cge(process_id,selection_id,prop)
         
     
-def insert_into_process_attributes(conn,process_id,attribute_key,attribute_value):
+def update_process_attributes(conn,process_id,attribute_key,attribute_value):
         
     if process_id!="" and attribute_value!="":
-        query="INSERT INTO process_attributes (process_id,attribute_key,attribute_value) values('%s','%s','%s')"%(process_id,attribute_key,attribute_value)
+        #query="INSERT INTO process_attributes (process_id,attribute_key,attribute_value) values('%s','%s','%s')"%(process_id,attribute_key,attribute_value)
+        query="update process_attributes set attribute_value='%s' where process_id='%s' and attribute_key='%s'"%(attribute_value,process_id,attribute_key)
         cursor = conn.cursor()
             
         try:
@@ -83,10 +84,10 @@ def execute_dtu_cge(process_id,selection_id,prop):
         error_list.append(error_message)
     gzip_file_md5=hashlib.md5(open(gzip_file, 'rb').read()).hexdigest()
     tab_file_md5=hashlib.md5(open(tab_file, 'rb').read()).hexdigest()
-    insert_into_process_attributes(conn,process_id,'gzip_analysis_file',gzip_file)
-    insert_into_process_attributes(conn,process_id,'tab_analysis_file',tab_file)
-    insert_into_process_attributes(conn,process_id,'gzip_analysis_file_md5',gzip_file_md5)
-    insert_into_process_attributes(conn,process_id,'tab_analysis_file_md5',tab_file_md5)
+    update_process_attributes(conn,process_id,'gzip_analysis_file',gzip_file)
+    update_process_attributes(conn,process_id,'tab_analysis_file',tab_file)
+    update_process_attributes(conn,process_id,'gzip_analysis_file_md5',gzip_file_md5)
+    update_process_attributes(conn,process_id,'tab_analysis_file_md5',tab_file_md5)
     return error_list
 
 if __name__ == '__main__':
