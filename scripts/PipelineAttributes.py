@@ -26,6 +26,10 @@ class default_attributes:
 	global public_key
 	global analyst_webin_id_key
 	global pair_key
+        global gzip_analysis_file_key
+        global tab_analysis_file_key
+        global gzip_analysis_file_md5_key
+        global tab_analysis_file_md5_key
 	
 	selection_id_key='selection_id'
 	process_id_key='process_id'
@@ -49,7 +53,11 @@ class default_attributes:
 	public_key='public'
 	analyst_webin_id_key='analyst_webin'
 	pair_key='pair'
-	
+        gzip_analysis_file_key='gzip_analysis_file'
+        tab_analysis_file_key='tab_analysis_file'
+	gzip_analysis_file_md5_key='gzip_analysis_file_md5'
+        tab_analysis_file_md5_key='tab_analysis_file_md5'
+
 
 	def __init__(self,process_id,selection_id, datahub,tax_id,scientific_name,sample_accession,secondary_sample_acc,experiment_accession,study_accession,secondary_study_acc,run_accession,pipeline_name,provider_center_name,provider_webin_id,fastq_files,fastq_md5,public,analyst_webin_id):
 		self.process_id=process_id
@@ -66,7 +74,11 @@ class default_attributes:
 		self.pipeline_name=pipeline_name
 		self.provider_center_name=provider_center_name
 		self.provider_webin_id=provider_webin_id
-		files=list()
+		self.gzip_analysis_file=''
+                self.tab_analysis_file=''
+                self.gzip_analysis_file_md5=''
+                self.tab_analysis_file_md5=''
+                files=list()
 		if ";" in fastq_files:
 			files=fastq_files.split(";")
 			self.fastq1=files[0]
@@ -99,7 +111,7 @@ class default_attributes:
    
 	def insert_into_process_attributes(self,conn,process_id,attribute_key,attribute_value):
 		
-		if process_id!="" and attribute_value!="":
+		if process_id!="" and attribute_key!="":
 			query="INSERT INTO process_attributes (process_id,attribute_key,attribute_value) values('%s','%s','%s')"%(process_id,attribute_key,attribute_value)
 			cursor = conn.cursor()
 			
@@ -136,7 +148,11 @@ class default_attributes:
 		self.insert_into_process_attributes(conn,self.process_id,fastq2_md5_key,self.fastq2_md5)
 		self.insert_into_process_attributes(conn,self.process_id,public_key,self.public)
 		self.insert_into_process_attributes(conn,self.process_id,analyst_webin_id_key,self.analyst_webin_id)
-		self.insert_into_process_attributes(conn,self.process_id,pair_key,self.pair)
+		self.insert_into_process_attributes(conn,self.process_id,gzip_analysis_file_key,self.gzip_analysis_file)
+                self.insert_into_process_attributes(conn,self.process_id,tab_analysis_file_key,self.tab_analysis_file)
+                self.insert_into_process_attributes(conn,self.process_id,gzip_analysis_file_md5_key,self.gzip_analysis_file_md5)
+                self.insert_into_process_attributes(conn,self.process_id,tab_analysis_file_md5_key,self.tab_analysis_file_md5)
+                self.insert_into_process_attributes(conn,self.process_id,pair_key,self.pair)
 		
 	@staticmethod	
 	def get_attribute_value(conn,attribute_key,process_id):
