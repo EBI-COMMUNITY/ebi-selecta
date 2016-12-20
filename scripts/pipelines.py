@@ -69,14 +69,10 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
                         i=0
                         for line in data:
                             if 'error' in line.lower(): 
-                                message=data[i-1]+'    '+data[i]+'    '+data[i+1]
+                                message=data[i-1]+'\n'+data[i]
                                 self.error_list.append(message.replace("'",""))
                             i=i+1
 
-                        #if 'error' in out.lower():
-                 #               print "error 1"
-                 #				self.error_list.append(out.replace("'",""))
-		#print "End of standard output of subprocess"
                 if err:
 			print "standard error of subprocess:"
 			print err
@@ -84,13 +80,9 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
                         i=0
                         for line in data:
                             if 'error' in line.lower():  
-                                message=data[i-1]+'    '+data[i]+'    '+data[i+1]
+                                message=data[i-1]+'\n'+data[i]
                                 self.error_list.append(message.replace("'",""))
                             i=i+1
-                 #      if 'error' in err.lower():
-                 #               print "error 2"
-		 #		self.error_list.append(err.replace("'",""))
-		#print "End of standard error  of subprocess"
                 if sp.returncode!=0:
 			self.error_list.append(err.replace("'",""))
 			print >> sys.stderr, err
@@ -148,7 +140,7 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
         @staticmethod
         def del_file(filename):
             if os.path.exists(filename):
-                os.remove(filename)
+                shutil.rmtree(filename)
 
         #def change_permission(filename):
 
@@ -203,7 +195,6 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
          	self.run(command)
 		gzip_file,tab_file=self.post_process()
 		error_message='\n'.join(self.error_list) 
-		print "\n\n\n\nERROR Message:",error_message,"\n\n\n\n"
                 return gzip_file,tab_file,error_message
 		
 	
