@@ -1,10 +1,8 @@
-CREATE DATABASE  IF NOT EXISTS `selectadb` /*!40100 DEFAULT CHARACTER SET utf8 */;
-USE `selectadb`;
--- MySQL dump 10.13  Distrib 5.6.24, for osx10.8 (x86_64)
+-- MySQL dump 10.13  Distrib 5.5.53, for debian-linux-gnu (x86_64)
 --
--- Host: 127.0.0.1    Database: selectadb
+-- Host: localhost    Database: selectadb
 -- ------------------------------------------------------
--- Server version	5.6.25
+-- Server version	5.5.53-0ubuntu0.14.04.1
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,6 +14,14 @@ USE `selectadb`;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Current Database: `selectadb`
+--
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `selectadb` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
+USE `selectadb`;
 
 --
 -- Table structure for table `account`
@@ -88,7 +94,7 @@ CREATE TABLE `process_selection` (
   `audit_user` varchar(45) DEFAULT NULL,
   `webin` varchar(100) NOT NULL,
   PRIMARY KEY (`selection_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +112,7 @@ CREATE TABLE `process_stages` (
   `audit_user` varchar(100) DEFAULT NULL,
   `stage_start` datetime DEFAULT NULL,
   `stage_end` datetime DEFAULT NULL,
-  `stage_error` varchar(1000) DEFAULT NULL,
+  `stage_error` text,
   PRIMARY KEY (`process_id`,`stage_name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -127,10 +133,6 @@ CREATE TABLE `selecta_rule_templates` (
   PRIMARY KEY (`template_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping routines for database 'selectadb'
---
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -141,4 +143,4 @@ CREATE TABLE `selecta_rule_templates` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2016-12-10 23:15:02
+-- Dump completed on 2016-12-20  9:40:02
