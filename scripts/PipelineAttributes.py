@@ -26,10 +26,10 @@ class default_attributes:
 	global public_key
 	global analyst_webin_id_key
 	global pair_key
-        global gzip_analysis_file_key
-        global tab_analysis_file_key
-        global gzip_analysis_file_md5_key
-        global tab_analysis_file_md5_key
+	global gzip_analysis_file_key
+	global tab_analysis_file_key
+	global gzip_analysis_file_md5_key
+	global tab_analysis_file_md5_key
 	
 	selection_id_key='selection_id'
 	process_id_key='process_id'
@@ -53,10 +53,10 @@ class default_attributes:
 	public_key='public'
 	analyst_webin_id_key='analyst_webin'
 	pair_key='pair'
-        gzip_analysis_file_key='gzip_analysis_file'
-        tab_analysis_file_key='tab_analysis_file'
+	gzip_analysis_file_key='gzip_analysis_file'
+	tab_analysis_file_key='tab_analysis_file'
 	gzip_analysis_file_md5_key='gzip_analysis_file_md5'
-        tab_analysis_file_md5_key='tab_analysis_file_md5'
+	tab_analysis_file_md5_key='tab_analysis_file_md5'
 
 
 	def __init__(self,process_id,selection_id, datahub,tax_id,scientific_name,sample_accession,secondary_sample_acc,experiment_accession,study_accession,secondary_study_acc,run_accession,pipeline_name,provider_center_name,provider_webin_id,fastq_files,fastq_md5,public,analyst_webin_id):
@@ -75,10 +75,11 @@ class default_attributes:
 		self.provider_center_name=provider_center_name
 		self.provider_webin_id=provider_webin_id
 		self.gzip_analysis_file=''
-                self.tab_analysis_file=''
-                self.gzip_analysis_file_md5=''
-                self.tab_analysis_file_md5=''
-                files=list()
+		self.tab_analysis_file=''
+		self.gzip_analysis_file_md5=''
+		self.tab_analysis_file_md5=''
+		files=list()
+		
 		if ";" in fastq_files:
 			files=fastq_files.split(";")
 			self.fastq1=files[0]
@@ -91,18 +92,19 @@ class default_attributes:
 			self.pair=False
 		
 		self.fastq_files=fastq_files
+		
 		md5s=list()
 		if ";" in fastq_md5:
 			md5s=fastq_md5.split(";")
 			self.fastq1_md5=md5s[0]
 			self.fastq2_md5=md5s[1]
 		else:
-			files.append(fastq_md5)
+			md5s.append(fastq_md5)
 			self.fastq1_md5=md5s[0]
 			self.fastq2_md5=""
 		self.public=public
 		self.analyst_webin_id=analyst_webin_id
-
+        
 
 	def __str__(self):
 		return 'selection_id:'+str(self.selection_id)+'\n'+'datahub:'+self.datahub+'\n'+'tax_id:'+str(self.tax_id)+'\n'+'scientific_name:'+self.scientific_name+'\n'+'sample_accession:'+self.sample_accession+'\n'+'secondary_sample_acc:'+self.secondary_sample_acc+'\n'+'experiment_accession:'+self.experiment_accession+'\n'+'study_accession:'+self.study_accession+'\n'+'secondary_study_acc:'+self.secondary_study_acc+'\n'+'run_accession:'+self.run_accession+'\n'+'pipeline_name:'+self.pipeline_name+'\n'+'provider_center_name:'+self.provider_center_name+'\n'+'provider_webin_id:'+self.provider_webin_id+'\n'+'fastq_files:'+self.fastq_files+'\n'+'fastq_md5:'+self.fastq_md5+'\n'+'public:'+self.public+'\n'+'analyst_webin_id:'+self.analyst_webin_id
@@ -149,10 +151,10 @@ class default_attributes:
 		self.insert_into_process_attributes(conn,self.process_id,public_key,self.public)
 		self.insert_into_process_attributes(conn,self.process_id,analyst_webin_id_key,self.analyst_webin_id)
 		self.insert_into_process_attributes(conn,self.process_id,gzip_analysis_file_key,self.gzip_analysis_file)
-                self.insert_into_process_attributes(conn,self.process_id,tab_analysis_file_key,self.tab_analysis_file)
-                self.insert_into_process_attributes(conn,self.process_id,gzip_analysis_file_md5_key,self.gzip_analysis_file_md5)
-                self.insert_into_process_attributes(conn,self.process_id,tab_analysis_file_md5_key,self.tab_analysis_file_md5)
-                self.insert_into_process_attributes(conn,self.process_id,pair_key,self.pair)
+		self.insert_into_process_attributes(conn,self.process_id,tab_analysis_file_key,self.tab_analysis_file)
+		self.insert_into_process_attributes(conn,self.process_id,gzip_analysis_file_md5_key,self.gzip_analysis_file_md5)
+		self.insert_into_process_attributes(conn,self.process_id,tab_analysis_file_md5_key,self.tab_analysis_file_md5)
+		self.insert_into_process_attributes(conn,self.process_id,pair_key,self.pair)
 		
 	@staticmethod	
 	def get_attribute_value(conn,attribute_key,process_id):
