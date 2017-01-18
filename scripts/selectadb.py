@@ -23,19 +23,23 @@ class properties:
 			 lines = f.readlines()
 		
 		workdir_provided=False
-		archivedir_provided=False
+		workdir_input_provided=False
+                archivedir_provided=False
 		dbuser_provided=False
 		dbpassword_provided=False
 		dbhost_provided=False
 		dbname_provided=False
 		dtu_cge_databases_provided=False
-		
+	        
 		
 		for l in lines:
 			pair=l.strip().split(":")
 			if pair[0].lower()=='workdir':
 				self.workdir=pair[1]
 				workdir_provided=True
+                        elif pair[0].lower()=='workdir_input':
+                                self.workdir_input=pair[1]
+                                workdir_input_provided=True
 			elif pair[0].lower()=='archivedir':
 				self.archivedir=pair[1]
 				archivedir_provided=True
@@ -58,6 +62,8 @@ class properties:
 		
 		if workdir_provided==False:
 			self.workdir=''
+                if workdir_input_provided==False:
+                        self.workdir_input=''
 		if archivedir_provided==False:
 		   self.archivedir=''
 		if dbuser_provided==False:
