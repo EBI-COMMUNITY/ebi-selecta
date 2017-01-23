@@ -8,9 +8,22 @@ from PipelineAttributes import default_attributes
 from pipelines import dtu_cge
 import os
 import hashlib
+import argparse
 
 global error_list
 error_list=''
+
+
+def get_args():
+
+    global properties_file
+    # Assign description to the help doc
+    parser = argparse.ArgumentParser(
+        description='Script rrmove the processed submissions to make free space for incoming submissions.')
+    parser.add_argument('-p', '--properties_file', type=str, help='Please provide the properties file that is required by SELECTA system', required=True)
+    args = parser.parse_args()
+    properties_file=args.properties_file
+
 
 def get_connection(db_user,db_password,db_host,db_database):
         conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host,db=db_database)
@@ -75,6 +88,7 @@ def execute_dtu_cge(process_id,selection_id,prop):
     run_accession=default_attributes.get_attribute_value(conn,'run_accession',process_id)
     database_dir=prop.dtu_cge_databases
     workdir=prop.workdir+process_id+"/"
+    print "Test:"+workdir
     sequencing_machine='Illumina'
     
     cge=dtu_cge(fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession)
@@ -92,7 +106,9 @@ def execute_dtu_cge(process_id,selection_id,prop):
 
 if __name__ == '__main__':
     error_list=list()
-    prop=properties('../resources/properties.txt')
+    get_args()
+    prop=properties(properties_file)
+    #prop=properties('../resources/properties.txt')
     conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
     core_executor_list=get_list(conn)
     for exe in core_executor_list:
