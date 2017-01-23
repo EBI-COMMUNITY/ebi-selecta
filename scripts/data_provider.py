@@ -32,7 +32,7 @@ def get_connection(db_user,db_password,db_host,db_database):
 
 def get_list(conn):
 	stage_name='data_provider'
-	query="select process_id,selection_id from process_stages where stage_name='%s'"%stage_name
+	query="select process_id,selection_id from process_stages where stage_start is null and stage_end is null and stage_name='%s'"%stage_name
 	cursor = conn.cursor()
 	cursor.execute(query)
 	
