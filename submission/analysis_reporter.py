@@ -16,7 +16,7 @@ from sra_objects import submission
 from PipelineAttributes import stages
 from PipelineAttributes import default_attributes
 from lxml import etree
-
+import argparse
 
 __author__ = 'Nima Pakseresht'
 
@@ -30,6 +30,16 @@ log_file='analysis_reporter.log'
 
 #TODO: Code will get benefit from writing a log file
 #TODO: Code also get benefit from checking the checksum of uploaded file.
+
+def get_args():
+
+    global properties_file
+    # Assign description to the help doc
+    parser = argparse.ArgumentParser(
+        description='Script rrmove the processed submissions to make free space for incoming submissions.')
+    parser.add_argument('-p', '--properties_file', type=str, help='Please provide the properties file that is required by SELECTA system', required=True)
+    args = parser.parse_args()
+    properties_file=args.properties_file
 
 def get_list(conn):
 	
@@ -183,8 +193,9 @@ def terminate(conn,analysis_reporter_stage):
 
 
 if __name__ == '__main__':
-	
-	 prop=properties('../resources/properties.txt')
+         get_args()
+         prop=properties(properties_file)	
+	 #prop=properties('../resources/properties.txt')
 	 conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
 	 analysis_reporter_list=get_list(conn)
 	 error_list=list()
