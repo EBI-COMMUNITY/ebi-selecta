@@ -191,7 +191,7 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 	def execute(self):
 
 		command=self.command_builder()
-	        print 'command:',command
+	        print 'COMMAND:',command
          	self.run(command)
 		gzip_file,tab_file=self.post_process()
 		error_message='\n'.join(self.error_list) 
