@@ -5,7 +5,7 @@ import time
 import subprocess
 import base64
 import os
-sys.path.append('../scripts')
+sys.path.append('/home/ubuntu/tools/ebi-selecta/scripts')
 import MySQLdb
 import mysql.connector
 import ftplib
@@ -151,9 +151,11 @@ def submitAnalysis(submission_xml,analysis_xml,user,passw):
 		print "Analysis submission started:"
 		#command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'
 	        command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'	
-		
+                print "COMMAND:",command		
 		sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 		out, err = sp.communicate()
+                print "SYSOUT:",out
+                print "SYSERR:",err
 		submission_error_messages=list()
 		if out:
 			root = etree.XML(out)
