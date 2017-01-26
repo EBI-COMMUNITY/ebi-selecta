@@ -201,7 +201,7 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		
 
 
-class slim_emc:
+class emc_slim:
 	
 	
 	
@@ -261,8 +261,8 @@ class slim_emc:
 	
 	
 	def post_process(self):
-		gzip_file=self.run_accession+"_analysis_SLIM_EMC_all.tar.gz"
-		tab_file=self.run_accession+"_analysis_SLIM_EMC_summarry.tsv"
+		gzip_file=self.run_accession+"_analysis_EMC_SLIM_all.tar.gz"
+		tab_file=self.run_accession+"_analysis_EMC_SLIM_summarry.tsv"
 		if os.path.exists(gzip_file):
 			if os.path.getsize(gzip_file)==0:
 				message="ERROR: gzip file %s is empty"%gzip_file
