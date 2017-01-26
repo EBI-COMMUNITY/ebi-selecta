@@ -41,8 +41,8 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		self.workdir=workdir
 		self.sequencing_machine=sequencing_machine
 		self.pair=pair
-                error_list=list()
-                self.error_list=error_list
+		error_list=list()
+		self.error_list=error_list
 		
 		
 	def command_builder(self):
@@ -58,33 +58,33 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		
 	def run(self,command):
 		print "running the command"
-                print command
+		print command
 		sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		
 		out, err = sp.communicate()
 		if out:
 			print "standard output of subprocess:"
 			print out
-                        data=out.split('\n')
-                        i=0
-                        for line in data:
-                            if 'error' in line.lower(): 
-                                message=data[i-1]+'\n'+data[i]
-                                self.error_list.append(message.replace("'",""))
-                            i=i+1
+			data=out.split('\n')
+			i=0
+			for line in data:
+				if 'error' in line.lower(): 
+					message=data[i-1]+'\n'+data[i]
+					self.error_list.append(message.replace("'",""))
+				i=i+1
 
-                if err:
-			print "standard error of subprocess:"
-			print err
-                        data=err.split('\n')
-                        i=0
-                        for line in data:
-                            if 'error' in line.lower():  
-                                message=data[i-1]+'\n'+data[i]
-                                self.error_list.append(message.replace("'",""))
-                            i=i+1
-                if sp.returncode!=0:
-			self.error_list.append(err.replace("'",""))
+			if err:
+				print "standard error of subprocess:"
+				print err
+				data=err.split('\n')
+				i=0
+				for line in data:
+					if 'error' in line.lower():  
+						message=data[i-1]+'\n'+data[i]
+						self.error_list.append(message.replace("'",""))
+					i=i+1
+			if sp.returncode!=0:
+				self.error_list.append(err.replace("'",""))
 			print >> sys.stderr, err
 		
 		
@@ -137,33 +137,33 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		
 	
 
-        @staticmethod
-        def del_file(filename):
-            if os.path.exists(filename):
-                shutil.rmtree(filename)
+		@staticmethod
+		def del_file(filename):
+			if os.path.exists(filename):
+				shutil.rmtree(filename)
 
-        #def change_permission(filename):
+		#def change_permission(filename):
 
 
 	def post_process(self):
 		print "doing post process:"
-                command='chmod -R ugo+rw %s'%self.workdir
-                print command
-                self.run(command)
+		command='chmod -R ugo+rw %s'%self.workdir
+		print command
+		self.run(command)
 		dtu_cge.delete_empty_files(self.workdir)
 		all_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_all"
-                dtu_cge.del_file(all_result_name)
-                all_result_name_gzip=self.workdir+self.run_accession+"_analysis_DTU_CGE_all.tar.gz"
+		dtu_cge.del_file(all_result_name)
+		all_result_name_gzip=self.workdir+self.run_accession+"_analysis_DTU_CGE_all.tar.gz"
 		dtu_cge.del_file(all_result_name_gzip)
-                tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summarry.tsv"
+		tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summarry.tsv"
 		dtu_cge.del_file(tab_result_name)
-                src_tsv_file=self.workdir+'out.tsv'
+		src_tsv_file=self.workdir+'out.tsv'
 		print all_result_name
 		print tab_result_name
 		if not os.path.exists(all_result_name):
 			os.makedirs(all_result_name)
 	
-                self.run(command)	
+		self.run(command)	
 		Assembler_dir=self.workdir+'Assembler'
 		self.copy_src_into_dest(Assembler_dir, all_result_name)
 		ContigAnalyzer_dir=self.workdir+'ContigAnalyzer'
@@ -171,14 +171,14 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		KmerFinder_dir=self.workdir+'KmerFinder'
 		self.copy_src_into_dest(KmerFinder_dir, all_result_name)
 		PlasmidFinder_dir=self.workdir+'PlasmidFinder'
-                if os.path.exists(PlasmidFinder_dir):
-	            self.copy_src_into_dest(PlasmidFinder_dir, all_result_name)
+		if os.path.exists(PlasmidFinder_dir):
+			self.copy_src_into_dest(PlasmidFinder_dir, all_result_name)
 		ResFinder_dir=self.workdir+'ResFinder'
 		if os.path.exists(ResFinder_dir):
-                    self.copy_src_into_dest(ResFinder_dir, all_result_name)
+			self.copy_src_into_dest(ResFinder_dir, all_result_name)
 		VirulenceFinder_dir=self.workdir+'VirulenceFinder'
-	        if os.path.exists(VirulenceFinder_dir):
-        	    self.copy_src_into_dest(VirulenceFinder_dir, all_result_name)
+		if os.path.exists(VirulenceFinder_dir):
+			self.copy_src_into_dest(VirulenceFinder_dir, all_result_name)
 		
 		
 		dtu_cge.make_tar_gzip(all_result_name,self.workdir)
@@ -191,14 +191,109 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 	def execute(self):
 
 		command=self.command_builder()
-	        print 'COMMAND:',command
-         	self.run(command)
+		print 'COMMAND:',command
+		self.run(command)
 		gzip_file,tab_file=self.post_process()
 		error_message='\n'.join(self.error_list) 
-                return gzip_file,tab_file,error_message
+		return gzip_file,tab_file,error_message
 		
 	
 		
+
+
+class slim_emc:
+	
+	
+	
+	def __init__(self,fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession):
+		self.fq1=fq1
+		self.fq2=fq2
+		self.run_accession=run_accession
+		self.database_dir=database_dir
+		self.workdir=workdir
+		self.sequencing_machine=sequencing_machine
+		self.pair=pair
+		error_list=list()
+		self.error_list=error_list
 		
 		
+	def command_builder(self):
+		command=""
+		if self.pair=='True':
+			command="python slim.py -fq1 %s -fq2 %s -p %s"%(self.fq1,self.fq2,self.run_accession)
+		else:
+			message="ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
+			#print "Currently cannot deal with non paired fastq files in dtu_sge object"
+			self.error_list.append(message.replace("'",""))
+		return command
+		
+		
+	def run(self,command):
+		print "running the command"
+		print command
+		sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+		
+		out, err = sp.communicate()
+		if out:
+			print "standard output of subprocess:"
+			print out
+			data=out.split('\n')
+			i=0
+			for line in data:
+				if 'error' in line.lower(): 
+					message=data[i-1]+'\n'+data[i]
+					self.error_list.append(message.replace("'",""))
+				i=i+1
+
+			if err:
+				print "standard error of subprocess:"
+				print err
+				data=err.split('\n')
+				i=0
+				for line in data:
+					if 'error' in line.lower():  
+						message=data[i-1]+'\n'+data[i]
+						self.error_list.append(message.replace("'",""))
+					i=i+1
+			if sp.returncode!=0:
+				self.error_list.append(err.replace("'",""))
+			print >> sys.stderr, err
+	
+	
+	def post_process(self):
+		gzip_file=self.run_accession+"_analysis_SLIM_EMC_all.tar.gz"
+		tab_file=self.run_accession+"_analysis_SLIM_EMC_summarry.tsv"
+		if os.path.exists(gzip_file):
+			if os.path.getsize(gzip_file)==0:
+				message="ERROR: gzip file %s is empty"%gzip_file
+				self.error_list.append(message.replace("'",""))
+				print message
+		else:
+			message="ERROR: gzip file %s doesn't exist"%gzip_file
+			self.error_list.append(message.replace("'",""))
+			print message
+		if os.path.exists(tab_file):
+			if os.path.getsize(tab_file)==0:
+				message="ERROR: gzip file %s is empty"%tab_file
+				self.error_list.append(message.replace("'",""))
+				print message
+			
+		else:
+			message="ERROR: gzip file %s doesn't exist"%tab_file
+			self.error_list.append(message.replace("'",""))
+			print message
+			
+		return gzip_file,tab_file
+			
+		
+		
+	
+	def execute(self):
+
+		command=self.command_builder()
+		print 'COMMAND:',command
+		self.run(command)
+		gzip_file,tab_file=self.post_process()
+		error_message='\n'.join(self.error_list) 
+		return gzip_file,tab_file,error_message
 		
