@@ -6,6 +6,7 @@ from PipelineAttributes import stages
 from selectadb import properties
 from PipelineAttributes import default_attributes
 from pipelines import dtu_cge
+from pipelines import emc_slim
 import os
 import hashlib
 import argparse
@@ -59,6 +60,8 @@ def execute(conn,process_id,selection_id,prop):
     print pipeline_name, process_id
     if pipeline_name.upper()=='DTU_CGE':
         execute_dtu_cge(process_id,selection_id,prop)
+    elif pipeline_name.upper()=='EMC_SLIM':
+        execute_emc_slim(process_id,selection_id,prop)
         
     
 def update_process_attributes(conn,process_id,attribute_key,attribute_value):
@@ -94,6 +97,32 @@ def execute_dtu_cge(process_id,selection_id,prop):
     cge=dtu_cge(fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession)
     print cge.fq1,cge.fq2,cge.database_dir,cge.workdir,cge.sequencing_machine,cge.pair
     gzip_file,tab_file,error_message=cge.execute()
+    if error_message!='':
+        error_list.append(error_message)
+    gzip_file_md5=hashlib.md5(open(gzip_file, 'rb').read()).hexdigest()
+    tab_file_md5=hashlib.md5(open(tab_file, 'rb').read()).hexdigest()
+    update_process_attributes(conn,process_id,'gzip_analysis_file',gzip_file)
+    update_process_attributes(conn,process_id,'tab_analysis_file',tab_file)
+    update_process_attributes(conn,process_id,'gzip_analysis_file_md5',gzip_file_md5)
+    update_process_attributes(conn,process_id,'tab_analysis_file_md5',tab_file_md5)
+    return error_list
+
+def execute_emc_slim(process_id,selection_id,prop):
+    fq1=os.path.basename(default_attributes.get_attribute_value(conn,'fastq1',process_id))
+    fq2=os.path.basename(default_attributes.get_attribute_value(conn,'fastq2',process_id))
+    pair=default_attributes.get_attribute_value(conn,'pair',process_id)
+    run_accession=default_attributes.get_attribute_value(conn,'run_accession',process_id)
+    #TODO:  not sure needed by SLIM
+    database_dir=prop.dtu_cge_databases
+    #TODO:  not sure needed by SLIM
+    workdir=prop.workdir+process_id+"/"
+    print "Test:"+workdir
+    #TODO: sequencing_machine shall be available in the parameters
+    sequencing_machine='Illumina'
+    
+    slim=emc_slim(fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession)
+    print slim.fq1,slim.fq2,slim.database_dir,slim.workdir,slim.sequencing_machine,slim.pair
+    gzip_file,tab_file,error_message=slim.execute()
     if error_message!='':
         error_list.append(error_message)
     gzip_file_md5=hashlib.md5(open(gzip_file, 'rb').read()).hexdigest()
