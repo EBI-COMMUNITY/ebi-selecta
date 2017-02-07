@@ -13,8 +13,8 @@ class selection:
 		self.public=public
 		self.analyst_webin_id=analyst_webin_id
 		
-        
-        
+		
+		
 		
 class properties:
 	
@@ -24,27 +24,27 @@ class properties:
 		
 		workdir_provided=False
 		workdir_input_provided=False
-                archivedir_provided=False
+		archivedir_provided=False
 		dbuser_provided=False
 		dbpassword_provided=False
 		dbhost_provided=False
 		dbname_provided=False
 		dtu_cge_databases_provided=False
-        emc_slim_program_provided=False
-        emc_slim_property_file_provided=False
-        analysis_submission_mode_provided=False
-        analysis_submission_action_provided=False
-        analysis_submission_url_provided=False
-	        
+		emc_slim_program_provided=False
+		emc_slim_property_file_provided=False
+		analysis_submission_mode_provided=False
+		analysis_submission_action_provided=False
+		analysis_submission_url_provided=False
+			
 		
 		for l in lines:
 			pair=l.strip().split(":")
 			if pair[0].lower()=='workdir':
 				self.workdir=pair[1]
 				workdir_provided=True
-                        elif pair[0].lower()=='workdir_input':
-                                self.workdir_input=pair[1]
-                                workdir_input_provided=True
+			elif pair[0].lower()=='workdir_input':
+				self.workdir_input=pair[1]
+				workdir_input_provided=True
 			elif pair[0].lower()=='archivedir':
 				self.archivedir=pair[1]
 				archivedir_provided=True
@@ -60,30 +60,30 @@ class properties:
 			elif pair[0].lower()=='dbname':
 				self.dbname=pair[1]
 				dbname_provided=True
-            elif pair[0].lower()=='emc_slim_program':
-                self.emc_slim_program=pair[1]
-                emc_slim_program_provided=True
-            elif pair[0].lower()=='emc_slim_property_file':
-                self.emc_slim_property_file=pair[1]
-                emc_slim_property_file_provided=True
+			elif pair[0].lower()=='emc_slim_program':
+				self.emc_slim_program=pair[1]
+				emc_slim_program_provided=True
+			elif pair[0].lower()=='emc_slim_property_file':
+				self.emc_slim_property_file=pair[1]
+				emc_slim_property_file_provided=True
 			elif pair[0].lower()=='dtu_cge_databases':
 				self.dtu_cge_databases=pair[1]
 				dtu_cge_databases_provided=True
-            elif pair[0].lower()=='analysis_submission_mode':
+			elif pair[0].lower()=='analysis_submission_mode':
 				self.analysis_submission_mode=pair[1]
 				analysis_submission_mode_provided=True
-            elif pair[0].lower()=='analysis_submission_action':
-                self.analysis_submission_action=pair[1]
-                analysis_submission_action_provided=True
-            elif pair[0].lower()=='dtu_cge_databases':
-                self.analysis_submission_url=pair[1]
-                analysis_submission_url_provided=True
+			elif pair[0].lower()=='analysis_submission_action':
+				self.analysis_submission_action=pair[1]
+				analysis_submission_action_provided=True
+			elif pair[0].lower()=='dtu_cge_databases':
+				self.analysis_submission_url=pair[1]
+				analysis_submission_url_provided=True
 				
 		
 		if workdir_provided==False:
 			self.workdir=''
-                if workdir_input_provided==False:
-                        self.workdir_input=''
+		if workdir_input_provided==False:
+			self.workdir_input=''
 		if archivedir_provided==False:
 		   self.archivedir=''
 		if dbuser_provided==False:
@@ -94,18 +94,18 @@ class properties:
 		   self.dbhost=''
 		if dbname_provided==False:
 		   self.dbname=''
-        if emc_slim_program_provided==False:
-           self.emc_slim_program=''
-        if emc_slim_property_file_provided==False:
-           self.emc_slim_property_file=''
+		if emc_slim_program_provided==False:
+		   self.emc_slim_program=''
+		if emc_slim_property_file_provided==False:
+		   self.emc_slim_property_file=''
 		if analysis_submission_mode_provided==False:
 		   self.analysis_submission_mode=''
-        if dtu_cge_databases_provided==False:
-           self.dtu_cge_databases=''
-        if analysis_submission_action_provided==False:
-           self.analysis_submission_action=''
-        if analysis_submission_url_provided==False:
-           self.analysis_submission_url=''
+		if dtu_cge_databases_provided==False:
+		   self.dtu_cge_databases=''
+		if analysis_submission_action_provided==False:
+		   self.analysis_submission_action=''
+		if analysis_submission_url_provided==False:
+		   self.analysis_submission_url=''
 
 
 		
