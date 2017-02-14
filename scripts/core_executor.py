@@ -113,15 +113,13 @@ def execute_emc_slim(process_id,selection_id,prop):
     pair=default_attributes.get_attribute_value(conn,'pair',process_id)
     run_accession=default_attributes.get_attribute_value(conn,'run_accession',process_id)
     #TODO:  not sure needed by SLIM
-    database_dir=prop.dtu_cge_databases
-    #TODO:  not sure needed by SLIM
     workdir=prop.workdir+process_id+"/"
     print "Test:"+workdir
     #TODO: sequencing_machine shall be available in the parameters
     sequencing_machine='Illumina'
     
-    slim=emc_slim(fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession)
-    print slim.fq1,slim.fq2,slim.database_dir,slim.workdir,slim.sequencing_machine,slim.pair
+    slim=emc_slim(fq1,fq2,prop.emc_slim_property_file,workdir,sequencing_machine, pair,run_accession,prop.emc_slim_program)
+    print slim.fq1,slim.fq2,slim.emc_slim_property_file,slim.workdir,slim.sequencing_machine,slim.pair,slim.run_accession,slim.emc_slim_program
     gzip_file,tab_file,error_message=slim.execute()
     if error_message!='':
         error_list.append(error_message)
