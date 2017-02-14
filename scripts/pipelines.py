@@ -155,7 +155,7 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		dtu_cge.del_file(all_result_name)
 		all_result_name_gzip=self.workdir+self.run_accession+"_analysis_DTU_CGE_all.tar.gz"
 		dtu_cge.del_file(all_result_name_gzip)
-		tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summarry.tsv"
+		tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summary.tsv"
 		dtu_cge.del_file(tab_result_name)
 		src_tsv_file=self.workdir+'out.tsv'
 		print all_result_name
@@ -205,11 +205,13 @@ class emc_slim:
 	
 	
 	
-	def __init__(self,fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession):
+	def __init__(self,fq1,fq2,emc_slim_property_file,workdir,sequencing_machine, pair,run_accession,emc_slim_program):
 		self.fq1=fq1
 		self.fq2=fq2
-		self.run_accession=run_accession
-		self.database_dir=database_dir
+		#self.run_accession=run_accession
+                self.emc_slim_program=emc_slim_program
+		self.emc_slim_property_file=emc_slim_property_file
+                self.run_accession=run_accession
 		self.workdir=workdir
 		self.sequencing_machine=sequencing_machine
 		self.pair=pair
@@ -220,7 +222,8 @@ class emc_slim:
 	def command_builder(self):
 		command=""
 		if self.pair=='True':
-			command="python slim.py -fq1 %s -fq2 %s -p %s"%(self.fq1,self.fq2,self.run_accession)
+			command="python %s -fq1 %s -fq2 %s -name %s -p %s -wkdir %s"%(self.emc_slim_program,self.fq1,self.fq2,self.run_accession,self.emc_slim_property_file,self.workdir)
+                        #print "COMMAND:",command 
 		else:
 			message="ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
 			#print "Currently cannot deal with non paired fastq files in dtu_sge object"
@@ -261,8 +264,8 @@ class emc_slim:
 	
 	
 	def post_process(self):
-		gzip_file=self.run_accession+"_analysis_EMC_SLIM_all.tar.gz"
-		tab_file=self.run_accession+"_analysis_EMC_SLIM_summarry.tsv"
+		gzip_file=self.workdir+self.run_accession+"_analysis_EMC_SLIM_all.tar.gz"
+		tab_file=self.workdir+self.run_accession+"_analysis_EMC_SLIM_summary.tsv"
 		if os.path.exists(gzip_file):
 			if os.path.getsize(gzip_file)==0:
 				message="ERROR: gzip file %s is empty"%gzip_file
