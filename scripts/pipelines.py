@@ -152,11 +152,11 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		self.run(command)
 		dtu_cge.delete_empty_files(self.workdir)
 		all_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_all"
-		dtu_cge.del_file(all_result_name)
+		del_file(all_result_name)
 		all_result_name_gzip=self.workdir+self.run_accession+"_analysis_DTU_CGE_all.tar.gz"
-		dtu_cge.del_file(all_result_name_gzip)
+		del_file(all_result_name_gzip)
 		tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summary.tsv"
-		dtu_cge.del_file(tab_result_name)
+		del_file(tab_result_name)
 		src_tsv_file=self.workdir+'out.tsv'
 		print all_result_name
 		print tab_result_name
