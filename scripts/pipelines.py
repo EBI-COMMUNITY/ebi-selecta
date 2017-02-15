@@ -137,10 +137,10 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		
 	
 
-		@staticmethod
-		def del_file(filename):
-			if os.path.exists(filename):
-				shutil.rmtree(filename)
+	@staticmethod
+	def del_file(filename):
+		if os.path.exists(filename):
+			shutil.rmtree(filename)
 
 		#def change_permission(filename):
 
@@ -152,11 +152,11 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 		self.run(command)
 		dtu_cge.delete_empty_files(self.workdir)
 		all_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_all"
-		del_file(all_result_name)
+		dtu_cge.del_file(all_result_name)
 		all_result_name_gzip=self.workdir+self.run_accession+"_analysis_DTU_CGE_all.tar.gz"
-		del_file(all_result_name_gzip)
+		dtu_cge.del_file(all_result_name_gzip)
 		tab_result_name=self.workdir+self.run_accession+"_analysis_DTU_CGE_summary.tsv"
-		del_file(tab_result_name)
+		dtu_cge.del_file(tab_result_name)
 		src_tsv_file=self.workdir+'out.tsv'
 		print all_result_name
 		print tab_result_name
