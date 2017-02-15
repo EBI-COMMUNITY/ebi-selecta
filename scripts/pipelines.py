@@ -209,9 +209,9 @@ class emc_slim:
 		self.fq1=fq1
 		self.fq2=fq2
 		#self.run_accession=run_accession
-				self.emc_slim_program=emc_slim_program
+		self.emc_slim_program=emc_slim_program
 		self.emc_slim_property_file=emc_slim_property_file
-				self.run_accession=run_accession
+		self.run_accession=run_accession
 		self.workdir=workdir
 		self.sequencing_machine=sequencing_machine
 		self.pair=pair
@@ -223,7 +223,6 @@ class emc_slim:
 		command=""
 		if self.pair=='True':
 			command="python %s -fq1 %s -fq2 %s -name %s -p %s -wkdir %s"%(self.emc_slim_program,self.fq1,self.fq2,self.run_accession,self.emc_slim_property_file,self.workdir)
-						#print "COMMAND:",command 
 		else:
 			message="ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
 			#print "Currently cannot deal with non paired fastq files in dtu_sge object"
