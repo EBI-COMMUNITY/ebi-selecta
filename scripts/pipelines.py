@@ -73,19 +73,19 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 					self.error_list.append(message.replace("'",""))
 				i=i+1
 
-			if err:
-				print "standard error of subprocess:"
-				print err
-				data=err.split('\n')
-				i=0
-				for line in data:
-					if 'error' in line.lower():  
-						message=data[i-1]+'\n'+data[i]
-						self.error_list.append(message.replace("'",""))
-					i=i+1
-			if sp.returncode!=0:
-				self.error_list.append(err.replace("'",""))
-			print >> sys.stderr, err
+        if err:
+            print "standard error of subprocess:"
+            print err
+            data=err.split('\n')
+            i=0
+            for line in data:
+                if 'error' in line.lower():
+                    message=data[i-1]+'\n'+data[i]
+                    self.error_list.append(message.replace("'",""))
+                i=i+1
+        if sp.returncode!=0:
+            self.error_list.append(err.replace("'",""))
+        print >> sys.stderr, err
 		
 		
 			
@@ -248,19 +248,19 @@ class emc_slim:
 					self.error_list.append(message.replace("'",""))
 				i=i+1
 
-			if err:
-				print "standard error of subprocess:"
-				print err
-				data=err.split('\n')
-				i=0
-				for line in data:
-					if 'error' in line.lower():  
-						message=data[i-1]+'\n'+data[i]
-						self.error_list.append(message.replace("'",""))
-					i=i+1
-			if sp.returncode!=0:
-				self.error_list.append(err.replace("'",""))
-			print >> sys.stderr, err
+        if err:
+            print "standard error of subprocess:"
+            print err
+            data=err.split('\n')
+            i=0
+            for line in data:
+                if 'error' in line.lower():
+                    message=data[i-1]+'\n'+data[i]
+                    self.error_list.append(message.replace("'",""))
+                i=i+1
+        if sp.returncode!=0:
+            self.error_list.append(err.replace("'",""))
+        print >> sys.stderr, err
 	
 	
 	def post_process(self):
