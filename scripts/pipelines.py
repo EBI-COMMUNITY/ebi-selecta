@@ -236,6 +236,10 @@ class emc_slim:
 		sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 		
 		out, err = sp.communicate()
+                #print "type:",type(out)
+                #print "type:",type(err)
+                #print "TEST1:",out
+                #print "TEST2:",err
 		if out:
 			print "standard output of subprocess:"
 			print out
@@ -258,8 +262,11 @@ class emc_slim:
 					self.error_list.append(message.replace("'",""))
 				i=i+1
 		if sp.returncode!=0:
-			self.error_list.append(err.replace("'",""))
-		print >> sys.stderr, err
+                        #print "TEST3:",sp.returncode
+                        #print "TEST4:",err
+                        if err:
+			    self.error_list.append(err.replace("'",""))
+		            print >> sys.stderr, err
 	
 	
 	def post_process(self):
