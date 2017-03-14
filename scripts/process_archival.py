@@ -23,7 +23,7 @@ def get_args():
     global properties_file  
     # Assign description to the help doc
     parser = argparse.ArgumentParser(
-        description='Script rrmove the processed submissions to make free space for incoming submissions.')
+        description='Script remove the processed submissions to make free space for incoming submissions.')
     parser.add_argument('-p', '--properties_file', type=str, help='Please provide the properties file that is required by SELECTA system', required=True)
     args = parser.parse_args()
     properties_file=args.properties_file
@@ -89,7 +89,8 @@ if __name__ == '__main__':
                final_errors='\n'.join(error_list) 
                exe.set_error(conn,final_errors) 
            else:
-               exe.set_finished(conn) 
+               exe.set_finished(conn)
+               print "procees of %s archival finished at %s"%(exe.process_id,now) 
         error_list=list()
     now = time.strftime("%c")
     print "process_archival has been finished %s"%now
