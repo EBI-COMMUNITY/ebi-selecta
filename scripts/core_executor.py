@@ -140,15 +140,21 @@ if __name__ == '__main__':
     #prop=properties('../resources/properties.txt')
     conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
     core_executor_list=get_list(conn)
+    max_number_of_core=prop.max_core_job
+    index=0
     for exe in core_executor_list:
-        if exe.check_started(conn)==False:
-           exe.set_started(conn)
-           execute(conn,exe.process_id,exe.selection_id,prop)
-           if len(error_list)!=0:
-               final_errors='\n'.join(error_list) 
-               exe.set_error(conn,final_errors) 
-           else:
-               exe.set_finished(conn) 
-        error_list=list()
+        if index <  max_number_of_core:   
+            if exe.check_started(conn)==False:
+               index=index+1
+               exe.set_started(conn)
+               execute(conn,exe.process_id,exe.selection_id,prop)
+               if len(error_list)!=0:
+                   final_errors='\n'.join(error_list) 
+                   exe.set_error(conn,final_errors) 
+               else:
+                   exe.set_finished(conn) 
+            error_list=list()
+        else:
+            break
         
         
