@@ -48,7 +48,7 @@ $workdir: /Users/nimap/Google-Drive/workspace/ebi-selecta/process/ERR1597716-011
 	def command_builder(self):
 		command=""
 		if self.pair=='True':
-			command="docker run -ti --rm -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired"%(self.database_dir,self.workdir,self.fq1,self.fq2,self.sequencing_machine)
+			command="docker run -i --rm -v %s:/databases -v %s:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/%s --fq2 /workdir/%s --Asp %s --Ast paired"%(self.database_dir,self.workdir,self.fq1,self.fq2,self.sequencing_machine)
 		else:
 			message="ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
 			#print "Currently cannot deal with non paired fastq files in dtu_sge object"
