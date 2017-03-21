@@ -90,6 +90,7 @@ if __name__ == '__main__':
                exe.set_error(conn,final_errors) 
            else:
                exe.set_finished(conn)
+               now = time.strftime("%c")
                print "procees of %s archival finished at %s"%(exe.process_id,now) 
         error_list=list()
     now = time.strftime("%c")
