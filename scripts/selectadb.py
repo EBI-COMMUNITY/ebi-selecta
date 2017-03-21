@@ -35,6 +35,7 @@ class properties:
 		analysis_submission_mode_provided=False
 		analysis_submission_action_provided=False
 		analysis_submission_url_provided=False
+                max_core_job_provided=False
 			
 		
 		for l in lines:
@@ -42,6 +43,9 @@ class properties:
 			if pair[0].lower()=='workdir':
 				self.workdir=pair[1]
 				workdir_provided=True
+                        elif pair[0].lower()=='max_core_job':
+                                self.max_core_job=pair[1]
+                                max_core_job_provided=True
 			elif pair[0].lower()=='workdir_input':
 				self.workdir_input=pair[1]
 				workdir_input_provided=True
@@ -82,6 +86,8 @@ class properties:
 		
 		if workdir_provided==False:
 			self.workdir=''
+                if max_core_job_provided==False:
+                        self.max_core_job=10
 		if workdir_input_provided==False:
 			self.workdir_input=''
 		if archivedir_provided==False:
@@ -108,15 +114,3 @@ class properties:
 		   self.analysis_submission_url=''
 
 
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
