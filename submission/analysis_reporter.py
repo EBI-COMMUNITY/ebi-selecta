@@ -106,7 +106,7 @@ def create_analysis_xml(conn,analysis,prop,attributes,analysis_xml):
 		 title="COMPARE project pathogen analysis, using %s pipeline on read data %s from sample %s"%(pipeline_name,run_accession,sample_accession)
 		 description="As part of the COMPARE project submitted data %s from sample %s organism name '%s' has been processed by %s pipeline."%(run_accession,sample_accession,scientific_name,pipeline_name)
 	 
-		 analysis_obj=analysis_pathogen_analysis(alias,centre_name,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml)
+		 analysis_obj=analysis_pathogen_analysis(alias,centre_name,sample_accession,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml)
 		 analysis_obj.build_analysis()
 
 
