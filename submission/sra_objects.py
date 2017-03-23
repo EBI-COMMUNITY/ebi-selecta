@@ -8,12 +8,13 @@ import lxml.builder
 class analysis_pathogen_analysis:
 	
 	
-	def __init__(self,alias,centre_name,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml_file):
+	def __init__(self,alias,centre_name,sample_accession,run_accession,study_accession,pipeline_name,analysis_date,analysis_files,title,description,analysis_xml_file):
 		self.alias=alias
 		self.analysis_xml_file=analysis_xml_file
 		#self.analysis_centre=analysis_centre
 		self.centre_name=centre_name
 		self.run_accession=run_accession
+                self.sample_accession=sample_accession
 		self.study_accession=study_accession
 		self.pipeline_name=pipeline_name
 		self.analysis_date=analysis_date
@@ -31,7 +32,8 @@ class analysis_pathogen_analysis:
 		description = etree.SubElement(analysisElt, 'DESCRIPTION')
 		description.text = self.description
 		studyrefElt = etree.SubElement(analysisElt, 'STUDY_REF', accession=self.study_accession)
-		runrefElt = etree.SubElement(analysisElt, 'RUN_REF', accession=self.run_accession)
+		samplerefElt = etree.SubElement(analysisElt, 'SAMPLE_REF', accession=self.sample_accession)
+                runrefElt = etree.SubElement(analysisElt, 'RUN_REF', accession=self.run_accession)
 		analysis_type = etree.SubElement(analysisElt, 'ANALYSIS_TYPE')
 		type = etree.SubElement(analysis_type, 'PATHOGEN_ANALYSIS')
 		files = etree.SubElement(analysisElt, 'FILES')
