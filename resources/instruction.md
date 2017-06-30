@@ -1,11 +1,11 @@
 # ebi-selecta improvements
 
 ## Installation and deployment
-* use Terraform to create the VM for selecta
-* Put all the installation code in ansible
+* ISSUE: use Terraform to create the VM for selecta
+* ISSUE: Put all the installation code in ansible
 * put the whole SELECTA in Docker
 * put the whole SELECTA in Kubernetes
-* continuous integration
+* Continuous integration
 * Continous Deployment
 * TDD 
 
@@ -13,8 +13,9 @@
 
 ## Functionality and code update
 * add unit test to the code
-* Analysis shall be updatable: to do that the analysis accession need to be recorded after analysis submission. This need to be recorded in process_attribute as analysis_result_id. Add a column ‘’process” to The process_selection table and only select the new jobs based on ‘Yes’ and ‘No’ in this. The default is Yes. If it is NO so means no action. If it is YES there are three options, 1:when the process hasn’t been already Started, do as how it does it now. If the process selection has started, leave it as it is. If the process has been finished, create a new selection object with all the info from the original selection id and also add the analysis_result_id  to the selection_attributes of new selection entries. And turn the YES to NO (This needs to be done safely in a transaction way for whole of it.) 
+* ISSUE: Analysis shall be updatable: to do that the analysis accession need to be recorded after analysis submission. This need to be recorded in process_attribute as analysis_result_id. Add a column ‘’process” to The process_selection table and only select the new jobs based on ‘Yes’ and ‘No’ in this. The default is Yes. If it is NO so means no action. If it is YES there are three options, 1:when the process hasn’t been already Started, do as how it does it now. If the process selection has started, leave it as it is. If the process has been finished, create a new selection object with all the info from the original selection id and also add the analysis_result_id  to the selection_attributes of new selection entries. And turn the YES to NO (This needs to be done safely in a transaction way for whole of it.) 
 
+* ceate different selection types to be able to select based on different critria
 * plan for different analysis categorisation. Currently everything is based on run.
 * Input_to_selection needs to be done.
 * Metadata need to be captured from data portal
