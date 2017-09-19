@@ -128,7 +128,7 @@ if __name__ == '__main__':
             pw = get_datahub_account_password(conn, account_name)
             download_datahub_file(account_name, pw, files, process_dir, dryrun=True)
             if len(error_list) != 0:
-                final_errors = ' '.join(str(v).replace("'", "") for v in error_list)
+                final_errors = '\n'.join(str(v).replace("'", "") for v in error_list)
                 data_provider_stage.set_error(conn, final_errors)
             else:
                 data_provider_stage.set_finished(conn)

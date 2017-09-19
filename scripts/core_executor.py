@@ -138,7 +138,7 @@ if __name__ == '__main__':
                exe.set_started(conn)
                execute(conn,exe.process_id,exe.selection_id,prop)
                if len(error_list)!=0:
-                   final_errors=' '.join(str(v).replace("'", "") for v in error_list)
+                   final_errors='\n'.join(str(v).replace("'", "") for v in error_list)
                    exe.set_error(conn,final_errors) 
                else:
                    exe.set_finished(conn) 

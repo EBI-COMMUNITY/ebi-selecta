@@ -178,7 +178,7 @@ class dtu_cge:
         print('COMMAND:', command)
         self.run(command)
         gzip_file, tab_file = self.post_process()
-        error_message = ' '.join(str(v).replace("'", "") for v in error_list)
+        error_message = '\n'.join(str(v).replace("'", "") for v in error_list)
         return gzip_file, tab_file, error_message
 
 
@@ -282,5 +282,5 @@ class emc_slim:
         print('COMMAND:', command)
         self.run(command)
         gzip_file, tab_file = self.post_process()
-        error_message = ' '.join(str(v).replace("'", "") for v in error_list)
+        error_message = '\n'.join(str(v).replace("'", "") for v in error_list)
         return gzip_file, tab_file, error_message
