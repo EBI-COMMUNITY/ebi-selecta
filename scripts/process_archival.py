@@ -78,12 +78,12 @@ if __name__ == '__main__':
            exe.set_started(conn)
            execute(exe.process_id,prop)
            if len(error_list)!=0:
-               final_errors='\n'.join(error_list) 
-               exe.set_error(conn,final_errors) 
+                final_errors = ' '.join(str(v).replace("'", "") for v in error_list)
+                exe.set_error(conn,final_errors)
            else:
-               exe.set_finished(conn)
-               now = time.strftime("%c")
-               print("procees of {} archival finished at {}".format(exe.process_id,now))
+                exe.set_finished(conn)
+                now = time.strftime("%c")
+                print("procees of {} archival finished at {}".format(exe.process_id,now))
         error_list=list()
     now = time.strftime("%c")
     print("process_archival has been finished {}".format(now))

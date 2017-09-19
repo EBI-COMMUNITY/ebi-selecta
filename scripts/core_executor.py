@@ -65,7 +65,6 @@ def update_process_attributes(conn,process_id,attribute_key,attribute_value):
         cursor = conn.cursor()
         try:
             cursor.execute(query)
-                #time.sleep(1)
             conn.commit()
         except:
             print("Cannot insert:")
