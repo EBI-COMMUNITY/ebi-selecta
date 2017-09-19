@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 
 import argparse
@@ -9,8 +9,6 @@ import ftplib
 
 
 __author__ = 'Nima Pakseresht'
-
-
 
 
 def get_args():
@@ -26,8 +24,7 @@ def get_args():
     global analysis_centre
     global submission_centre
     # Assign description to the help doc
-    parser = argparse.ArgumentParser(
-        description='Script retrieves schedules from a given server')
+    parser = argparse.ArgumentParser(description='Script retrieves schedules from a given server')
     # Add arguments
     parser.add_argument('-anacentre', '--analysis-centre', type=str, help='Run Id of the reads', required=False)
     parser.add_argument('-subcentre', '--submission-centre', type=str, help='Run Id of the reads', required=False)
@@ -67,9 +64,7 @@ def get_args():
     
 def convertAnalysisTemp(tempAnalysisFile):
     with open(tempAnalysisFile, 'r') as template_file:
-         content = template_file.read() 
-          
-   
+         content = template_file.read()
     content=content.replace("TODO1:FILENAE-DATE-TIME",getAlias("analysis"))
     content=content.replace("TODO2:DATA-CENTRE-NAME",submission_centre)
     content=content.replace("TODO3:ANALYSIS-CENTRE-NAME",analysis_centre)
@@ -81,33 +76,29 @@ def convertAnalysisTemp(tempAnalysisFile):
     content=content.replace("TODO9:RUNID",runid)
     content=content.replace("TODO10:FILE-TO-SUBMIT",file_name)
     content=content.replace("TODO11:FILE-CHECKSUM", calculateMd5(file_name))
-    
     f = open(analysisXmlFile,"w")
     f.write(content)
     f.close
-    print content
+    print(content)
     
     
 def convertSubmissionTemp(tempSubmissionFile):
     with open(tempSubmissionFile, 'r') as template_file:
-         content = template_file.read() 
-    
+         content = template_file.read()
     content=content.replace("TODO1:UNIQUE_NAME",getAlias("submission"))
     content=content.replace("TODO2:CENTER_NAME",analysis_centre)
     content=content.replace("TODO3:ACTION","ADD")
     content=content.replace("TODO4:ANALYSIS_FILE",analysisXmlFile)
-    
     f = open(submissionXmlFile,"w")
     f.write(content)
     f.close  
-    print content
+    print(content)
 
 def getDateTime():
     return time.strftime("%Y-%m-%dT%H:%M:%S")
     
 
 def getAlias(type):
-           
     alias=file_name+"-"+type+"-"+getDateTime()
     return alias
     
@@ -129,7 +120,6 @@ if __name__ == '__main__':
      global dateTime
      global submissionXmlFile
      global analysisXmlFile
-     
      get_args()
      dateTime=time.strftime("%Y-%m-%dT%H:%M:%S")
      submissionXmlFile=file_name+"-submission.xml"
@@ -137,6 +127,3 @@ if __name__ == '__main__':
      convertAnalysisTemp(analysis_temp)
      convertSubmissionTemp(submission_temp)
      uploadFileToEna(file_name)
-     
-    
-   

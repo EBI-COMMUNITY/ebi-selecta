@@ -71,7 +71,7 @@ def update_process_attributes(conn,process_id,attribute_key,attribute_value):
             print("Cannot insert:")
             message=str(sys.exc_info()[1])
             error_list.append(message)
-            print ("Exception: {}".format(message))
+            print("Exception: {}".format(message))
             conn.rollback()    
     
     
@@ -82,11 +82,11 @@ def execute_dtu_cge(process_id,selection_id,prop):
     run_accession=default_attributes.get_attribute_value(conn,'run_accession',process_id)
     database_dir=prop.dtu_cge_databases
     workdir=prop.workdir+process_id+"/"
-    print ("Test:"+workdir)
+    print("Test:"+workdir)
     sequencing_machine='Illumina'
     
     cge=dtu_cge(fq1,fq2,database_dir,workdir,sequencing_machine, pair,run_accession)
-    print (cge.fq1,cge.fq2,cge.database_dir,cge.workdir,cge.sequencing_machine,cge.pair)
+    print(cge.fq1,cge.fq2,cge.database_dir,cge.workdir,cge.sequencing_machine,cge.pair)
     gzip_file,tab_file,error_message=cge.execute()
     if error_message!='':
         error_list.append(error_message)
