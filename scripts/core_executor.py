@@ -129,6 +129,9 @@ if __name__ == '__main__':
     #prop=properties('../resources/properties.txt')
     conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
     core_executor_list=get_list(conn)
+    print('['*100)
+    print(type(core_executor_list))
+    print(']'*100)
     max_number_of_core=prop.max_core_job
     index=0
     for exe in core_executor_list:
@@ -145,5 +148,4 @@ if __name__ == '__main__':
             error_list=list()
         else:
             break
-        
-        
+

@@ -126,7 +126,7 @@ if __name__ == '__main__':
             files = get_file_names(conn, data_provider_stage.process_id)
             print("Files to be downloaded:{}".format(files))
             pw = get_datahub_account_password(conn, account_name)
-            download_datahub_file(account_name, pw, files, process_dir, dryrun=True)
+            download_datahub_file(account_name, pw, files, process_dir, dryrun=False)
             if len(error_list) != 0:
                 final_errors = '\n'.join(str(v).replace("'", "") for v in error_list)
                 data_provider_stage.set_error(conn, final_errors)

@@ -51,8 +51,9 @@ class dtu_cge:
         print(command)
         print('*' * 100)
         sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
         out, err = sp.communicate()
+        out = str(out)
+        err = str(err)
         if out:
             print('*' * 100)
             print("standard output of subprocess:")
@@ -65,12 +66,12 @@ class dtu_cge:
                     message = data[i - 1] + '\n' + data[i]
                     self.error_list.append(message.replace("'", ""))
                 i = i + 1
-
         if err:
             print('*' * 100)
             print("standard error of subprocess:")
             print(err)
             print('*' * 100)
+
             data = err.split('\n')
             i = 0
             for line in data:
