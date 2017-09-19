@@ -208,15 +208,15 @@ class emc_slim:
             print(command)
             print('*' * 100)
         else:
-		command = "python {} -fq1 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program, self.fq1,
+            command = "python {} -fq1 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program, self.fq1,
                                                                                    self.run_accession,
                                                                                   self.emc_slim_property_file,
                                                                                   self.workdir)
-         	print('*' * 100)
-                print(command)
-                print('*' * 100)
+            print('*' * 100)
+            print(command)
+            print('*' * 100)
 
-	return command
+        return command
 
     def run(self, command):
         print('*' * 100)
