@@ -128,7 +128,8 @@ class default_attributes:
                 conn.rollback()
 
     def insert_all_into_process_stages(self, conn):
-        '''insert_all_into_process_stages functions calls on insert_into_process_attributes, shouldnt be the function
+        '''
+            insert_all_into_process_stages functions calls on insert_into_process_attributes, shouldnt be the function
            insert_all_into_process_attributes?
         '''
         self.insert_into_process_attributes(conn, self.process_id, selection_id_key, self.selection_id)
