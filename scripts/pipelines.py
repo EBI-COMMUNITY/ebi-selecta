@@ -208,10 +208,15 @@ class emc_slim:
             print(command)
             print('*' * 100)
         else:
-            message = "ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
-            # print "Currently cannot deal with non paired fastq files in dtu_sge object"
-            self.error_list.append(message.replace("'", ""))
-        return command
+		command = "python {} -fq1 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program, self.fq1,
+                                                                                   self.run_accession,
+                                                                                  self.emc_slim_property_file,
+                                                                                  self.workdir)
+         	print('*' * 100)
+                print(command)
+                print('*' * 100)
+
+	return command
 
     def run(self, command):
         print('*' * 100)
