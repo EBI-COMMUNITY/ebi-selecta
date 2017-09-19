@@ -71,7 +71,7 @@ def update_process_attributes(conn,process_id,attribute_key,attribute_value):
             print("Cannot insert:")
             message=str(sys.exc_info()[1])
             error_list.append(message)
-            print ("Exception: {}".format(message)
+            print ("Exception: {}".format(message))
             conn.rollback()    
     
     

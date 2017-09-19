@@ -244,8 +244,8 @@ class emc_slim:
         if sp.returncode != 0:
             if err:
                 self.error_list.append(err.replace("'", ""))
-                print(err, file=sys.stderr) \
- \
+                print(err, file=sys.stderr)
+
     def post_process(self):
         gzip_file = self.workdir + self.run_accession + "_analysis_EMC_SLIM_all.tar.gz"
         tab_file = self.workdir + self.run_accession + "_analysis_EMC_SLIM_summary.tsv"

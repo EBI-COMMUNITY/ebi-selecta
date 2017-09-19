@@ -40,7 +40,7 @@ def get_list(conn):
            "and b.stage_end is not null and b.stage_error is null and b.stage_name='{}' "
            "and c.stage_start is not null and c.stage_end is not null and c.stage_error is null "
            "and c.stage_name='{}' and a.process_id=b.process_id and b.process_id= "
-           c.process_id).format(process_archival_stage,data_provider_stage,core_executor_stage,analysis_reporter_stage)
+           "c.process_id").format(process_archival_stage,data_provider_stage,core_executor_stage,analysis_reporter_stage)
     cursor = conn.cursor()
     cursor.execute(query)
     process_archival_list=list()
@@ -56,7 +56,7 @@ def delete(dir):
         shutil.rmtree(dir)
     except shutil.Error as e:
         message='Directory not copied. Error: {}'.format(e)
-	    error_list.append(message.replace("'",""))
+        error_list.append(message.replace("'",""))
         print(message)
 
 
@@ -67,7 +67,7 @@ def execute(process_id,prop):
 
 if __name__ == '__main__':
     now = time.strftime("%c")
-    print "process_archival has been started {}".format(now)
+    print("process_archival has been started {}".format(now))
     error_list=list()
     get_args()
     prop=properties(properties_file)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
            else:
                exe.set_finished(conn)
                now = time.strftime("%c")
-               print "procees of {} archival finished at {}".format(exe.process_id,now)
+               print("procees of {} archival finished at {}".format(exe.process_id,now))
         error_list=list()
     now = time.strftime("%c")
     print("process_archival has been finished {}".format(now))
