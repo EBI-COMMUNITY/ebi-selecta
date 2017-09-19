@@ -128,6 +128,9 @@ class default_attributes:
                 conn.rollback()
 
     def insert_all_into_process_stages(self, conn):
+        '''insert_all_into_process_stages functions calls on insert_into_process_attributes, shouldnt be the function
+           insert_all_into_process_attributes?
+        '''
         self.insert_into_process_attributes(conn, self.process_id, selection_id_key, self.selection_id)
         self.insert_into_process_attributes(conn, self.process_id, datahub_key, self.datahub)
         self.insert_into_process_attributes(conn, self.process_id, tax_id_key, self.tax_id)
@@ -232,7 +235,7 @@ class stages:
         except:
             print("ERROR: Cannot update process_stages set stage_start=NOW():", file=sys.stderr)
             message = str(sys.exc_info()[1])
-            print("Exception: {}".format(message) , file=sys.stderr)
+            print("Exception: {}".format(message), file=sys.stderr)
             conn.rollback()
 
     def set_finished(self, conn):

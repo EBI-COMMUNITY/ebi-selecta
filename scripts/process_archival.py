@@ -1,7 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 import MySQLdb
-import mysql.connector
+import pymysql
 from selectadb import properties
 from PipelineAttributes import stages
 from PipelineAttributes import default_attributes
@@ -10,8 +10,7 @@ import argparse
 import time
 
 global error_list
-#global properties_file
-#properties_file=''
+
 error_list=''
 
 def get_connection(db_user,db_password,db_host,db_database):
@@ -29,31 +28,25 @@ def get_args():
     properties_file=args.properties_file
 
 def get_list(conn):
-
     data_provider_stage='data_provider'
     core_executor_stage='core_executor'
     analysis_reporter_stage='analysis_reporter'
     process_archival_stage='process_archival'
-    
-    query="select process_id,selection_id from process_stages where stage_start is null and \
-           stage_end is null and stage_error is null and stage_name='%s' and \
-           process_id in (select distinct(a.process_id) from process_stages a,process_stages b, \
-           process_stages c  where a.stage_start is not null and a.stage_end is not null and \
-           a.stage_error is null and a.stage_name='%s' and b.stage_start is not null \
-           and b.stage_end is not null and b.stage_error is null and b.stage_name='%s' \
-           and c.stage_start is not null and c.stage_end is not null and c.stage_error is null \
-           and c.stage_name='%s' and a.process_id=b.process_id and b.process_id= \
-           c.process_id)"%(process_archival_stage,data_provider_stage,core_executor_stage,analysis_reporter_stage)
-
+    query=("select process_id,selection_id from process_stages where stage_start is null and "
+           "stage_end is null and stage_error is null and stage_name='{}' and "
+           "process_id in (select distinct(a.process_id) from process_stages a,process_stages b, "
+           "process_stages c  where a.stage_start is not null and a.stage_end is not null and "
+           "a.stage_error is null and a.stage_name='{}' and b.stage_start is not null "
+           "and b.stage_end is not null and b.stage_error is null and b.stage_name='{}' "
+           "and c.stage_start is not null and c.stage_end is not null and c.stage_error is null "
+           "and c.stage_name='{}' and a.process_id=b.process_id and b.process_id= "
+           c.process_id).format(process_archival_stage,data_provider_stage,core_executor_stage,analysis_reporter_stage)
     cursor = conn.cursor()
     cursor.execute(query)
-    
     process_archival_list=list()
     for (process_id, selection_id) in cursor:
-         
          stage=stages(process_id,selection_id,process_archival_stage)
          process_archival_list.append(stage)
-        
     return process_archival_list
 
 
@@ -62,8 +55,8 @@ def delete(dir):
     try:
         shutil.rmtree(dir)
     except shutil.Error as e:
-        message='Directory not copied. Error: %s' %e
-	error_list.append(message.replace("'",""))
+        message='Directory not copied. Error: {}'.format(e)
+	    error_list.append(message.replace("'",""))
         print(message)
 
 
@@ -74,11 +67,10 @@ def execute(process_id,prop):
 
 if __name__ == '__main__':
     now = time.strftime("%c")
-    print "process_archival has been started %s"%now
+    print "process_archival has been started {}".format(now)
     error_list=list()
     get_args()
     prop=properties(properties_file)
-    #prop=properties('/home/ubuntu/tools/ebi-selecta/resources/properties.txt')
     conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
     process_archival_list=get_list(conn)
     for exe in process_archival_list:
@@ -91,7 +83,7 @@ if __name__ == '__main__':
            else:
                exe.set_finished(conn)
                now = time.strftime("%c")
-               print "procees of %s archival finished at %s"%(exe.process_id,now) 
+               print "procees of {} archival finished at {}".format(exe.process_id,now)
         error_list=list()
     now = time.strftime("%c")
-    print "process_archival has been finished %s"%now
+    print("process_archival has been finished {}".format(now))
