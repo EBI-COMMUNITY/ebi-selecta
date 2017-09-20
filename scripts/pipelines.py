@@ -221,13 +221,16 @@ class emc_slim:
 
     def run(self, command):
         print('*' * 100)
-        print("running the command:", command)
+        print("IN RUN FUNCTION: running the command:", command)
         print('*' * 100)
         sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, err = sp.communicate()
 
         if out:
+            print('*'*100)
             print("standard output of subprocess:", out)
+            print("Type:",type(out))
+            print('*'*100)
             data = out.split('\n')
             i = 0
             for line in data:

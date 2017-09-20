@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
     for data_provider_stage in data_provider_list:
         print(data_provider_stage.process_id, data_provider_stage.selection_id, data_provider_stage.stage_list)
-
+        exit()
         if data_provider_stage.check_started(conn) == False:
             print("\nTo be started job: process_id:{} collection id: {} dataprovider id: {} ".format(
                 data_provider_stage.process_id, data_provider_stage.selection_id, data_provider_stage.stage_list))
