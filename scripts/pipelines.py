@@ -52,14 +52,14 @@ class dtu_cge:
         print('*' * 100)
         sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, err = sp.communicate()
-        out = str(out)
-        err = str(err)
+        #out1 = str(out)
+        #err1 = str(err)
         if out:
             print('*' * 100)
             print("standard output of subprocess:")
-            print(out)
+            print(out.decode())
             print('*' * 100)
-            data = out.split('\n')
+            data = out.decode().split('\n')
             i = 0
             for line in data:
                 if 'error' in line.lower():
@@ -69,10 +69,10 @@ class dtu_cge:
         if err:
             print('*' * 100)
             print("standard error of subprocess:")
-            print(err)
+            print(err.decode())
             print('*' * 100)
 
-            data = err.split('\n')
+            data = err.decode().split('\n')
             i = 0
             for line in data:
                 if 'error' in line.lower():
@@ -80,8 +80,8 @@ class dtu_cge:
                     self.error_list.append(message.replace("'", ""))
                 i = i + 1
         if sp.returncode != 0:
-            self.error_list.append(err.replace("'", ""))
-        print(err, file=sys.stderr)
+            self.error_list.append(err.decode().replace("'", ""))
+        print(err.decode(), file=sys.stderr)
 
     # @staticmethod
     def copy_src_into_dest(self, src, dest):
@@ -225,13 +225,17 @@ class emc_slim:
         print('*' * 100)
         sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         out, err = sp.communicate()
+     
+        #out1=out.decode() 
+        #err1=err.decode() 
 
         if out:
+            #out1=out.decode()
             print('*'*100)
-            print("standard output of subprocess:", out)
-            print("Type:",type(out))
+            print("standard output of subprocess:\n", out.decode())
+            #print("Type:",type(out1))
             print('*'*100)
-            data = out.split('\n')
+            data = out.decode().split('\n')
             i = 0
             for line in data:
                 if 'error' in line.lower():
@@ -240,10 +244,11 @@ class emc_slim:
                 i = i + 1
 
         if err:
+            #err1=err.decode()
             print('*' * 100)
-            print("standard error of subprocess:", err)
+            print("standard error of subprocess:\n", err.decode())
             print('*' * 100)
-            data = err.split('\n')
+            data = err.decode().split('\n')
             i = 0
             for line in data:
                 if 'error' in line.lower():
@@ -252,8 +257,9 @@ class emc_slim:
                 i = i + 1
         if sp.returncode != 0:
             if err:
-                self.error_list.append(err.replace("'", ""))
-                print(err, file=sys.stderr)
+                #err1=err.decode()
+                self.error_list.append(err.decode().replace("'", ""))
+                print(err.decode(), file=sys.stderr)
 
     def post_process(self):
         gzip_file = self.workdir + self.run_accession + "_analysis_EMC_SLIM_all.tar.gz"
@@ -286,5 +292,5 @@ class emc_slim:
         print('COMMAND:', command)
         self.run(command)
         gzip_file, tab_file = self.post_process()
-        error_message = '\n'.join(str(v).replace("'", "") for v in error_list)
+        error_message = '\n'.join(str(v).replace("'", "") for v in self.error_list)
         return gzip_file, tab_file, error_message
