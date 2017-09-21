@@ -90,7 +90,7 @@ def execute_dtu_cge(process_id,selection_id,prop):
     if error_message!='':
         error_list.append(error_message)
     gzip_file_md5=hashlib.md5(open(gzip_file, 'rb').read()).hexdigest()
-    tab_file_md5=hashlib.md5(open(tab_file, 'r').read()).hexdigest()
+    tab_file_md5=hashlib.md5(open(tab_file, 'rb').read()).hexdigest()
     update_process_attributes(conn,process_id,'gzip_analysis_file',gzip_file)
     update_process_attributes(conn,process_id,'tab_analysis_file',tab_file)
     update_process_attributes(conn,process_id,'gzip_analysis_file_md5',gzip_file_md5)
@@ -115,7 +115,7 @@ def execute_emc_slim(process_id,selection_id,prop):
         error_list.append(error_message)
     else: 
         gzip_file_md5=hashlib.md5(open(gzip_file, 'rb').read()).hexdigest()
-        tab_file_md5=hashlib.md5(open(tab_file, 'r').read()).hexdigest()
+        tab_file_md5=hashlib.md5(open(tab_file, 'rb').read()).hexdigest()
         update_process_attributes(conn,process_id,'gzip_analysis_file',gzip_file)
         update_process_attributes(conn,process_id,'tab_analysis_file',tab_file)
         update_process_attributes(conn,process_id,'gzip_analysis_file_md5',gzip_file_md5)
