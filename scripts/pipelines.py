@@ -277,12 +277,12 @@ class emc_slim:
             print('*' * 100)
         if os.path.exists(tab_file):
             if os.path.getsize(tab_file) == 0:
-                message = "ERROR: gzip file {} is empty".formmat(tab_file)
+                message = "ERROR: tab file {} is empty".formmat(tab_file)
                 self.error_list.append(message.replace("'", ""))
                 print(message)
 
         else:
-            message = "ERROR: gzip file {} doesn't exist".format(tab_file)
+            message = "ERROR: tab file {} doesn't exist".format(tab_file)
             self.error_list.append(message.replace("'", ""))
             print(message)
         return gzip_file, tab_file
