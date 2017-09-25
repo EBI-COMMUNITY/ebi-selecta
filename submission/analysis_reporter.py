@@ -148,11 +148,12 @@ def submitAnalysis(submission_xml, analysis_xml, user, passw,url):
     # command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'
     command = "curl -k  -F \"SUBMISSION=@{}\" -F \"ANALYSIS=@{}\" \"{}".format(
         submission_xml, analysis_xml,url) + '%20' + user + '%20' + passw + '\"'
+    print("URL:",url)
     print("COMMAND:", command)
     sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = sp.communicate()
-    print("SYSOUT:", out)
-    print("SYSERR:", err)
+    print("SYSOUT:", out.decode())
+    print("SYSERR:", err.decode())
     submission_error_messages = list()
     if out:
         root = etree.XML(out)
@@ -161,10 +162,9 @@ def submitAnalysis(submission_xml, analysis_xml, user, passw,url):
             for mess in messages.findall('ERROR'):
                 submission_error_messages.append('ERROR:' + mess.text)
 
-    print(out)
-    print(err)
+   
     print("returncode of subprocess:", sp.returncode)
-    return submission_error_messages, sp.returncode, out, err
+    return submission_error_messages, sp.returncode, out.decode(), err.decode()
 
 
 def post_submission(submission_error_messages, returncode, out, err):
@@ -193,6 +193,10 @@ if __name__ == '__main__':
     prop = properties(properties_file)
     # prop=properties('../resources/properties.txt')
     conn = get_connection(prop.dbuser, prop.dbpassword, prop.dbhost, prop.dbname)
+    print("analysis_submission_url:",prop.analysis_submission_url)
+    print("analysis_submission_action:",prop.analysis_submission_action)
+    print ("analysis_submission_mode:",prop.analysis_submission_mode)
+
     analysis_reporter_list = get_list(conn)
     error_list = list()
     for analysis_reporter_stage in analysis_reporter_list:
