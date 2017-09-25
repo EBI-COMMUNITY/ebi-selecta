@@ -82,7 +82,7 @@ class properties:
                 elif pair[0].lower() == 'analysis_submission_action':
                     self.analysis_submission_action = pair[1]
                     analysis_submission_action_provided = True
-                elif pair[0].lower() == 'dtu_cge_databases':
+                elif pair[0].lower() == 'analysis_submission_url':
                     self.analysis_submission_url = pair[1]
                     analysis_submission_url_provided = True
 
