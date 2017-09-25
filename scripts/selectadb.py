@@ -42,7 +42,7 @@ class properties:
                 print("*" * 100)
                 print(l)
                 print("*" * 100)
-                pair = l.strip().split(":")
+                pair = l.strip().split(":",1)
                 if pair[0].lower() == 'workdir':
                     self.workdir = pair[1]
                     workdir_provided = True
