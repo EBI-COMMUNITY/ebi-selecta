@@ -143,11 +143,11 @@ def uploadFileToEna(filename, user, passw):
     return err
 
 
-def submitAnalysis(submission_xml, analysis_xml, user, passw):
+def submitAnalysis(submission_xml, analysis_xml, user, passw,url):
     print("Analysis submission started:")
     # command="curl -k  -F \"SUBMISSION=@%s\" -F \"ANALYSIS=@%s\" \"https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA"%(submission_xml,analysis_xml)+'%20'+user+'%20'+passw+'\"'
-    command = "curl -k  -F \"SUBMISSION=@{}\" -F \"ANALYSIS=@{}\" \"https://www.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA".format(
-        submission_xml, analysis_xml) + '%20' + user + '%20' + passw + '\"'
+    command = "curl -k  -F \"SUBMISSION=@{}\" -F \"ANALYSIS=@{}\" \"{}".format(
+        submission_xml, analysis_xml,url) + '%20' + user + '%20' + passw + '\"'
     print("COMMAND:", command)
     sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = sp.communicate()
@@ -210,11 +210,11 @@ if __name__ == '__main__':
             analysis_xml = prop.workdir + analysis_reporter_stage.process_id + '/analysis.xml'
             submission_xml = prop.workdir + analysis_reporter_stage.process_id + '/submission.xml'
             create_analysis_xml(conn, analysis_reporter_stage, prop, attributes, analysis_xml)
-            action = 'ADD'
+            #action = 'ADD'
             analysis_xml_name = os.path.basename(analysis_xml)
-            create_submission_xml(conn, analysis_reporter_stage, analysis_xml_name, submission_xml, action)
+            create_submission_xml(conn, analysis_reporter_stage, analysis_xml_name, submission_xml, prop.analysis_submission_action)
             submission_error_messages, returncode, out, err = submitAnalysis(submission_xml, analysis_xml,
-                                                                             analyst_webin, passw)
+                                                                             analyst_webin, passw,prop.analysis_submission_url)
             post_submission_error = post_submission(submission_error_messages, returncode, out, err)
             if post_submission_error != '':
                 error_list.append(post_submission_error)
