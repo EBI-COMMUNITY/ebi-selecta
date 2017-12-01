@@ -15,14 +15,15 @@ class selection:
         self.analyst_webin_id = analyst_webin_id
 
 
+
 class properties:
+
     def __init__(self, property_file):
         with open(property_file) as f:
             lines = f.readlines()
-            print('|-|' * 50)
+            print('~' * 50)
             print(type(lines))
-            print('|-|' * 50)
-
+            print('~' * 50)
             workdir_provided = False
             workdir_input_provided = False
             archivedir_provided = False
@@ -30,6 +31,10 @@ class properties:
             dbpassword_provided = False
             dbhost_provided = False
             dbname_provided = False
+            dbport_provided = False
+            lsf_provided = False
+            rmem_provided = False
+            lmem_provided = False
             dtu_cge_databases_provided = False
             emc_slim_program_provided = False
             emc_slim_property_file_provided = False
@@ -47,7 +52,7 @@ class properties:
                     self.workdir = pair[1]
                     workdir_provided = True
                 elif pair[0].lower() == 'max_core_job':
-                    self.max_core_job = pair[1]
+                    self.max_core_job = int(pair[1])
                     max_core_job_provided = True
                 elif pair[0].lower() == 'workdir_input':
                     self.workdir_input = pair[1]
@@ -67,6 +72,24 @@ class properties:
                 elif pair[0].lower() == 'dbname':
                     self.dbname = pair[1]
                     dbname_provided = True
+                elif pair[0].lower() == 'dbport':
+                    self.dbport = int(pair[1])
+                    dbport_provided = True
+                elif pair[0].lower() == 'lsf':
+                    if pair[1].lower() == 'yes':
+                        self.lsf = True
+                    elif pair[1].lower() =='no':
+                        self.lsf = False
+                    lsf_provided = True
+                elif pair[0].lower() == 'rmem':
+                    self.rmem= pair[1]
+                    rmem_provided = True
+                elif pair[0].lower() =='lmem':
+                    self.lmem=pair[1]
+                    lmem_provided = True
+                elif pair[0].lower() =='seqmachine':
+                    self.seq_machine = pair[1]
+                    seq_machine_provided = True
                 elif pair[0].lower() == 'emc_slim_program':
                     self.emc_slim_program = pair[1]
                     emc_slim_program_provided = True
@@ -86,6 +109,7 @@ class properties:
                     self.analysis_submission_url = pair[1]
                     analysis_submission_url_provided = True
 
+
             if not workdir_provided:
                 self.workdir = ''
             if not max_core_job_provided:
@@ -102,6 +126,16 @@ class properties:
                 self.dbhost = ''
             if not dbname_provided:
                 self.dbname = ''
+            if not dbport_provided:
+                self.dbport = 3306
+            if not lsf_provided:
+                self.lsf = ''
+            if not seq_machine_provided:
+                self.seq_machine = ''
+            if not rmem_provided:
+                self.rmem=''
+            if not lmem_provided:
+                self.lmem=''
             if not emc_slim_program_provided:
                 self.emc_slim_program = ''
             if not emc_slim_property_file_provided:

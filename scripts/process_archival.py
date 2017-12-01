@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import MySQLdb
+#import MySQLdb
 import pymysql
 from selectadb import properties
 from PipelineAttributes import stages

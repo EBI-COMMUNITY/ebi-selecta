@@ -6,6 +6,9 @@ import tarfile
 import zipfile
 from shutil import copyfile
 import shutil
+sys.stdout.flush()
+from farmpy import *
+from bsub import bsub
 
 
 class dtu_cge:
@@ -45,43 +48,48 @@ class dtu_cge:
             self.error_list.append(message.replace("'", ""))
         return command
 
-    def run(self, command):
+    def run(self, command, lsf):
         print('*' * 100)
         print("running the command")
         print(command)
         print('*' * 100)
-        sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, err = sp.communicate()
-        #out1 = str(out)
-        #err1 = str(err)
-        if out:
-            print('*' * 100)
-            print("standard output of subprocess:")
-            print(out.decode())
-            print('*' * 100)
-            data = out.decode().split('\n')
-            i = 0
-            for line in data:
-                if 'error' in line.lower():
-                    message = data[i - 1] + '\n' + data[i]
-                    self.error_list.append(message.replace("'", ""))
-                i = i + 1
-        if err:
-            print('*' * 100)
-            print("standard error of subprocess:")
-            print(err.decode())
-            print('*' * 100)
+        if not lsf:
+            sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            out, err = sp.communicate()
+            #out1 = str(out)
+            #err1 = str(err)
+            if out:
+                print('*' * 100)
+                print("standard output of subprocess:")
+                print(out.decode())
+                print('*' * 100)
+                data = out.decode().split('\n')
+                i = 0
+                for line in data:
+                    if 'error' in line.lower():
+                        message = data[i - 1] + '\n' + data[i]
+                        self.error_list.append(message.replace("'", ""))
+                    i = i + 1
+            if err:
+                print('*' * 100)
+                print("standard error of subprocess:")
+                print(err.decode())
+                print('*' * 100)
 
-            data = err.decode().split('\n')
-            i = 0
-            for line in data:
-                if 'error' in line.lower():
-                    message = data[i - 1] + '\n' + data[i]
-                    self.error_list.append(message.replace("'", ""))
-                i = i + 1
-        if sp.returncode != 0:
-            self.error_list.append(err.decode().replace("'", ""))
-        print(err.decode(), file=sys.stderr)
+                data = err.decode().split('\n')
+                i = 0
+                for line in data:
+                    if 'error' in line.lower():
+                        message = data[i - 1] + '\n' + data[i]
+                        self.error_list.append(message.replace("'", ""))
+                    i = i + 1
+            if sp.returncode != 0:
+                self.error_list.append(err.decode().replace("'", ""))
+            print(err.decode(), file=sys.stderr)
+        elif lsf:
+            print("LSF option is true... ")
+            print(command)
+
 
     # @staticmethod
     def copy_src_into_dest(self, src, dest):
@@ -174,10 +182,10 @@ class dtu_cge:
         copyfile(src_tsv_file, tab_result_name)
         return all_result_name_gzip, tab_result_name
 
-    def execute(self):
+    def execute(self, lsf):
         command = self.command_builder()
         print('COMMAND:', command)
-        self.run(command)
+        self.run(command, lsf)
         gzip_file, tab_file = self.post_process()
         error_message = '\n'.join(str(v).replace("'", "") for v in error_list)
         return gzip_file, tab_file, error_message
@@ -185,82 +193,109 @@ class dtu_cge:
 
 class emc_slim:
     def __init__(self, fq1, fq2, emc_slim_property_file, workdir, sequencing_machine, pair, run_accession,
-                 emc_slim_program):
+                 emc_slim_program, prop):
         self.fq1 = fq1
         self.fq2 = fq2
-        # self.run_accession=run_accession
         self.emc_slim_program = emc_slim_program
         self.emc_slim_property_file = emc_slim_property_file
         self.run_accession = run_accession
         self.workdir = workdir
         self.sequencing_machine = sequencing_machine
         self.pair = pair
+        self.lsf = prop.lsf
+        self.rmem = prop.rmem
+        self.lmem = prop.lmem
         error_list = list()
         self.error_list = error_list
+        print('.'*100)
+        print(
+            "slim.FASTQ1: {}\nslim.FASTQ2: {}\nslim.property_file: {}\nslim.workdir: {}\nslim.sequence_machine: {}\nslim.pair: {}\nslim.run_accession: {}\nslim.lsf: {} \nslim.program: {}\nslim.rmem: {} \nslim.lmem: {}".format(
+                self.fq1,
+                self.fq2,
+                self.emc_slim_property_file,
+                self.workdir,
+                self.sequencing_machine,
+                self.pair,
+                self.run_accession,
+                self.lsf,
+                self.emc_slim_program,
+                self.rmem,
+                self.lmem
+            ))
+        print('.' * 100)
 
     def command_builder(self):
         command = ""
         if self.pair == 'True':
-            command = "python {} -fq1 {} -fq2 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program, self.fq1,
-                                                                                  self.fq2, self.run_accession,
+            command = "python2 -s {} -fq1 {} -fq2 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program,
+                                                                                  self.fq1,
+                                                                                  self.fq2,
+                                                                                  self.run_accession,
                                                                                   self.emc_slim_property_file,
                                                                                   self.workdir)
-            print('*' * 100)
-            print(command)
-            print('*' * 100)
+            #print('/>' * 100)
+            #print(command)
+            #print('</' * 100)
         else:
-            command = "python {} -fq1 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program, self.fq1,
-                                                                                   self.run_accession,
-                                                                                  self.emc_slim_property_file,
-                                                                                  self.workdir)
-            print('*' * 100)
-            print(command)
-            print('*' * 100)
+            command = "python2 -s {} -fq1 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program,
+                                                                          self.fq1,
+                                                                          self.run_accession,
+                                                                          self.emc_slim_property_file,
+                                                                          self.workdir)
+            #print(':' * 100)
+            #print(command)
+            #print(':' * 100)
 
         return command
 
-    def run(self, command):
+    def run(self, command, prop):
         print('*' * 100)
         print("IN RUN FUNCTION: running the command:", command)
+        print("Requested memory: {}".format(prop.rmem))
+        print("Memory limits: {}".format(prop.lmem))
         print('*' * 100)
-        sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, err = sp.communicate()
-     
-        #out1=out.decode() 
-        #err1=err.decode() 
+        processing_id = self.workdir.split('/')[-2]
+        lsf = prop.lsf
+        job_id=''
+        if not lsf:
+            sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = sp.communicate()
 
-        if out:
-            #out1=out.decode()
-            print('*'*100)
-            print("standard output of subprocess:\n", out.decode())
-            #print("Type:",type(out1))
-            print('*'*100)
-            data = out.decode().split('\n')
-            i = 0
-            for line in data:
-                if 'error' in line.lower():
-                    message = data[i - 1] + '\n' + data[i]
-                    self.error_list.append(message.replace("'", ""))
-                i = i + 1
+            if out:
+                print('*'*100)
+                print("standard output of subprocess:\n", out.decode())
+                print('*'*100)
+                data = out.decode().split('\n')
+                i = 0
+                for line in data:
+                    if 'error' in line.lower():
+                        message = data[i - 1] + '\n' + data[i]
+                        self.error_list.append(message.replace("'", ""))
+                    i = i + 1
 
-        if err:
-            #err1=err.decode()
-            print('*' * 100)
-            print("standard error of subprocess:\n", err.decode())
-            print('*' * 100)
-            data = err.decode().split('\n')
-            i = 0
-            for line in data:
-                if 'error' in line.lower():
-                    message = data[i - 1] + '\n' + data[i]
-                    self.error_list.append(message.replace("'", ""))
-                i = i + 1
-        if sp.returncode != 0:
             if err:
-                #err1=err.decode()
-                self.error_list.append(err.decode().replace("'", ""))
-                print(err.decode(), file=sys.stderr)
+                print('*' * 100)
+                print("standard error of subprocess:\n", err.decode())
+                print('*' * 100)
+                data = err.decode().split('\n')
+                i = 0
+                for line in data:
+                    if 'error' in line.lower():
+                        message = data[i - 1] + '\n' + data[i]
+                        self.error_list.append(message.replace("'", ""))
+                    i = i + 1
+            #Comment this out after amending A above
+            if sp.returncode != 0:
+                if err:
+                    self.error_list.append(err.decode().replace("'", ""))
+                    print(err.decode(), file=sys.stderr)
+        else:
+            print("LSF option is set to true .....")
+            print(command)
+            job_id = bsub('core_executor_' + processing_id, R=prop.rmem, M=prop.lmem, verbose=True)(command)
+        return [job_id]
 
+        #
     def post_process(self):
         gzip_file = self.workdir + self.run_accession + "_analysis_EMC_SLIM_all.tar.gz"
         tab_file = self.workdir + self.run_accession + "_analysis_EMC_SLIM_summary.tsv"
@@ -277,7 +312,7 @@ class emc_slim:
             print('*' * 100)
         if os.path.exists(tab_file):
             if os.path.getsize(tab_file) == 0:
-                message = "ERROR: tab file {} is empty".formmat(tab_file)
+                message = "ERROR: tab file {} is empty".format(tab_file)
                 self.error_list.append(message.replace("'", ""))
                 print(message)
 
@@ -287,10 +322,21 @@ class emc_slim:
             print(message)
         return gzip_file, tab_file
 
-    def execute(self):
+    def execute(self, prop):
+        lsf = prop.lsf
         command = self.command_builder()
         print('COMMAND:', command)
-        self.run(command)
-        gzip_file, tab_file = self.post_process()
-        error_message = '\n'.join(str(v).replace("'", "") for v in self.error_list)
-        return gzip_file, tab_file, error_message
+        jobids =self.run(command, prop)
+        print(jobids)
+        #bsub.poll(jobids)
+        """ Probably have the post_process out of this execute """
+        if not lsf:
+            gzip_file, tab_file = self.post_process()
+            error_message = '\n'.join(str(v).replace("'", "") for v in self.error_list)
+            return [gzip_file, tab_file, error_message, jobids]
+        else:
+            gzip_file=""
+            tab_file=""
+            error_message=""
+            return [gzip_file, tab_file, error_message, jobids]
+
