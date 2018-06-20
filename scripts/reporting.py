@@ -3,8 +3,59 @@ from mock.mock import self
 import time
 import sys
 
+__author__ = 'Nima Pakseresht, Blaise Alako'
+
+import cx_Oracle
+
+class Oracle(object):
+
+    def connect(self, username, password, hostname, port, servicename):
+        """ Connect to the database. """
+
+        try:
+            self.db = cx_Oracle.connect(username, password
+                                , hostname + ':' + port + '/' + servicename)
+        except cx_Oracle.DatabaseError as e:
+            # Log error as appropriate
+            raise
+
+        # If the database connection succeeded create the cursor
+        # we-re going to use.
+        self.cursor = self.db.cursor()
+
+    def disconnect(self):
+        """
+        Disconnect from the database. If this fails, for instance
+        if the connection instance doesn't exist, ignore the exception.
+        """
+
+        try:
+            self.cursor.close()
+            self.db.close()
+        except cx_Oracle.DatabaseError:
+            pass
+
+    def execute(self, sql, bindvars=None, commit=False):
+        """
+        Execute whatever SQL statements are passed to the method;
+        commit if specified. Do not specify fetchall() in here as
+        the SQL statement may not be a select.
+        bindvars is a dictionary of variables you pass to execute.
+        """
+
+        try:
+            self.cursor.execute(sql, bindvars)
+        except cx_Oracle.DatabaseError as e:
+            # Log error as appropriate
+            raise
+
+        # Only commit if it-s necessary.
+        if commit:
+            self.db.commit()
+
 
 def get_process_id(id):
+    time.sleep(2)
     return id + "-" + str(time.strftime("%d%m%Y%H%M%S"))
 
 
@@ -78,54 +129,38 @@ def process_report_set_started(conn, info):
             print(row)
 
 
-def process_report_set_finished(con, process_report_id):
-    """" info is a dict with the following:
-		 process_archival.py add the finish date to end_time
-	"""
-    query = "update process_report set process_report_end_time=NOW() where process_report_id={}".format(
-        process_report_id)
+
+def already_ran_runs (conn, selection_id):
+    """ Get previously ran run accessions from the Process
+        report table ....
+    """
+    query ="Select distinct run_accession from process_report where process_report_start_time is not null and selection_id ={}".format(selection_id)
     cursor = conn.cursor()
     try:
-        cursor.execute()
-        conn.commit()
+        cursor.execute(query)
+        ran_accessions = [run[0] for run in cursor]
     except:
-        print("ERROR: can not set process_report_end_time to NOW():", file=sys.stderr)
         message = str(sys.exc_info()[1])
         error_list.append(message)
         print("Exception: {}".format(message), file=sys.stderr)
         conn.rollback()
-
-
-def process_report_set_analysis(conn, info):
-    """ info contains, process_report_id and analysis_id """
-    process_report_id = info['process_report_id']
-    analysis_id = info['analysis_id']
-    query = "Update process_report set analysid_id={} where process_report_id={}".format(analysis_id, process_report_id)
-    cursor = conn.cursor()
-    try:
-        cursor.execute
-        conn.commit()
-    except:
-        print("Error: can not set analysis_id to {} where process_report_id={} in process_report table".format(
-            analysis_id, process_report_id), file=sys.stderr)
-        message = str(sys.exc_info()[1])
-        error_list.append(message)
-        print("Exception: {}".format(message), file=sys.stderr)
-        conn.rollback()
+    return ran_accessions
 
 
 class Process_report:
-    def __init__(self, select, attr, error_list, processing_type):
+    def __init__(self, select, attr, error_list):
         self.select = select
         self.attr = attr
         self.error_list = error_list
-        self.processing_type = processing_type
+        self.continuity = select.continuity
+        self.selection_to_attribute_end = select.selection_to_attribute_end
         self.attr.selection_id = select.selection_id
         self.attr.datahub = select.datahub
         self.attr.pipeline_name = select.pipeline_name
         self.attr.public = select.public
         self.attr.analyst_webin_id = select.analyst_webin_id
         self.attr.process_id = get_process_id(attr.run_accession)
+
 
     def log_process_report_info(self, conn):
         self.info = dict()
@@ -137,11 +172,14 @@ class Process_report:
         self.info['run_accession'] = self.attr.run_accession
         self.info['process_id'] = self.attr.process_id
         self.info['selection_id'] = self.select.selection_id
-        print('!' * 100)
+        print('=' * 100)
+        print("Process report info:")
         print(self.info)
-        print('!' * 100)
+        print('=' * 100)
 
         """ GET_PROCESS_ID takes a run id and append to it the current date and time """
+        """ Contiguity is NO """
+
         self.attr.insert_all_into_process_stages(self.conn)
 
         """ INSERT_ALL_INTO_PROCESS_STAGE call on INSERT_INTO_PROCESS_STAGE process_stages
@@ -154,6 +192,7 @@ class Process_report:
             stages.analysis_reporter_stage_name,stages.process_archival_stage_name] 
             Update process_report table 
         """
+        """ Update process_report table """
         process_report_set_started(self.conn, self.info)
 
         if len(self.error_list) != 0:

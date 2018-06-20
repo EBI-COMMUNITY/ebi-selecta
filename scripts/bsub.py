@@ -1,4 +1,10 @@
 """
+_________Author: Brent Pedersen___________
+_________Ported to python3 by Blaise Alako ___________
+
+"""
+
+"""
  create a job with a job name and any extra args to send to lsf
  in the case below. 
     -J some_job -e some_job.%J.err -o some_job.%J.out
@@ -53,7 +59,10 @@ class bsub(object):
     @classmethod
     def running_jobs(self):
         running = [x.split()[0] for x in sp.check_output(["bjobs"], shell=True).rstrip().decode().split("\n")[1:]]
+        print('.'*100)
+        print('Running job ids:')
         print(running)
+        print('.' * 100)
         return running
         """
         results=[]
@@ -133,6 +142,7 @@ class bsub(object):
             command = "echo \"%s\" | %s" % (input_string, str(self))
         if self.verbose:
             print("bsub command: {}".format(command), file=sys.stderr)
+        print("bsub command: {}".format(command))
         p = sp.Popen(command, shell=True, stdout=sp.PIPE, stderr=sp.PIPE)
         print(str(p))
         p.wait()

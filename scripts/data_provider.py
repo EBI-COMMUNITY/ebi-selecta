@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
-import MySQLdb
-# import mysql.connector
-import pymysql
+import pymysql as MySQLdb
 import os
 import base64
 from PipelineAttributes import stages
@@ -18,6 +16,9 @@ import re
 global error_list
 
 error_list = ''
+
+__author__ = 'Nima Pakseresht, Blaise Alako'
+
 
 
 def get_args():
@@ -87,7 +88,8 @@ def download_datahub_file(account_name, password, files, outdir, process_id, lsf
     for file in files:
         outputfile = outdir + '/' + os.path.basename(file)
         print(file)
-        url = "ftp://{}:{}@ftp.dcc-private.ebi.ac.uk/data/{}".format(account_name, password, file)
+        """ For some reason the data folder is empty, fastqs are now in vol1 folder :( """
+        url = "ftp://{}:{}@ftp.dcc-private.ebi.ac.uk/vol1/{}".format(account_name, password, file)
         command = "wget -t 2 {} -O {}".format(url, outputfile)
         print('*' * 100)
         print(command)
@@ -111,7 +113,7 @@ def download_datahub_file(account_name, password, files, outdir, process_id, lsf
                 print('*' * 100)
                 print("Running: ", command)
                 print('*' * 100)
-                job_id = bsub('data_provider_' + process_id, verbose=True)(command)
+                job_id = bsub('data_provider_' + process_id, g='/SELECTA', verbose=True)(command)
                 jobids.append(job_id)
     return jobids
 

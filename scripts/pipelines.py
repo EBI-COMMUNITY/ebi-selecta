@@ -7,9 +7,11 @@ import zipfile
 from shutil import copyfile
 import shutil
 sys.stdout.flush()
-from farmpy import *
+#from farmpy import *
 from bsub import bsub
+import re
 
+__author__ = 'Nima Pakseresht, Blaise Alako'
 
 class dtu_cge:
     '''
@@ -26,38 +28,72 @@ class dtu_cge:
 	 --Ast paired
 	'''
 
-    def __init__(self, fq1, fq2, database_dir, workdir, sequencing_machine, pair, run_accession):
+    def __init__(self, fq1, fq2, database_dir, workdir, sequencing_machine, pair, run_accession,prop, instrument_model, sample_accession):
         self.fq1 = fq1
         self.fq2 = fq2
         self.run_accession = run_accession
+        self.sample_accession = sample_accession
         self.database_dir = database_dir
         self.workdir = workdir
         self.sequencing_machine = sequencing_machine
         self.pair = pair
+        self.instrument_model=instrument_model
+        self.lsf = prop.lsf
+        self.cgetools = prop.cgetools
+        self.rmem = prop.rmem
+        self.lmem = prop.lmem
+        self.bgroup = prop.bgroup
+
         error_list = list()
         self.error_list = error_list
 
-    def command_builder(self):
-        command = ""
+    def command_builder_mock(self):
         if self.pair == 'True':
-            command = "docker run -i --rm -v {}:/databases -v {}:/workdir cgetools BAP --wdir /workdir --fq1 /workdir/{} --fq2 /workdir/{} --Asp {} --Ast paired".format(
-                self.database_dir, self.workdir, self.fq1, self.fq2, self.sequencing_machine)
+            command = "mkdir -p {}  && du -hs /hps/nobackup/nucleotide/blaise/selecta/development/process/SRR1002804-19042018120902 &&  ".format(self.workdir, self.workdir)
+
+            command = command + " cp -fv /homes/blaise/conda.list {}out.tsv ; mkdir -p {}{}; mkdir -p  {}{}; mkdir -p {}{}; mkdir -p {}{}; mkdir -p {}{}; mkdir -p {}{}; mkdir -p {}{}  ".format( self.workdir, self.workdir, 'Assembler',
+                                                                               self.workdir, 'ContigAnalyzer',
+                                                                               self.workdir, 'KmerFinder',
+                                                                               self.workdir,'PlasmidFinder',
+                                                                               self.workdir, 'ResFinder',
+                                                                               self.workdir,'VirulenceFinder',
+                                                                               self.workdir,'MLST')
+
         else:
-            message = "ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
-            # print "Currently cannot deal with non paired fastq files in dtu_sge object"
+            message = ""
             self.error_list.append(message.replace("'", ""))
+            command = "singularity exec -B {}:/databases -B {}:/workdir {} {} --wdir /workdir --fq1 /workdir/{} --Asp {} --Ast paired".format(
+                self.database_dir, self.workdir, self.cgetools, BAP, self.fq1, self.sequencing_machine)
         return command
 
-    def run(self, command, lsf):
+
+    def command_builder(self):
+        command = ""
+        BAP = "/usr/src/cgepipeline/cgetools/BAP.py"
+        if self.pair == 'True':
+            """ Use singularity instead to run cgetools"""
+
+            command = "singularity exec -B {}:/databases -B {}:/workdir {} {} --wdir /workdir --fq1 /workdir/{} --fq2 /workdir/{} --Asp {} --Ast paired".format(self.database_dir, self.workdir, self.cgetools, BAP, self.fq1, self.fq2, self.sequencing_machine)
+        else:
+            command = "singularity exec -B {}:/databases -B {}:/workdir {} {} --wdir /workdir --fq1 /workdir/{} --Asp '{}' --Ast single".format(self.database_dir, self.workdir, self.cgetools, BAP, self.fq1, self.sequencing_machine) # Make use of the instrument model define above
+        return command
+
+    def run(self, command):
         print('*' * 100)
         print("running the command")
+        print(self.cgetools)
         print(command)
         print('*' * 100)
-        if not lsf:
+        job_id=''
+        processing_id = self.workdir.split('/')[-2]
+        if not self.lsf:
+            print('*'*100)
+            print("NO LSF MODE: \n Running Command: {}".format(command))
+            print('*'* 100)
             sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             out, err = sp.communicate()
-            #out1 = str(out)
-            #err1 = str(err)
+            print(out)
+            print(err)
             if out:
                 print('*' * 100)
                 print("standard output of subprocess:")
@@ -73,6 +109,7 @@ class dtu_cge:
             if err:
                 print('*' * 100)
                 print("standard error of subprocess:")
+                print("ERROR MESSAGE: {} ".format(err))
                 print(err.decode())
                 print('*' * 100)
 
@@ -85,29 +122,33 @@ class dtu_cge:
                     i = i + 1
             if sp.returncode != 0:
                 self.error_list.append(err.decode().replace("'", ""))
-            print(err.decode(), file=sys.stderr)
-        elif lsf:
+            print(err, file=sys.stderr)
+        elif self.lsf:
             print("LSF option is true... ")
             print(command)
+            job_id = bsub('core_executor_' + processing_id, R=self.rmem, M=self.lmem, g=self.bgroup, verbose=True)(command)
+        return [job_id]
 
 
     # @staticmethod
     def copy_src_into_dest(self, src, dest):
         name = os.path.basename(src)
         dest_file = os.path.join(dest, name)
+        print("Copying {} to {}".format(src, dest_file))
         try:
             shutil.copytree(src, dest_file)
         except shutil.Error as e:
-            message = 'Directory not copied. Error: %s' % e
+            message = 'Directory not copied. Error: {}'.format(e)
             self.error_list.append(message.replace("'", ""))
             print(message)
         except OSError as e:
-            message = 'Directory not copied. Error: %s' % e
+            message = 'Directory not copied. Error: {}'.format(e)
             self.error_list.append(message.replace("'", ""))
             print(message)
 
     @staticmethod
     def delete_empty_files(folder):
+        print("Deleting folder: {}".format(folder))
         for root, dirs, files in os.walk(folder):
             for file in files:
                 fullname = os.path.join(root, file)
@@ -119,7 +160,7 @@ class dtu_cge:
     @staticmethod
     def make_tar_gzip(src, des):
         name = os.path.basename(src) + '.tar.gz'
-        print("name:", name)
+        print("Archiving and compressing:{}".format(name))
         des = os.path.join(des, name)
         with tarfile.open(des, "w:gz") as tar:
             tar.add(src, arcname=os.path.basename(src))
@@ -127,7 +168,7 @@ class dtu_cge:
     @staticmethod
     def zip_dir(src):
         filename = os.path.basename(src) + '.zip'
-        print(filename)
+        print("Ziping {}".format(filename))
         zf = zipfile.ZipFile(filename, "w")
         for dirname, subdirs, files in os.walk(src):
             print(dirname, subdirs, files)
@@ -139,36 +180,55 @@ class dtu_cge:
     @staticmethod
     def del_file(filename):
         if os.path.exists(filename):
-            shutil.rmtree(filename)
+            print('*'*100)
+            print('Deleting: {} exist and is been deleted....'.format(filename))
+            shutil.rmtree(filename, ignore_errors=True)
 
         # def change_permission(filename):
 
+
     def post_process(self):
+        '''
+        We should account for multiplexing in fastqs. We should add the name of the sample in the final file summary and chuncks that will be
+        submitted to the FTP server. This is from the the observation that the same samples from the same processed runs will have similar name
+        however their checksum values is different.
+        Examples:
+            dcc_allison PRJEB2059 ERR023804 (12)--
+            dcc_allison PRJEB2059 'ERR028305','ERR028650'
+        '''
         print('*' * 100)
-        print("doing post process:")
-        command = 'chmod -R ugo+rw {}'.format(self.workdir)
+        print("Doing post process:.........")
+        command = 'chmod -R a+rw {}'.format(self.workdir)
         print(command)
         print('*' * 100)
-        self.run(command)
+        sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out, err = sp.communicate()
+        if out:
+            self.error_list.append(out.decode().split('\n'))
+        if err:
+            self.error_list.append(err.decode().split('\n'))
+
         dtu_cge.delete_empty_files(self.workdir)
-        all_result_name = self.workdir + self.run_accession + "_analysis_DTU_CGE_all"
+
+        all_result_name = self.workdir + self.run_accession + "_" + self.sample_accession + "_analysis_DTU_CGE_all"
+
         dtu_cge.del_file(all_result_name)
-        all_result_name_gzip = self.workdir + self.run_accession + "_analysis_DTU_CGE_all.tar.gz"
+        all_result_name_gzip = self.workdir + self.run_accession + "_" + self.sample_accession + "_analysis_DTU_CGE_all.tar.gz"
         dtu_cge.del_file(all_result_name_gzip)
-        tab_result_name = self.workdir + self.run_accession + "_analysis_DTU_CGE_summary.tsv"
+        tab_result_name = self.workdir + self.run_accession + "_" + self.sample_accession + "_analysis_DTU_CGE_summary.tsv"
         dtu_cge.del_file(tab_result_name)
         src_tsv_file = self.workdir + 'out.tsv'
-        print(all_result_name)
-        print(tab_result_name)
         if not os.path.exists(all_result_name):
             os.makedirs(all_result_name)
-        self.run(command)
         Assembler_dir = self.workdir + 'Assembler'
-        self.copy_src_into_dest(Assembler_dir, all_result_name)
+        if os.path.exists(Assembler_dir):
+            self.copy_src_into_dest(Assembler_dir, all_result_name)
         ContigAnalyzer_dir = self.workdir + 'ContigAnalyzer'
-        self.copy_src_into_dest(ContigAnalyzer_dir, all_result_name)
+        if os.path.exists(ContigAnalyzer_dir):
+            self.copy_src_into_dest(ContigAnalyzer_dir, all_result_name)
         KmerFinder_dir = self.workdir + 'KmerFinder'
-        self.copy_src_into_dest(KmerFinder_dir, all_result_name)
+        if os.path.exists(KmerFinder_dir):
+            self.copy_src_into_dest(KmerFinder_dir, all_result_name)
         PlasmidFinder_dir = self.workdir + 'PlasmidFinder'
         if os.path.exists(PlasmidFinder_dir):
             self.copy_src_into_dest(PlasmidFinder_dir, all_result_name)
@@ -178,33 +238,57 @@ class dtu_cge:
         VirulenceFinder_dir = self.workdir + 'VirulenceFinder'
         if os.path.exists(VirulenceFinder_dir):
             self.copy_src_into_dest(VirulenceFinder_dir, all_result_name)
-        dtu_cge.make_tar_gzip(all_result_name, self.workdir)
-        copyfile(src_tsv_file, tab_result_name)
+        MLST_dir = self.workdir + 'MLST'
+        if os.path.exists(MLST_dir):
+            self.copy_src_into_dest(MLST_dir, all_result_name)
+
+        cgMLSTFinder_dir = self.workdir + 'cgMLSTFinder'
+        if os.path.exists(cgMLSTFinder_dir):
+            self.copy_src_into_dest(cgMLSTFinder_dir, all_result_name)
+        SalmonellaTypeFinder_dir = self.workdir + 'SalmonellaTypeFinder'
+        if os.path.exists(SalmonellaTypeFinder_dir):
+            self.copy_src_into_dest(SalmonellaTypeFinder_dir, all_result_name)
+
+        try:
+            dtu_cge.make_tar_gzip(all_result_name, self.workdir)
+            copyfile(src_tsv_file, tab_result_name)
+        except Exception:
+            print('Could not make tar gzip archive, or copy src tsv to tab_result_name')
+        print("Post-process finished for {}".format(all_result_name))
         return all_result_name_gzip, tab_result_name
 
-    def execute(self, lsf):
+    def execute(self):
         command = self.command_builder()
-        print('COMMAND:', command)
-        self.run(command, lsf)
-        gzip_file, tab_file = self.post_process()
-        error_message = '\n'.join(str(v).replace("'", "") for v in error_list)
-        return gzip_file, tab_file, error_message
+        #command = self.command_builder_mock()
+        print('*'*100)
+        print('DTU command:', command)
+        print('*'*100)
+        jobids = self.run(command)
+
+        """ Making use of LSF """
+        print('*'*100)
+        print('DTU bjobs ids:{} '.format(jobids))
+        print('*'*100)
+        return jobids
 
 
 class emc_slim:
     def __init__(self, fq1, fq2, emc_slim_property_file, workdir, sequencing_machine, pair, run_accession,
-                 emc_slim_program, prop):
+                 emc_slim_program, prop, instrument_model, sample_accession):
         self.fq1 = fq1
         self.fq2 = fq2
         self.emc_slim_program = emc_slim_program
         self.emc_slim_property_file = emc_slim_property_file
         self.run_accession = run_accession
+        self.sample_accession = sample_accession
         self.workdir = workdir
         self.sequencing_machine = sequencing_machine
+        self.instrument_model = instrument_model
         self.pair = pair
         self.lsf = prop.lsf
         self.rmem = prop.rmem
         self.lmem = prop.lmem
+        self.bgroup = prop.bgroup
         error_list = list()
         self.error_list = error_list
         print('.'*100)
@@ -224,6 +308,28 @@ class emc_slim:
             ))
         print('.' * 100)
 
+
+    def command_builder_mock(self):
+        if self.pair == 'True':
+            command = "mkdir -p {} ; ".format(self.workdir, self.workdir)
+            command = command + "cp -fv /homes/blaise/conda.list {}{}_analysis_EMC_SLIM_summary.tsv  ; cp -fv /homes/blaise/conda.2cp.gz {}{}_analysis_EMC_SLIM_all.tar.gz ; cp -fv /homes/blaise/conda.list {}out.tsv ; mkdir -p {}{}; mkdir -p  {}{}; mkdir -p {}{}; mkdir -p {}{}; mkdir -p {}{}; mkdir -p {}{}; mkdir -p {}{}  ".format(
+                self.workdir, self.run_accession,
+                self.workdir, self.run_accession,
+                self.workdir, self.workdir, 'Assembler',
+                self.workdir, 'ContigAnalyzer',
+                self.workdir, 'KmerFinder',
+                self.workdir, 'PlasmidFinder',
+                self.workdir, 'ResFinder',
+                self.workdir, 'VirulenceFinder',
+                self.workdir, 'MLST')
+
+        else:
+            message = "ERROR:Currently cannot deal with non paired fastq files in dtu_sge object"
+            # print "Currently cannot deal with non paired fastq files in dtu_sge object"
+            self.error_list.append(message.replace("'", ""))
+        return command
+
+
     def command_builder(self):
         command = ""
         if self.pair == 'True':
@@ -233,31 +339,26 @@ class emc_slim:
                                                                                   self.run_accession,
                                                                                   self.emc_slim_property_file,
                                                                                   self.workdir)
-            #print('/>' * 100)
-            #print(command)
-            #print('</' * 100)
+
         else:
             command = "python2 -s {} -fq1 {} -name {} -p {} -wkdir {}".format(self.emc_slim_program,
                                                                           self.fq1,
                                                                           self.run_accession,
                                                                           self.emc_slim_property_file,
                                                                           self.workdir)
-            #print(':' * 100)
-            #print(command)
-            #print(':' * 100)
+
 
         return command
 
-    def run(self, command, prop):
+    def run(self, command):
         print('*' * 100)
         print("IN RUN FUNCTION: running the command:", command)
-        print("Requested memory: {}".format(prop.rmem))
-        print("Memory limits: {}".format(prop.lmem))
+        print("Requested memory: {}".format(self.rmem))
+        print("Memory limits: {}".format(self.lmem))
         print('*' * 100)
         processing_id = self.workdir.split('/')[-2]
-        lsf = prop.lsf
         job_id=''
-        if not lsf:
+        if not self.lsf:
             sp = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = sp.communicate()
 
@@ -292,13 +393,13 @@ class emc_slim:
         else:
             print("LSF option is set to true .....")
             print(command)
-            job_id = bsub('core_executor_' + processing_id, R=prop.rmem, M=prop.lmem, verbose=True)(command)
+            job_id = bsub('core_executor_' + processing_id, R=self.rmem, M=self.lmem, g=self.bgroup, verbose=True)(command)
         return [job_id]
 
         #
     def post_process(self):
         gzip_file = self.workdir + self.run_accession + "_analysis_EMC_SLIM_all.tar.gz"
-        tab_file = self.workdir + self.run_accession + "_analysis_EMC_SLIM_summary.tsv"
+        tab_file = self.workdir + self.run_accession + "_" + self.sample_accession + "_analysis_EMC_SLIM_summary.tsv"
         if os.path.exists(gzip_file):
             if os.path.getsize(gzip_file) == 0:
                 message = "ERROR: gzip file {} is empty".format(gzip_file)
@@ -322,21 +423,11 @@ class emc_slim:
             print(message)
         return gzip_file, tab_file
 
-    def execute(self, prop):
-        lsf = prop.lsf
+    def execute(self):
         command = self.command_builder()
+        #command = self.command_builder_mock()
         print('COMMAND:', command)
-        jobids =self.run(command, prop)
+        jobids =self.run(command)
         print(jobids)
-        #bsub.poll(jobids)
-        """ Probably have the post_process out of this execute """
-        if not lsf:
-            gzip_file, tab_file = self.post_process()
-            error_message = '\n'.join(str(v).replace("'", "") for v in self.error_list)
-            return [gzip_file, tab_file, error_message, jobids]
-        else:
-            gzip_file=""
-            tab_file=""
-            error_message=""
-            return [gzip_file, tab_file, error_message, jobids]
+        return(jobids)
 

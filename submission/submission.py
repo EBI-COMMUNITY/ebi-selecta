@@ -8,7 +8,7 @@ import hashlib
 import ftplib
 
 
-__author__ = 'Nima Pakseresht'
+__author__ = 'Nima Pakseresht, Blaise Alako'
 
 
 def get_args():

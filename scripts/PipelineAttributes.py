@@ -1,4 +1,5 @@
 import sys
+import pymysql as MySQLdb
 import time
 
 
@@ -17,6 +18,7 @@ class default_attributes:
     global pipeline_name_key
     global provider_center_name_key
     global provider_webin_id_key
+    global instrument_platform_key
     global fastq_files_key
     global fastq1_key
     global fastq2_key
@@ -45,6 +47,7 @@ class default_attributes:
     pipeline_name_key = 'pipeline_name'
     provider_center_name_key = 'provider_center_name'
     provider_webin_id_key = 'provider_webin_id'
+    instrument_platform_key = 'instrument_platform'
     fastq_files_key = 'fastq_files'
     fastq1_key = 'fastq1'
     fastq2_key = 'fastq2'
@@ -60,7 +63,7 @@ class default_attributes:
 
     def __init__(self, process_id, selection_id, datahub, tax_id, scientific_name, sample_accession,
                  secondary_sample_acc, experiment_accession, study_accession, secondary_study_acc, run_accession,
-                 pipeline_name, provider_center_name, provider_webin_id, fastq_files, fastq_md5, public,
+                 pipeline_name, provider_center_name, provider_webin_id, instrument_platform, fastq_files, fastq_md5, public,
                  analyst_webin_id):
         self.process_id = process_id
         self.selection_id = selection_id
@@ -76,6 +79,7 @@ class default_attributes:
         self.pipeline_name = pipeline_name
         self.provider_center_name = provider_center_name
         self.provider_webin_id = provider_webin_id
+        self.instrument_platform = instrument_platform
         self.gzip_analysis_file = ''
         self.tab_analysis_file = ''
         self.gzip_analysis_file_md5 = ''
@@ -111,8 +115,21 @@ class default_attributes:
                'secondary_sample_acc:' + self.secondary_sample_acc + '\n' + 'experiment_accession:' + self.experiment_accession + '\n' + \
                'study_accession:' + self.study_accession + '\n' + 'secondary_study_acc:' + self.secondary_study_acc + '\n' + \
                'run_accession:' + self.run_accession + '\n' + 'pipeline_name:' + self.pipeline_name + '\n' + 'provider_center_name:' + self.provider_center_name + '\n' + \
-               'provider_webin_id:' + self.provider_webin_id + '\n' + 'fastq_files:' + self.fastq_files + '\n' + 'fastq_md5:' + self.fastq_md5 + '\n' + \
+               'provider_webin_id:' + self.provider_webin_id + '\n' + 'Instrument_platform:' + '\n' + self.instrument_platform + '\n' + 'fastq_files:' + self.fastq_files + '\n' + 'fastq_md5:' + self.fastq_md5 + '\n' + \
                'public:' + self.public + '\n' + 'analyst_webin_id:' + self.analyst_webin_id
+
+    """
+    def __str__(self):
+        sb = []
+        for key in self.__dict__:
+            sb.append("{key}='{value}'".format(key=key, value=self.__dict__[key]))
+
+        return ', '.join(sb)
+    
+    def __repr__(self):
+        return self.__str__()
+
+    """
 
     def insert_into_process_attributes(self, conn, process_id, attribute_key, attribute_value):
 
@@ -121,14 +138,18 @@ class default_attributes:
                 process_id, attribute_key, attribute_value)
             cursor = conn.cursor()
             try:
+                print('-'*100)
+                print(query)
+                print('-'*100)
                 cursor.execute(query)
-                # time.sleep(1)
                 conn.commit()
+
             except:
                 print("ERROR: Cannot insert:", file=sys.stderr)
                 message = str(sys.exc_info()[1])
                 print("Exception: %s".format(message), file=sys.stderr)
                 conn.rollback()
+
 
     def insert_all_into_process_stages(self, conn):
         '''
@@ -151,6 +172,7 @@ class default_attributes:
         self.insert_into_process_attributes(conn, self.process_id, pipeline_name_key, self.pipeline_name)
         self.insert_into_process_attributes(conn, self.process_id, provider_center_name_key, self.provider_center_name)
         self.insert_into_process_attributes(conn, self.process_id, provider_webin_id_key, self.provider_webin_id)
+        self.insert_into_process_attributes(conn, self.process_id, instrument_platform_key, self.instrument_platform)
         self.insert_into_process_attributes(conn, self.process_id, fastq_files_key, self.fastq_files)
         self.insert_into_process_attributes(conn, self.process_id, fastq1_key, self.fastq1)
         self.insert_into_process_attributes(conn, self.process_id, fastq2_key, self.fastq2)
@@ -172,15 +194,18 @@ class default_attributes:
             attribute_key, process_id)
         cursor = conn.cursor()
         cursor.execute(query)
+        cursor.close()
         for attribute_value in cursor:
             value = attribute_value
-        return value[0]
+        #return value[0]
+        return str(''.join(value))
 
     @staticmethod
     def get_all_attributes(conn, process_id):
         query = "select attribute_key,attribute_value from process_attributes where process_id='{}' ".format(process_id)
         cursor = conn.cursor()
         cursor.execute(query)
+        cursor.close()
         key_value = dict()
         for attribute_key, attribute_value in cursor:
             key_value[attribute_key] = attribute_value
@@ -210,6 +235,26 @@ class stages:
         # self.process_report_id = process_report_id
         self.stage_list = stage_list
 
+
+    def process_report_set_finished(self, conn):
+        """" info is a dict with the following:
+    		 process_archival.py add the finish date to end_time
+    	"""
+        query = "update process_report set process_report_end_time=NOW() where process_id='{}'".format(self.process_id)
+        print(query)
+        cursor = conn.cursor()
+        try:
+            cursor.execute(query)
+            conn.commit()
+            cursor.close()
+        except:
+            print("ERROR: can not set process_report_end_time to NOW():", file=sys.stderr)
+            message = str(sys.exc_info()[1])
+            print("Exception: {}".format(message), file=sys.stderr)
+            conn.rollback()
+            cursor.close()
+
+
     def insert_into_process_stages(self, conn, process_id, selection_id, stage_name):
         print("Insert to process_stages:", process_id, selection_id, stage_name)
         query = "INSERT INTO process_stages (process_id,selection_id,stage_name) values('{}','{}','{}')".format(
@@ -219,11 +264,13 @@ class stages:
         try:
             cursor.execute(query)
             conn.commit()
+            cursor.close()
         except:
             print("ERROR: INSERT INTO process_stages table: {}".format(query), file=sys.stderr)
             message = str(sys.exc_info()[1])
             print("Exception: {} : {}".format(message, query), file=sys.stderr)
             conn.rollback()
+            cursor.close()
 
     def insert_all_into_process_stages(self, conn):
         for stage in self.stage_list:
@@ -233,26 +280,45 @@ class stages:
         query = "select distinct process_id from process_stages where stage_start is null and stage_name='{}'".format(
             self.stage_list)
         cursor = conn.cursor()
-        cursor.execute(query)
-        process_id_all = list()
+        process_id_all=list()
+        try:
+            cursor.execute(query)
+        except:
+            print("ERROR: SELECT PROCESS_ID: {}".format(query), file=sys.stderr)
+            message = str(sys.exc_info()[1])
+            print("Exception: {} : {}".format(message, query), file=sys.stderr)
+            conn.rollback()
+            #cursor.close()
         for row in cursor:
             process_id_all.append(row[0])
+            #cursor.close()
         if self.process_id in process_id_all:
+            cursor.close()
             return False
         else:
+            cursor.close()
             return True
 
     def set_started(self, conn):
         query = "update process_stages set stage_start=NOW() where process_id='{}' and stage_name='{}'".format(
             self.process_id, self.stage_list)
+
         cursor = conn.cursor()
         try:
+            print('-'*100)
+            print(query)
+            print('-'*100)
             cursor.execute(query)
             conn.commit()
-        except:
+            cursor.close()
+
+        except (MySQLdb.Error, MySQLdb.Warning) as e:
             print("ERROR: Cannot update process_stages set stage_start=NOW():", file=sys.stderr)
             message = str(sys.exc_info()[1])
-            print("Exception: {}".format(message), file=sys.stderr)
+            print("Exception: {}, {}".format(message, e), file=sys.stderr)
+            print('-'*100)
+            print("MySQL error: {}".format(e))
+            print('-'*100)
             conn.rollback()
 
     def set_finished(self, conn):
@@ -262,6 +328,8 @@ class stages:
         try:
             cursor.execute(query)
             conn.commit()
+            cursor.close()
+
         except:
             print("ERROR: Cannot update process_stages set stage_end=NOW():", file=sys.stderr)
             message = str(sys.exc_info()[1])
@@ -276,6 +344,8 @@ class stages:
         try:
             cursor.execute(query)
             conn.commit()
+            cursor.close()
+
         except:
             print("ERROR: Cannot {}".format(query), file=sys.stderr)
             message = str(sys.exc_info()[1])
