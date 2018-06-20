@@ -2,7 +2,18 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="5fceab47-5fe9-4686-9b50-2b0633f3c64d" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/ebi-selecta.iml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/misc.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/resources/properties.dev.txt" />
       <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/scripts/selecta_processing_reports.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/submission/PipelineAttributes.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/submission/pipelines.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/submission/reporting.py" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/submission/selectadb.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/PipelineAttributes.py" afterPath="$PROJECT_DIR$/scripts/PipelineAttributes.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/bsub.py" afterPath="$PROJECT_DIR$/scripts/bsub.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/scripts/core_executor.py" afterPath="$PROJECT_DIR$/scripts/core_executor.py" />
@@ -26,7 +37,7 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="pipelines.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="pipelines.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scripts/pipelines.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="437">
@@ -82,11 +93,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="data_provider.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="data_provider.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/scripts/data_provider.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1634">
-              <caret line="98" column="0" lean-forward="false" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
+            <state relative-caret-position="1177">
+              <caret line="235" column="25" lean-forward="true" selection-start-line="235" selection-start-column="25" selection-end-line="235" selection-end-column="25" />
               <folding />
             </state>
           </provider>
@@ -119,8 +130,8 @@
       <file leaf-file-name="selection_to_attribute.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/scripts/selection_to_attribute.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="12711">
-              <caret line="686" column="64" lean-forward="false" selection-start-line="686" selection-start-column="64" selection-end-line="686" selection-end-column="64" />
+            <state relative-caret-position="19">
+              <caret line="528" column="20" lean-forward="true" selection-start-line="528" selection-start-column="20" selection-end-line="528" selection-end-column="20" />
               <folding>
                 <element signature="e#24#37#0" expanded="true" />
               </folding>
@@ -757,30 +768,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/data_provider.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1634">
-          <caret line="98" column="0" lean-forward="false" selection-start-line="98" selection-start-column="0" selection-end-line="98" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/scripts/reporting.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2812">
           <caret line="151" column="28" lean-forward="false" selection-start-line="151" selection-start-column="28" selection-end-line="151" selection-end-column="28" />
           <folding>
             <element signature="e#0#37#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/scripts/selection_to_attribute.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12711">
-          <caret line="686" column="64" lean-forward="false" selection-start-line="686" selection-start-column="64" selection-end-line="686" selection-end-column="64" />
-          <folding>
-            <element signature="e#24#37#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -809,6 +802,24 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="437">
           <caret line="30" column="138" lean-forward="true" selection-start-line="30" selection-start-column="138" selection-end-line="30" selection-end-column="138" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/selection_to_attribute.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="19">
+          <caret line="528" column="20" lean-forward="true" selection-start-line="528" selection-start-column="20" selection-end-line="528" selection-end-column="20" />
+          <folding>
+            <element signature="e#24#37#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/scripts/data_provider.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1177">
+          <caret line="235" column="25" lean-forward="true" selection-start-line="235" selection-start-column="25" selection-end-line="235" selection-end-column="25" />
           <folding />
         </state>
       </provider>
