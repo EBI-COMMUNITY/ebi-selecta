@@ -15,5 +15,15 @@
         <FILES>
              <FILE filename="TODO10:FILE-TO-SUBMIT" filetype="tab" checksum_method="MD5" checksum="TODO11:FILE-CHECKSUM"/>
         </FILES>
+        <ANALYSIS_ATTRIBUTES>
+            <ANALYSIS_ATTRIBUTE>
+                <TAG>PIPELINE_NAME</TAG>
+                <VALUE>DTU_CGE or EMC_SLIM</VALUE>
+            </ANALYSIS_ATTRIBUTE>
+            <ANALYSIS_ATTRIBUTE>
+                <TAG>PIPELINE_VERSION</TAG>
+                <VALUE>DTU_CGE_VERSION or EMC_SLIM_VERSION </VALUE>
+            </ANALYSIS_ATTRIBUTE>
+        </ANALYSIS_ATTRIBUTES>
     </ANALYSIS>
 </ANALYSIS_SET>

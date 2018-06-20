@@ -1,13 +1,15 @@
 from lxml import etree
 import lxml.builder
 
+__author__ = 'Nima Pakseresht, Blaise Alako'
+
 
 # sudo pip install --upgrade setuptools
 # wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python
 # sudo pip install lxml
 
 class analysis_pathogen_analysis:
-    def __init__(self, alias, centre_name, sample_accession, run_accession, study_accession, pipeline_name,
+    def __init__(self, alias, centre_name, sample_accession, run_accession, study_accession, pipeline_name, pipeline_version,
                  analysis_date, analysis_files, title, description, analysis_xml_file):
         self.alias = alias
         self.analysis_xml_file = analysis_xml_file
@@ -17,10 +19,13 @@ class analysis_pathogen_analysis:
         self.sample_accession = sample_accession
         self.study_accession = study_accession
         self.pipeline_name = pipeline_name
+        self.pipeline_version = pipeline_version
         self.analysis_date = analysis_date
         self.analysis_files = analysis_files
         self.title = title
         self.description = description
+
+
 
     def build_analysis(self):
         analysis_set = etree.Element('ANALYSIS_SET')
@@ -34,8 +39,10 @@ class analysis_pathogen_analysis:
         studyrefElt = etree.SubElement(analysisElt, 'STUDY_REF', accession=self.study_accession)
         samplerefElt = etree.SubElement(analysisElt, 'SAMPLE_REF', accession=self.sample_accession)
         runrefElt = etree.SubElement(analysisElt, 'RUN_REF', accession=self.run_accession)
+
         analysis_type = etree.SubElement(analysisElt, 'ANALYSIS_TYPE')
         type = etree.SubElement(analysis_type, 'PATHOGEN_ANALYSIS')
+
         files = etree.SubElement(analysisElt, 'FILES')
         file1Elt = etree.SubElement(files, 'FILE', filename=self.analysis_files[0].file_name,
                                     filetype=self.analysis_files[0].file_type, checksum_method="MD5",
@@ -43,7 +50,25 @@ class analysis_pathogen_analysis:
         file2Elt = etree.SubElement(files, 'FILE', filename=self.analysis_files[1].file_name,
                                     filetype=self.analysis_files[1].file_type, checksum_method="MD5",
                                     checksum=self.analysis_files[1].file_md5)
+
+        """ Analysis Attributes """
+        analysis_attributes = etree.SubElement(analysisElt,'ANALYSIS_ATTRIBUTES')
+        analysis_attribute = etree.SubElement(analysis_attributes ,'ANALYSIS_ATTRIBUTE')
+        etree.SubElement(analysis_attribute, "TAG").text = "PIPELINE_NAME"
+        etree.SubElement(analysis_attribute, "VALUE").text = self.pipeline_name
+        analysis_attribute = etree.SubElement(analysis_attributes, 'ANALYSIS_ATTRIBUTE')
+        etree.SubElement(analysis_attribute, "TAG").text = "PIPELINE_VERSION"
+        etree.SubElement(analysis_attribute, "VALUE").text = self.pipeline_version
+
+        """ End Analysis Attributes """
+
+
+
+        print('-'*100)
+        print('Analysis XML dump\n')
+        print('Analysis files: {}'.format(self.analysis_files))
         print(lxml.etree.tostring(analysis_xml, pretty_print=True, xml_declaration=True, encoding='UTF-8'))
+        print('-' * 100)
         analysis_xml.write(self.analysis_xml_file, pretty_print=True, xml_declaration=True, encoding='UTF-8')
 
 

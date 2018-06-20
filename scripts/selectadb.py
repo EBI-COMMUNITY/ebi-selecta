@@ -1,9 +1,13 @@
 from mock.mock import self
 
+__author__ = 'Nima Pakseresht, Blaise Alako'
 
+
+#selection(selection_id, datahub, tax_id, study_accession, run_accession, pipeline_name, analysis_id,
+#                              public, selection_to_attribute_end, webin, process_type, continuity)
 class selection:
     def __init__(self, selection_id, datahub, tax_id, study_accession, run_accession, pipeline_name, analysis_id,
-                 public, analyst_webin_id):
+                 public, selection_to_attribute_end, analyst_webin_id, process_type, continuity):
         self.selection_id = selection_id
         self.datahub = datahub
         self.tax_id = tax_id
@@ -13,16 +17,20 @@ class selection:
         self.analysis_id = analysis_id
         self.public = public
         self.analyst_webin_id = analyst_webin_id
+        self.process_type = process_type
+        self.continuity = continuity
+        self.selection_to_attribute_end = selection_to_attribute_end
+
 
 
 class properties:
+
     def __init__(self, property_file):
         with open(property_file) as f:
             lines = f.readlines()
-            print('|-|' * 50)
-            print(type(lines))
-            print('|-|' * 50)
-
+            #print('~' * 50)
+            #print(type(lines))
+            #print('~' * 50)
             workdir_provided = False
             workdir_input_provided = False
             archivedir_provided = False
@@ -30,24 +38,35 @@ class properties:
             dbpassword_provided = False
             dbhost_provided = False
             dbname_provided = False
+            dbport_provided = False
+            lsf_provided = False
+            rmem_provided = False
+            lmem_provided = False
             dtu_cge_databases_provided = False
+            dtu_cge_version_provided= False
+            pipeline_version_provided =False
             emc_slim_program_provided = False
             emc_slim_property_file_provided = False
+            emc_slim_version_provided = False
             analysis_submission_mode_provided = False
             analysis_submission_action_provided = False
-            analysis_submission_url_provided = False
+            analysis_submission_url_dev_provided = False
+            analysis_submission_url_prod_provided = False
+
             max_core_job_provided = False
+            cgetools_provided = False
+            bgroup_provided = False
 
             for l in lines:
-                print("*" * 100)
-                print(l)
-                print("*" * 100)
+                #print("*" * 100)
+                #print(l)
+                #print("*" * 100)
                 pair = l.strip().split(":",1)
                 if pair[0].lower() == 'workdir':
                     self.workdir = pair[1]
                     workdir_provided = True
                 elif pair[0].lower() == 'max_core_job':
-                    self.max_core_job = pair[1]
+                    self.max_core_job = int(pair[1])
                     max_core_job_provided = True
                 elif pair[0].lower() == 'workdir_input':
                     self.workdir_input = pair[1]
@@ -67,6 +86,29 @@ class properties:
                 elif pair[0].lower() == 'dbname':
                     self.dbname = pair[1]
                     dbname_provided = True
+                elif pair[0].lower() == 'dbport':
+                    self.dbport = int(pair[1])
+                    dbport_provided = True
+                elif pair[0].lower() == 'lsf':
+                    if pair[1].lower() == 'yes':
+                        self.lsf = True
+                    elif pair[1].lower() =='no':
+                        self.lsf = False
+                    lsf_provided = True
+                elif pair[0].lower() == 'rmem':
+                    self.rmem= pair[1]
+                    rmem_provided = True
+                elif pair[0].lower() =='lmem':
+                    self.lmem=pair[1]
+                    lmem_provided = True
+
+                elif pair[0].lower() =='bgroup':
+                    self.bgroup = pair[1]
+                    bgroup_provided = True
+
+                elif pair[0].lower() =='seqmachine':
+                    self.seq_machine = pair[1]
+                    seq_machine_provided = True
                 elif pair[0].lower() == 'emc_slim_program':
                     self.emc_slim_program = pair[1]
                     emc_slim_program_provided = True
@@ -76,15 +118,35 @@ class properties:
                 elif pair[0].lower() == 'dtu_cge_databases':
                     self.dtu_cge_databases = pair[1]
                     dtu_cge_databases_provided = True
+
+                elif pair[0].lower() == 'dtu_cge_version':
+                    self.dtu_cge_version = pair[1]
+                    dtu_cge_version_provided = True
+
+                elif pair[0].lower() == 'emc_slim_version':
+                    self.emc_slim_version = pair[1]
+                    emc_slim_version_provided = True
+
+
+                elif pair[0].lower() == 'cgetools':
+                    self.cgetools = pair[1]
+                    cgetools_provided = True
+
                 elif pair[0].lower() == 'analysis_submission_mode':
                     self.analysis_submission_mode = pair[1]
                     analysis_submission_mode_provided = True
+
                 elif pair[0].lower() == 'analysis_submission_action':
                     self.analysis_submission_action = pair[1]
                     analysis_submission_action_provided = True
-                elif pair[0].lower() == 'analysis_submission_url':
-                    self.analysis_submission_url = pair[1]
-                    analysis_submission_url_provided = True
+
+                elif pair[0].lower() == 'analysis_submission_url_dev':
+                    self.analysis_submission_url_dev = pair[1]
+                    analysis_submission_url_dev_provided = True
+                elif pair[0].lower() == 'analysis_submission_url_prod':
+                    self.analysis_submission_url_prod = pair[1]
+                    analysis_submission_url_prod_provided = True
+
 
             if not workdir_provided:
                 self.workdir = ''
@@ -102,6 +164,19 @@ class properties:
                 self.dbhost = ''
             if not dbname_provided:
                 self.dbname = ''
+            if not dbport_provided:
+                self.dbport = 3306
+            if not lsf_provided:
+                self.lsf = ''
+            if not seq_machine_provided:
+                self.seq_machine = ''
+            if not rmem_provided:
+                self.rmem=''
+            if not lmem_provided:
+                self.lmem=''
+            if not bgroup_provided:
+                self.bgroup=''
+
             if not emc_slim_program_provided:
                 self.emc_slim_program = ''
             if not emc_slim_property_file_provided:
@@ -110,7 +185,20 @@ class properties:
                 self.analysis_submission_mode = ''
             if not dtu_cge_databases_provided:
                 self.dtu_cge_databases = ''
+
+            if not dtu_cge_version_provided:
+                self.dtu_cge_version = ''
+
+            if not emc_slim_version_provided:
+                self.emc_slim_version = ''
+            if not dtu_cge_version_provided:
+                self.dtu_cge_version=''
+
+            if not cgetools_provided:
+                self.cgetools =''
             if not analysis_submission_action_provided:
                 self.analysis_submission_action = ''
-            if not analysis_submission_url_provided:
-                self.analysis_submission_url = ''
+            if not analysis_submission_url_dev_provided:
+                self.analysis_submission_url_dev = ''
+            if not analysis_submission_url_prod_provided:
+                self.analysis_submission_url_prod = ''

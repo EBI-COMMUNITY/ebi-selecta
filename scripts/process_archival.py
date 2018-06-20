@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 
-import MySQLdb
-import pymysql
+#import MySQLdb
+import pymysql as MySQLdb
 from selectadb import properties
 from PipelineAttributes import stages
 from PipelineAttributes import default_attributes
 import shutil
 import argparse
 import time
+from reporting import Process_report
+
+__author__ = 'Nima Pakseresht, Blaise Alako'
+
 
 global error_list
 
 error_list=''
 
-def get_connection(db_user,db_password,db_host,db_database):
-        conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host,db=db_database)
+def get_connection(db_user,db_password,db_host,db_database , db_port):
+        conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host,db=db_database, port=db_port)
         return conn
 
 def get_args():
@@ -40,7 +44,8 @@ def get_list(conn):
            "and b.stage_end is not null and b.stage_error is null and b.stage_name='{}' "
            "and c.stage_start is not null and c.stage_end is not null and c.stage_error is null "
            "and c.stage_name='{}' and a.process_id=b.process_id and b.process_id= "
-           "c.process_id").format(process_archival_stage,data_provider_stage,core_executor_stage,analysis_reporter_stage)
+           "c.process_id)").format(process_archival_stage,data_provider_stage,core_executor_stage,analysis_reporter_stage)
+    print(query)
     cursor = conn.cursor()
     cursor.execute(query)
     process_archival_list=list()
@@ -59,21 +64,44 @@ def delete(dir):
         error_list.append(message.replace("'",""))
         print(message)
 
+def archDirectory(src, dest):
+    try:
+        shutil.copytree(src, dest, ignore=shutil.ignore_patterns('*.fastq'))
+        shutil.rmtree(src, ignore_errors=True)
+    # Directories are the same
+    except shutil.Error as e:
+        print('Directory not copied. Error: %s' % e)
+        message = 'Directory not copied. Error: {}'.format(e)
+        error_list.append(message.replace("'", ""))
+        print(message)
+    # Any error saying that the directory doesn't exist
+    except OSError as e:
+        print('Directory not copied. Error: %s' % e)
+        message = 'Directory not copied. Error: {}'.format(e)
+        error_list.append(message.replace("'", ""))
+        print(message)
+
 
 def execute(process_id,prop):
-    workdir=prop.workdir+process_id+"/"
-    delete(workdir)
+    src=prop.workdir+process_id
+    dest = prop.archivedir+process_id
+    print('Source dir: {}\nDestination: {}'.format(src, dest))
+    archDirectory(src, dest)
 
 
 if __name__ == '__main__':
     now = time.strftime("%c")
-    print("process_archival has been started {}".format(now))
+    print("process_archival started {}".format(now))
     error_list=list()
     get_args()
     prop=properties(properties_file)
-    conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname)
+    conn=get_connection(prop.dbuser,prop.dbpassword,prop.dbhost,prop.dbname, prop.dbport)
     process_archival_list=get_list(conn)
+    print('-'*100)
+    print("Analysis to archive:{}".format(len(process_archival_list)))
     for exe in process_archival_list:
+        print('.'*100)
+        print("{} Archive check started:".format(exe.process_id))
         if exe.check_started(conn)==False:
            exe.set_started(conn)
            execute(exe.process_id,prop)
@@ -82,8 +110,15 @@ if __name__ == '__main__':
                 exe.set_error(conn,final_errors)
            else:
                 exe.set_finished(conn)
+                exe.process_report_set_finished(conn)
                 now = time.strftime("%c")
-                print("procees of {} archival finished at {}".format(exe.process_id,now))
-        error_list=list()
+                print("process of {} archival finished on {}".format(exe.process_id,now))
+                error_list=list()
+        else:
+            print("{} Archiving Already started........".format(exe.process_id))
     now = time.strftime("%c")
-    print("process_archival has been finished {}".format(now))
+    message="ARCHIVAL FINISHED {}".format(now)
+    print('*'*50)
+    print(message)
+    print('*'*50)
+    conn.close()
