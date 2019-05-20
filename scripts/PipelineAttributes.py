@@ -29,8 +29,10 @@ class default_attributes:
     global pair_key
     global gzip_analysis_file_key
     global tab_analysis_file_key
+    global tab_analysis_file2_key
     global gzip_analysis_file_md5_key
     global tab_analysis_file_md5_key
+    global tab_analysis_file2_md5_key
     global ruler
     ruler = '*' * 100
     selection_id_key = 'selection_id'
@@ -58,8 +60,10 @@ class default_attributes:
     pair_key = 'pair'
     gzip_analysis_file_key = 'gzip_analysis_file'
     tab_analysis_file_key = 'tab_analysis_file'
+    tab_analysis_file2_key = 'tab_analysis_file2'
     gzip_analysis_file_md5_key = 'gzip_analysis_file_md5'
     tab_analysis_file_md5_key = 'tab_analysis_file_md5'
+    tab_analysis_file2_md5_key = 'tab_analysis_file2_md5'
 
     def __init__(self, process_id, selection_id, datahub, tax_id, scientific_name, sample_accession,
                  secondary_sample_acc, experiment_accession, study_accession, secondary_study_acc, run_accession,
@@ -82,11 +86,14 @@ class default_attributes:
         self.instrument_platform = instrument_platform
         self.gzip_analysis_file = ''
         self.tab_analysis_file = ''
+        self.tab_analysis_file2 = ''
         self.gzip_analysis_file_md5 = ''
         self.tab_analysis_file_md5 = ''
+        self.tab_analysis_file2_md5 =''
         files = list()
         if ";" in fastq_files:
-            files = fastq_files.split(";")
+            #files = fastq_files.split(";")
+            files = list(filter(lambda x: '_' in x, fastq_files.split(';')))
             self.fastq1 = files[0]
             self.fastq2 = files[1]
             self.pair = True
@@ -157,7 +164,7 @@ class default_attributes:
 		   insert_all_into_process_attributes?
 		'''
         print('*' * 100)
-        print("insert_all_into_process_stages is called and calles on insert_into_process_attributes")
+        print("insert_all_into_process_stages is called and calls on insert_into_process_attributes")
         print('*' * 100)
         self.insert_into_process_attributes(conn, self.process_id, selection_id_key, self.selection_id)
         self.insert_into_process_attributes(conn, self.process_id, datahub_key, self.datahub)
@@ -182,10 +189,14 @@ class default_attributes:
         self.insert_into_process_attributes(conn, self.process_id, analyst_webin_id_key, self.analyst_webin_id)
         self.insert_into_process_attributes(conn, self.process_id, gzip_analysis_file_key, self.gzip_analysis_file)
         self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file_key, self.tab_analysis_file)
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file2_key, self.tab_analysis_file2)
         self.insert_into_process_attributes(conn, self.process_id, gzip_analysis_file_md5_key,
                                             self.gzip_analysis_file_md5)
         self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file_md5_key,
                                             self.tab_analysis_file_md5)
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file2_md5_key,
+                                            self.tab_analysis_file2_md5)
+
         self.insert_into_process_attributes(conn, self.process_id, pair_key, self.pair)
 
     @staticmethod
@@ -194,7 +205,7 @@ class default_attributes:
             attribute_key, process_id)
         cursor = conn.cursor()
         cursor.execute(query)
-        cursor.close()
+        #cursor.close()
         for attribute_value in cursor:
             value = attribute_value
         #return value[0]
@@ -205,7 +216,7 @@ class default_attributes:
         query = "select attribute_key,attribute_value from process_attributes where process_id='{}' ".format(process_id)
         cursor = conn.cursor()
         cursor.execute(query)
-        cursor.close()
+        #cursor.close()
         key_value = dict()
         for attribute_key, attribute_value in cursor:
             key_value[attribute_key] = attribute_value
@@ -246,13 +257,13 @@ class stages:
         try:
             cursor.execute(query)
             conn.commit()
-            cursor.close()
+            #cursor.close()
         except:
             print("ERROR: can not set process_report_end_time to NOW():", file=sys.stderr)
             message = str(sys.exc_info()[1])
             print("Exception: {}".format(message), file=sys.stderr)
             conn.rollback()
-            cursor.close()
+            #cursor.close()
 
 
     def insert_into_process_stages(self, conn, process_id, selection_id, stage_name):
@@ -264,13 +275,13 @@ class stages:
         try:
             cursor.execute(query)
             conn.commit()
-            cursor.close()
+            #cursor.close()
         except:
             print("ERROR: INSERT INTO process_stages table: {}".format(query), file=sys.stderr)
             message = str(sys.exc_info()[1])
             print("Exception: {} : {}".format(message, query), file=sys.stderr)
             conn.rollback()
-            cursor.close()
+            #cursor.close()
 
     def insert_all_into_process_stages(self, conn):
         for stage in self.stage_list:
@@ -293,10 +304,10 @@ class stages:
             process_id_all.append(row[0])
             #cursor.close()
         if self.process_id in process_id_all:
-            cursor.close()
+            #cursor.close()
             return False
         else:
-            cursor.close()
+            #cursor.close()
             return True
 
     def set_started(self, conn):
@@ -310,7 +321,7 @@ class stages:
             print('-'*100)
             cursor.execute(query)
             conn.commit()
-            cursor.close()
+            #cursor.close()
 
         except (MySQLdb.Error, MySQLdb.Warning) as e:
             print("ERROR: Cannot update process_stages set stage_start=NOW():", file=sys.stderr)
@@ -328,7 +339,7 @@ class stages:
         try:
             cursor.execute(query)
             conn.commit()
-            cursor.close()
+            #cursor.close()
 
         except:
             print("ERROR: Cannot update process_stages set stage_end=NOW():", file=sys.stderr)
@@ -344,7 +355,7 @@ class stages:
         try:
             cursor.execute(query)
             conn.commit()
-            cursor.close()
+            #cursor.close()
 
         except:
             print("ERROR: Cannot {}".format(query), file=sys.stderr)

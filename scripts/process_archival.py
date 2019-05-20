@@ -9,6 +9,7 @@ import shutil
 import argparse
 import time
 from reporting import Process_report
+import psycopg2
 
 __author__ = 'Nima Pakseresht, Blaise Alako'
 
@@ -18,7 +19,7 @@ global error_list
 error_list=''
 
 def get_connection(db_user,db_password,db_host,db_database , db_port):
-        conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host,db=db_database, port=db_port)
+        conn = psycopg2.connect(host=db_host, database=db_database, user=db_user, password=db_password, port=db_port)
         return conn
 
 def get_args():

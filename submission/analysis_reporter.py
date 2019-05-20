@@ -4,9 +4,7 @@ import time
 import subprocess
 import base64
 import os
-
 import re
-import pymysql as MySQLdb
 import ftplib
 from selectadb import properties
 from sra_objects import analysis_pathogen_analysis
@@ -20,6 +18,7 @@ import datetime
 from joblib import Parallel, delayed
 import multiprocessing
 from reporting import Process_report
+import psycopg2
 
 __author__ = 'Nima Pakseresht, Blaise Alako'
 
@@ -73,7 +72,7 @@ def get_list(conn):
 
 
 def get_connection(db_user, db_password, db_host, db_database, db_port):
-    conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host, db=db_database, port=db_port)
+    conn = psycopg2.connect(host=db_host, database=db_database, user=db_user, password=db_password,  port=db_port)
     return conn
 
 
@@ -88,21 +87,32 @@ def create_analysis_xml(conn, analysis, prop, attributes, analysis_xml):
     tab_analysis_file = attributes['tab_analysis_file']
     gzip_analysis_file_md5 = attributes['gzip_analysis_file_md5']
     tab_analysis_file_md5 = attributes['tab_analysis_file_md5']
+    tab_analysis_file2= attributes['tab_analysis_file2']
+    if (os.path.isfile(tab_analysis_file2)):
+        tab_analysis_file2_md5 = attributes['tab_analysis_file2_md5']
+    pipeline_version = None
     pipeline_name = attributes['pipeline_name']
     if pipeline_name.lower() =='dtu_cge':
         pipeline_version = prop.dtu_cge_version
     elif pipeline_name.lower() =='emc_slim':
         pipeline_version = prop.emc_slim_version
-
+    elif pipeline_name.lower() =='uantwerp_bacpipe':
+        pipeline_version = prop.uantwerp_bacpipe_version
+    selecta_version = prop.selecta_version
     study_accession = attributes['study_accession']
     scientific_name = attributes['scientific_name']
     sample_accession = attributes['sample_accession']
+
     print(run_accession, gzip_analysis_file, gzip_analysis_file_md5, tab_analysis_file, tab_analysis_file_md5)
     analysis_files = list()
     file1 = analysis_file(os.path.basename(tab_analysis_file), 'tab', tab_analysis_file_md5)
-    file2 = analysis_file(os.path.basename(gzip_analysis_file), 'other', gzip_analysis_file_md5)
     analysis_files.append(file1)
+    file2 = analysis_file(os.path.basename(gzip_analysis_file), 'other', gzip_analysis_file_md5)
     analysis_files.append(file2)
+    if (os.path.isfile(tab_analysis_file2)):
+        file3= analysis_file(os.path.basename(tab_analysis_file2), 'tab', tab_analysis_file2_md5)
+        analysis_files.append(file3)
+
     print('*'*100)
     print("Analysis files:\n {} ".format(analysis_files))
     print('*'*100)
@@ -116,8 +126,11 @@ def create_analysis_xml(conn, analysis, prop, attributes, analysis_xml):
     description = "As part of the COMPARE project submitted data {} from sample {} organism name '{}' has been processed by {} pipeline.".format(
         run_accession, sample_accession, scientific_name, pipeline_name)
     analysis_obj = analysis_pathogen_analysis(alias, centre_name, sample_accession, run_accession, study_accession,
-                                              pipeline_name, pipeline_version, analysis_date, analysis_files, title, description,
+                                              pipeline_name, pipeline_version, selecta_version,  analysis_date, analysis_files, title, description,
                                               analysis_xml)
+    print('*'*100)
+    print(description)
+    print('*'*100)
     analysis_obj.build_analysis()
 
 
@@ -139,6 +152,7 @@ def get_account_pass(conn, user):
 
 
 def uploadFileToEna(filename, user, passw):
+    trialcount=0
     print("uploading {} ".format(filename))
     command = "curl -T {}  ftp://webin.ebi.ac.uk --user {}:{}".format(filename, user, passw)
     md5downloaded = "curl -s ftp://webin.ebi.ac.uk/{} --user {}:{} | md5sum | cut -f1 -d ' '".format(os.path.basename(filename), user,passw)
@@ -174,6 +188,9 @@ def uploadFileToEna(filename, user, passw):
     else:
         time.sleep(10)
         uploadFileToEna(filename, user, passw)
+        trialcount +=1
+        if trialcount >10:
+            return err.decode()
 
 
 
@@ -225,12 +242,12 @@ def terminate(conn, analysis_reporter_stage, analysis_id, submission_id):
         process_report_set_submission(conn, submission_id, analysis_reporter_stage.process_id)
 
 
-
 def extract_analysis_id(out):
     if re.findall('ANALYSIS accession="(.+)" alias=', out):
         analysis_id = re.findall('ANALYSIS accession="(.+)" alias=', out)
     else:
-        #<ERROR>In object(ERZ529314) the file (ERR2187921_analysis_DTU_CGE_summary.tsv) has already been submitted and is waiting to be processed</ERROR>
+        #<ERROR>In object(ERZ529314) the file (ERR2187921_analysis_DTU_CGE_summary.tsv)
+        # has already been submitted and is waiting to be processed</ERROR>
         if re.findall('ERZ\d{6,7}', out):
             analysis_id = re.findall('ERZ\d{6,7}', out)
         else:
@@ -247,7 +264,7 @@ def process_report_set_analysis(conn, analysis_id, process_id):
         if analysis_id:
             cursor.execute(query)
             conn.commit()
-            cursor.close()
+            #cursor.close()
         else:
             pass
     except:
@@ -256,14 +273,15 @@ def process_report_set_analysis(conn, analysis_id, process_id):
         message = str(sys.exc_info()[1])
         print("Exception: {}".format(message), file=sys.stderr)
         conn.rollback()
-        cursor.close()
+        #cursor.close()
 
 
 def extract_submission_id(out):
     if re.findall('SUBMISSION accession="(.+)" alias=', out):
         submission_id = re.findall('SUBMISSION accession="(.+)" alias=', out)
     else:
-        #<ERROR>In object(ERZ529314) the file (ERR2187921_analysis_DTU_CGE_summary.tsv) has already been submitted and is waiting to be processed</ERROR>
+        #<ERROR>In object(ERZ529314) the file (ERR2187921_analysis_DTU_CGE_summary.tsv)
+        # has already been submitted and is waiting to be processed</ERROR>
         if re.findall('ERA\d{6,7}', out):
             submission_id = re.findall('ERA\d{6,7}', out)
         else:
@@ -288,7 +306,7 @@ def process_report_set_submission(conn, submission_id, process_id):
         message = str(sys.exc_info()[1])
         print("Exception: {}".format(message), file=sys.stderr)
         conn.rollback()
-        cursor.close()
+       #cursor.close()
 
 
 def prepare_and_submit_analysis(conn, default_attributes, analysis_reporter_stage):
@@ -303,10 +321,16 @@ def prepare_and_submit_analysis(conn, default_attributes, analysis_reporter_stag
         passw = get_account_pass(conn, analyst_webin)
         gzip_analysis_file = attributes['gzip_analysis_file']
         tab_analysis_file = attributes['tab_analysis_file']
+        tab_analysis_file2 = attributes['tab_analysis_file2']
+
         print("ATTRIBUTES: {}".format(attributes))
         print('Should upload \n {} and \n{} in ftp.webin but dry at the moment'.format(gzip_analysis_file, tab_analysis_file))
+
         uploadFileToEna(gzip_analysis_file, analyst_webin, passw)
         uploadFileToEna(tab_analysis_file, analyst_webin, passw)
+        if (os.path.isfile(tab_analysis_file2)):
+            uploadFileToEna(tab_analysis_file2, analyst_webin, passw)
+
         analysis_xml = prop.workdir + analysis_reporter_stage.process_id + '/analysis.xml'
         submission_xml = prop.workdir + analysis_reporter_stage.process_id + '/submission.xml'
         create_analysis_xml(conn, analysis_reporter_stage, prop, attributes, analysis_xml)
@@ -349,13 +373,15 @@ def prepare_and_submit_analysis(conn, default_attributes, analysis_reporter_stag
 if __name__ == '__main__':
     get_args()
     prop = properties(properties_file)
-    # prop=properties('../resources/properties.txt')
+    print('-'*100)
+    print('-'*100)
     conn = get_connection(prop.dbuser, prop.dbpassword, prop.dbhost, prop.dbname, prop.dbport)
     print('-'*100)
-    print("analysis_submission_url_dev:",prop.analysis_submission_url_dev)
+    print("Pipeline_version:{}".format(prop.uantwerp_bacpipe_version))
+    print("analysis_submission_url_dev:", prop.analysis_submission_url_dev)
     print("analysis_submission_url_prod:", prop.analysis_submission_url_prod)
-    print("analysis_submission_action:",prop.analysis_submission_action)
-    print ("analysis_submission_mode:",prop.analysis_submission_mode)
+    print("analysis_submission_action:", prop.analysis_submission_action)
+    print("analysis_submission_mode:", prop.analysis_submission_mode)
     print("DB_NAME: {}".format(prop.dbname))
     print("DB_HOST: {}".format(prop.dbhost))
     print('-'*100)
@@ -370,17 +396,22 @@ if __name__ == '__main__':
         for analysis_reporter_stage in analysis_reporter_list:
             print(analysis_reporter_stage.process_id)
             print(analysis_reporter_stage.check_started(conn))
-            outcome = prepare_and_submit_analysis(conn, default_attributes, analysis_reporter_stage)
-            print('-'*100)
-            print("Outcome of submission:")
-            print(outcome)
-            print(analysis_reporter_stage.process_id)
-            print('-'*100)
+            attributes = default_attributes.get_all_attributes(conn, analysis_reporter_stage.process_id)
+            
+            if os.path.isfile(attributes['gzip_analysis_file']) and os.path.isfile(attributes['tab_analysis_file']):
+                outcome = prepare_and_submit_analysis(conn, default_attributes, analysis_reporter_stage)
+                print('-'*100)
+                print("Outcome of submission:")
+                print(outcome)
+                print(analysis_reporter_stage.process_id)
+                print('-'*100)
+            else:
+                pass
     except:
         print("EXCEPT BLOCK IN __MAIN__")
-        #message = str(sys.exc_info()[1])
-        #print(message)
-        #print(str(sys.exc_info()))
+        message = str(sys.exc_info()[1])
+        print(message)
+        print(str(sys.exc_info()))
         pass
 
 

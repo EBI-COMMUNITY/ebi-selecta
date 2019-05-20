@@ -4,8 +4,10 @@ import pymysql as MySQLdb
 from PipelineAttributes import stages
 from selectadb import properties
 from PipelineAttributes import default_attributes
-from pipelines import dtu_cge
-from pipelines import emc_slim
+
+from pipelines import DtuCge
+from pipelines import EmcSlim
+from pipelines import UAntwerpBacpipe
 import os
 import sys
 import hashlib

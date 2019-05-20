@@ -1,11 +1,18 @@
-from mock.mock import self
+"""
+This Module populate or provide the starting material
+for running the SELECTA workflow.
+Information from the process_selection table as well
+as the SELECTA propertie.txt files are consumed here.
+"""
 
 __author__ = 'Nima Pakseresht, Blaise Alako'
 
 
-#selection(selection_id, datahub, tax_id, study_accession, run_accession, pipeline_name, analysis_id,
-#                              public, selection_to_attribute_end, webin, process_type, continuity)
 class selection:
+    """
+    This Class Initialise the SELECTA workflow from
+    entries in the process_selection table
+    """
     def __init__(self, selection_id, datahub, tax_id, study_accession, run_accession, pipeline_name, analysis_id,
                  public, selection_to_attribute_end, analyst_webin_id, process_type, continuity):
         self.selection_id = selection_id
@@ -24,6 +31,10 @@ class selection:
 
 
 class properties:
+    """
+    This Class populate SELECTA properties.txt
+    configuration file
+    """
 
     def __init__(self, property_file):
         with open(property_file) as f:
@@ -42,25 +53,34 @@ class properties:
             lsf_provided = False
             rmem_provided = False
             lmem_provided = False
+
+            selecta_version_provided = False
             dtu_cge_databases_provided = False
             dtu_cge_version_provided= False
             pipeline_version_provided =False
             emc_slim_program_provided = False
             emc_slim_property_file_provided = False
             emc_slim_version_provided = False
+
+            uantwerp_bacpipe_program_provided = False
+            uantwerp_bacpipe_version_provided = False
+            uantwerp_bacpipe_dep_provided = False
+
+            prokka_program_provided = False
+            prokka_program_version_provided = False
+
             analysis_submission_mode_provided = False
             analysis_submission_action_provided = False
             analysis_submission_url_dev_provided = False
             analysis_submission_url_prod_provided = False
 
             max_core_job_provided = False
+            nproc_provided = False
             cgetools_provided = False
             bgroup_provided = False
 
             for l in lines:
-                #print("*" * 100)
-                #print(l)
-                #print("*" * 100)
+
                 pair = l.strip().split(":",1)
                 if pair[0].lower() == 'workdir':
                     self.workdir = pair[1]
@@ -89,6 +109,11 @@ class properties:
                 elif pair[0].lower() == 'dbport':
                     self.dbport = int(pair[1])
                     dbport_provided = True
+
+                elif pair[0].lower() == 'nproc':
+                    self.nproc = int(pair[1])
+                    nproc_provided = True
+
                 elif pair[0].lower() == 'lsf':
                     if pair[1].lower() == 'yes':
                         self.lsf = True
@@ -127,10 +152,31 @@ class properties:
                     self.emc_slim_version = pair[1]
                     emc_slim_version_provided = True
 
+                elif pair[0].lower() == 'selecta_version':
+                    self.selecta_version = pair[1]
+                    selecta_version_provided = True
 
                 elif pair[0].lower() == 'cgetools':
                     self.cgetools = pair[1]
                     cgetools_provided = True
+                #UAntwerp_BACPIPE_PROGRAM
+                elif pair[0].lower() == 'uantwerp_bacpipe_program':
+                    self.uantwerp_bacpipe_program = pair[1]
+                    uantwerp_bacpipe_program_provided = True
+                elif pair[0].lower() == 'uantwerp_bacpipe_version':
+                    self.uantwerp_bacpipe_version = pair[1]
+                    uantwerp_bacpipe_version_provided = True
+                elif pair[0].lower() == 'uantwerp_bacpipe_dep':
+                    self.uantwerp_bacpipe_dep = pair[1]
+                    uantwerp_bacpipe_dep_provided = True
+
+                elif pair[0].lower() == 'prokka_program':
+                    self.prokka_program = pair[1]
+                    prokka_program_provided = True
+                elif pair[0].lower() == 'prokka_program_version':
+                    self.prokka_program_version = pair[1]
+                    prokka_program_version_provided = True
+
 
                 elif pair[0].lower() == 'analysis_submission_mode':
                     self.analysis_submission_mode = pair[1]
@@ -166,6 +212,8 @@ class properties:
                 self.dbname = ''
             if not dbport_provided:
                 self.dbport = 3306
+            if not nproc_provided:
+                self.nproc = 10
             if not lsf_provided:
                 self.lsf = ''
             if not seq_machine_provided:
@@ -189,10 +237,23 @@ class properties:
             if not dtu_cge_version_provided:
                 self.dtu_cge_version = ''
 
+            if not selecta_version_provided:
+                self.selecta_version = ''
+
             if not emc_slim_version_provided:
                 self.emc_slim_version = ''
             if not dtu_cge_version_provided:
-                self.dtu_cge_version=''
+                self.dtu_cge_version =''
+
+            if not uantwerp_bacpipe_program_provided:
+                self.uantwerp_bacpipe_program = ''
+            if not uantwerp_bacpipe_version_provided:
+                self.uantwerp_bacpipe_version = ''
+
+            if not prokka_program_provided:
+                self.prokka_program = ''
+            if not prokka_program_version_provided:
+                self.prokka_program_version = ''
 
             if not cgetools_provided:
                 self.cgetools =''

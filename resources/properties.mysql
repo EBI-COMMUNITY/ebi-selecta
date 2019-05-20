@@ -1,11 +1,11 @@
 WORKDIR:/hps/nobackup/nucleotide/blaise/selecta/development_blaise/process/
 ARCHIVEDIR:/hps/nobackup/nucleotide/blaise/selecta/development_blaise/archive/
-DBUSER:postgres
-DBPASSWORD:password
-DBHOST:19X.6X.XX.XXX
-DBNAME:selectadb_v1
-DBPORT:5432
-LSF:YES
+DBUSER:selectauser
+DBPASSWORD:selectapass
+DBHOST:mysql-ena-dev
+DBNAME:SELECTADB_DEVELOPMENT_BLAISE
+DBPORT:4498
+LSF:NO
 NPROC:20
 RMEM:rusage[mem=42000]
 LMEM:42000
@@ -13,7 +13,6 @@ BGROUP:/SELECTA
 CGETOOLS:/hps/nobackup/nucleotide/blaise/selecta/tools/singularity/cgetools.simg
 SEQMACHINE:Illumina
 MAX_CORE_JOB:75
-SELECTA_VERSION:1.1
 DTU_CGE_DATABASES:/hps/nobackup/nucleotide/blaise/selecta/db/cge-databases-2/
 DTU_CGE_VERSION:1.1
 EMC_SLIM_PROGRAM:/hps/nobackup/nucleotide/blaise/selecta/tools/erasmus-tools/slim_emc/SLIM.py
