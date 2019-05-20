@@ -54,13 +54,6 @@ def get_connection(db_user, db_password, db_host, db_database, db_port):
     return conn
 
 
-def get_era_connection(db_user, db_password, db_host, db_database, db_port):
-    """ database <-  dbConnect(drv , "jdbc:oracle:thin:@xxx-vm-xxxx.xxx.xxx.uk:xxxx:database",
-                        "xxxxxx","xxxxx", ":memory:")
-    """
-    conn = MySQLdb.connect(user="ena_sequence", passwd="nightjar", host="ora-vm-009.ebi.ac.uk", db="ERAPRO", port="1541", connect_timeout=172800)
-    return conn
-
 def process_report(conn):
     query = "select  datahub, PipelineName, studyAccession, sum(RunProcessed) as RunProcessed, sum(DoubleEnd) as DoubleEnd, sum(SingleEnd) as SingleEnd, \
     sum(AnalysisSubmitted) as AnalysisSubmitted, sum(runSubmitted) as runSubmitted from(select selection_id,\
