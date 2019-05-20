@@ -23,6 +23,8 @@ import itertools
 import random
 from collections import deque
 from tabulate import tabulate
+import psycopg2
+
 
 
 __author__='Blaise Alako'
@@ -48,13 +50,13 @@ def get_args():
 
 def get_connection(db_user, db_password, db_host, db_database, db_port):
     """ Some core_executor takes over 48 hour to complete hence increase of mysql connect_time out variable, """
-    conn = MySQLdb.connect(user=db_user, passwd=db_password, host=db_host, db=db_database, port=db_port, connect_timeout=172800)
+    conn = psycopg2.connect(host=db_host, database=db_database, user=db_user, password=db_password, port=db_port)
     return conn
 
 
 def get_era_connection(db_user, db_password, db_host, db_database, db_port):
-    """ erapro <-  dbConnect(drv , "jdbc:oracle:thin:@ora-vm-009.ebi.ac.uk:1541:ERAPRO",
-                        "ena_sequence","nightjar", ":memory:")
+    """ database <-  dbConnect(drv , "jdbc:oracle:thin:@xxx-vm-xxxx.xxx.xxx.uk:xxxx:database",
+                        "xxxxxx","xxxxx", ":memory:")
     """
     conn = MySQLdb.connect(user="ena_sequence", passwd="nightjar", host="ora-vm-009.ebi.ac.uk", db="ERAPRO", port="1541", connect_timeout=172800)
     return conn
@@ -77,16 +79,26 @@ def process_report(conn):
     #print('-'*100)
     #print(query)
     #print('-'*100)
+    error_list=[]
     try:
         cursor = conn.cursor()
         cursor.execute(query)
         cursor.close()
-    except (MySQLdb.Error, MySQLdb.Warning) as e:
-        try:
-            print(e)
-        except IndexError:
-            print("MySQL Error: {}".format(str(e)))
-
+    except psycopg2.ProgrammingError as exc:
+        error_list.append(exc.message)
+        print(exc.message)
+    except psycopg2.InterfaceError as exc:
+        error_list.append(exc.message)
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        conn.commit()
+    except:
+        print("Cannot insert:")
+        message = str(sys.exc_info()[1])
+        error_list.append(message)
+        print("Exception: {}".format(message))
+        conn.rollback()
     return cursor.fetchall()
 
 
@@ -94,16 +106,26 @@ def analysis_report(conn):
     query = "select selection_id, study_accession, analysis_id, submission_id from process_report \
     where process_report_start_time is not null and analysis_id is not null or submission_id is not null"
     #print(query)
+    error_list=[]
     try:
         cursor = conn.cursor()
         cursor.execute(query)
         cursor.close()
-    except (MySQLdb.Error, MySQLdb.Warning) as e:
-        try:
-            print(e)
-        except IndexError:
-            print("MySQL Error: {}".format(str(e)))
-
+    except psycopg2.ProgrammingError as exc:
+        error_list.append(exc.message)
+        print(exc.message)
+    except psycopg2.InterfaceError as exc:
+        error_list.append(exc.message)
+        conn = get_connection()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        conn.commit()
+    except:
+        print("Cannot insert:")
+        message = str(sys.exc_info()[1])
+        error_list.append(message)
+        print("Exception: {}".format(message))
+        conn.rollback()
     return cursor.fetchall()
 
 
