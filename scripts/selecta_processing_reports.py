@@ -55,20 +55,23 @@ def get_connection(db_user, db_password, db_host, db_database, db_port):
 
 
 def process_report(conn):
-    query = "select  datahub, PipelineName, studyAccession, sum(RunProcessed) as RunProcessed, sum(DoubleEnd) as DoubleEnd, sum(SingleEnd) as SingleEnd, \
-    sum(AnalysisSubmitted) as AnalysisSubmitted, sum(runSubmitted) as runSubmitted from(select selection_id,\
-    datahub, pipeline_name PipelineName, study_accession studyAccession, runs_processed as RunProcessed, \
-    CASE WHEN attribute_key = 'pair' and attribute_value='True' THEN runs_processed ELSE 0 END AS DoubleEnd, \
-    CASE WHEN attribute_key = 'pair' and attribute_value='False' THEN runs_processed ELSE 0 END AS SingleEnd, \
+
+    query = "select  datahub, PipelineName, studyAccession, sum(RunProcessed) as RunProcessed, sum(DoubleEnd) as DoubleEnd, \
+    sum(SingleEnd) as SingleEnd,     sum(AnalysisSubmitted) as AnalysisSubmitted, sum(runSubmitted) as runSubmitted \
+    from ( select selection_id,    datahub, pipeline_name PipelineName, study_accession studyAccession, runs_processed as RunProcessed, \
+	CASE WHEN attribute_key = 'pair' and attribute_value='True' THEN runs_processed ELSE 0 END AS DoubleEnd, \
+	CASE WHEN attribute_key = 'pair' and attribute_value='False' THEN runs_processed ELSE 0 END AS SingleEnd, \
     analysis_submitted AnalysisSubmitted, run_submitted runSubmitted \
-    /*A_run_archived runArchived*/\
-    from (select P.selection_id, P.datahub, P.pipeline_name, tmptbl.study_accession, tmptbl.attribute_key, tmptbl.attribute_value, tmptbl.runs_processed , tmptbl.analysis_submitted, tmptbl.run_submitted from \
-    (SELECT A.selection_id, A.study_accession, B.attribute_key, B.attribute_value, count(A.study_accession) as runs_processed, count(A.analysis_id) as analysis_submitted, count(A.submission_id) as run_submitted \
-    FROM process_report as A join process_attributes as B on A.process_id=B.process_id \
-    where B.attribute_key='pair'  group by  A.selection_id, A.study_accession, B.attribute_key, B.attribute_value) tmptbl join \
-    process_selection P on tmptbl.selection_id=P.selection_id) as processed \
-    GROUP BY selection_id, study_accession, attribute_value, attribute_key) as summary \
-    GROUP BY selection_id, datahub, studyAccession;"
+	from (select P.selection_id, P.datahub, P.pipeline_name, tmptbl.study_accession, tmptbl.attribute_key, \
+	tmptbl.attribute_value, tmptbl.runs_processed , tmptbl.analysis_submitted, tmptbl.run_submitted \
+	from  (SELECT A.selection_id, A.study_accession, B.attribute_key, B.attribute_value, count(A.study_accession) \
+	as runs_processed, count(A.analysis_id) as analysis_submitted, count(A.submission_id) as run_submitted   \
+	FROM process_report as A join process_attributes as B on A.process_id=B.process_id \
+	where B.attribute_key='pair' \
+	group by  A.selection_id, A.study_accession, B.attribute_key, B.attribute_value) tmptbl join \
+	process_selection P on tmptbl.selection_id=P.selection_id) as processed ) as WITHCASE \
+	GROUP BY datahub, PipelineName, studyAccession order by datahub, PipelineName;"
+
     #print('-'*100)
     #print(query)
     #print('-'*100)
@@ -76,12 +79,11 @@ def process_report(conn):
     try:
         cursor = conn.cursor()
         cursor.execute(query)
-        cursor.close()
     except psycopg2.ProgrammingError as exc:
-        error_list.append(exc.message)
-        print(exc.message)
+        error_list.append(exc)
+        print(exc)
     except psycopg2.InterfaceError as exc:
-        error_list.append(exc.message)
+        error_list.append(exc)
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute(query)
@@ -103,7 +105,6 @@ def analysis_report(conn):
     try:
         cursor = conn.cursor()
         cursor.execute(query)
-        cursor.close()
     except psycopg2.ProgrammingError as exc:
         error_list.append(exc.message)
         print(exc.message)
