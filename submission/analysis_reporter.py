@@ -87,9 +87,18 @@ def create_analysis_xml(conn, analysis, prop, attributes, analysis_xml):
     tab_analysis_file = attributes['tab_analysis_file']
     gzip_analysis_file_md5 = attributes['gzip_analysis_file_md5']
     tab_analysis_file_md5 = attributes['tab_analysis_file_md5']
-    tab_analysis_file2= attributes['tab_analysis_file2']
+
+    tab_analysis_file2 = attributes['tab_analysis_file2']
+    tab_analysis_file3 = attributes['tab_analysis_file3']
+    tab_analysis_file4 = attributes['tab_analysis_file4']
+
     if (os.path.isfile(tab_analysis_file2)):
         tab_analysis_file2_md5 = attributes['tab_analysis_file2_md5']
+    if (os.path.isfile(tab_analysis_file3)):
+        tab_analysis_file3_md5 = attributes['tab_analysis_file3_md5']
+    if (os.path.isfile(tab_analysis_file4)):
+        tab_analysis_file4_md5 = attributes['tab_analysis_file4_md5']
+
     pipeline_version = None
     pipeline_name = attributes['pipeline_name']
     if pipeline_name.lower() =='dtu_cge':
@@ -98,6 +107,9 @@ def create_analysis_xml(conn, analysis, prop, attributes, analysis_xml):
         pipeline_version = prop.emc_slim_version
     elif pipeline_name.lower() =='uantwerp_bacpipe':
         pipeline_version = prop.uantwerp_bacpipe_version
+    elif pipeline_name.lower() =='rivm_jovian':
+        pipeline_version = prop.rivm_jovian_version
+
     selecta_version = prop.selecta_version
     study_accession = attributes['study_accession']
     scientific_name = attributes['scientific_name']
@@ -112,6 +124,13 @@ def create_analysis_xml(conn, analysis, prop, attributes, analysis_xml):
     if (os.path.isfile(tab_analysis_file2)):
         file3= analysis_file(os.path.basename(tab_analysis_file2), 'tab', tab_analysis_file2_md5)
         analysis_files.append(file3)
+    if (os.path.isfile(tab_analysis_file3)):
+        file4 = analysis_file(os.path.basename(tab_analysis_file3), 'tab', tab_analysis_file3_md5)
+        analysis_files.append(file4)
+    if (os.path.isfile(tab_analysis_file4)):
+        file5= analysis_file(os.path.basename(tab_analysis_file4), 'tab', tab_analysis_file4_md5)
+        analysis_files.append(file5)
+
 
     print('*'*100)
     print("Analysis files:\n {} ".format(analysis_files))
@@ -322,7 +341,8 @@ def prepare_and_submit_analysis(conn, default_attributes, analysis_reporter_stag
         gzip_analysis_file = attributes['gzip_analysis_file']
         tab_analysis_file = attributes['tab_analysis_file']
         tab_analysis_file2 = attributes['tab_analysis_file2']
-
+        tab_analysis_file3 = attributes['tab_analysis_file3']
+        tab_analysis_file4 = attributes['tab_analysis_file4']
         print("ATTRIBUTES: {}".format(attributes))
         print('Should upload \n {} and \n{} in ftp.webin but dry at the moment'.format(gzip_analysis_file, tab_analysis_file))
 
@@ -330,6 +350,10 @@ def prepare_and_submit_analysis(conn, default_attributes, analysis_reporter_stag
         uploadFileToEna(tab_analysis_file, analyst_webin, passw)
         if (os.path.isfile(tab_analysis_file2)):
             uploadFileToEna(tab_analysis_file2, analyst_webin, passw)
+        if(os.path.isfile(tab_analysis_file3)):
+            uploadFileToEna(tab_analysis_file3, analyst_webin, passw)
+        if(os.path.isfile(tab_analysis_file4)):
+            uploadFileToEna(tab_analysis_file4, analyst_webin, passw)
 
         analysis_xml = prop.workdir + analysis_reporter_stage.process_id + '/analysis.xml'
         submission_xml = prop.workdir + analysis_reporter_stage.process_id + '/submission.xml'

@@ -60,6 +60,7 @@ class analysis_pathogen_analysis:
                                     filetype=self.analysis_files[1].file_type, checksum_method="MD5",
                                     checksum=self.analysis_files[1].file_md5)
 
+
         print('*' * 100)
         print(analysis_set)
         print(files)
@@ -76,6 +77,15 @@ class analysis_pathogen_analysis:
             file3Elt = etree.SubElement(files, 'FILE', filename=self.analysis_files[2].file_name,
                                         filetype=self.analysis_files[2].file_type, checksum_method="MD5",
                                         checksum=self.analysis_files[2].file_md5)
+
+            file4Elt = etree.SubElement(files, 'FILE', filename=self.analysis_files[3].file_name,
+                                        filetype=self.analysis_files[3].file_type, checksum_method="MD5",
+                                        checksum=self.analysis_files[3].file_md5)
+
+            file5Elt = etree.SubElement(files, 'FILE', filename=self.analysis_files[4].file_name,
+                                        filetype=self.analysis_files[4].file_type, checksum_method="MD5",
+                                        checksum=self.analysis_files[4].file_md5)
+
         else:
             print("Could not test on existance of cgMLTSFinder result...")
             for analysis_file in self.analysis_files:

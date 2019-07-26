@@ -7,6 +7,7 @@ from PipelineAttributes import default_attributes
 from pipelines import DtuCge
 from pipelines import EmcSlim
 from pipelines import UAntwerpBacpipe
+from pipelines import RivmJovian
 import os
 import sys
 import hashlib
@@ -25,7 +26,6 @@ import psycopg2
 import itertools
 import random
 from collections import deque
-
 
 
 __author__ = 'Nima Pakseresht, Blaise Alako'
@@ -107,9 +107,11 @@ def execute(conn, process_id, selection_id, prop):
 		jobids, pipeline_content = execute_emc_slim(process_id, selection_id, prop)
 	elif pipeline_name.upper() == 'UANTWERP_BACPIPE':
 		jobids, pipeline_content = execute_uantwerp_bacpipe(process_id, selection_id, prop)
-		print('*'*100)
-		print("Pipeline name is BACPIPE")
-		print('*'*100)
+	elif pipeline_name.upper() == 'RIVM_JOVIAN':
+		jobids, pipeline_content = execute_rivm_jovian(process_id,selection_id, prop)
+	print('*'*100)
+	print("Pipeline name is:{}".format(pipeline_name.upper()))
+	print('*'*100)
 
 	return jobids, pipeline_content
 
@@ -154,8 +156,13 @@ def process_attributes_update(gzip_file, tab_files, process_id, conn, error_mess
 	else:
 		tab_file_1 = ''
 		tab_file_2 = ''
+		tab_file_3 = ''
+		tab_file_4 = ''
 		tab_file_1_md5 = ''
 		tab_file_2_md5 = ''
+		tab_file_3_md5 = ''
+		tab_file_4_md5 = ''
+
 		gzip_file_md5 = hashlib.md5(open(gzip_file, 'rb').read()).hexdigest()
 		if os.path.exists(tab_files[0]):
 			tab_file_1 = tab_files[0]
@@ -163,13 +170,28 @@ def process_attributes_update(gzip_file, tab_files, process_id, conn, error_mess
 		if os.path.exists(tab_files[1]):
 			tab_file_2 = tab_files[1]
 			tab_file_2_md5 = hashlib.md5(open(tab_file_2, 'rb').read()).hexdigest()
-		"""Handle potential second tab files ..."""
+		if os.path.exists(tab_files[2]):
+			tab_file_3 = tab_files[2]
+			tab_file_3_md5 = hashlib.md5(open(tab_file_3, 'rb').read()).hexdigest()
+		if os.path.exists(tab_files[3]):
+			tab_file_4 = tab_files[3]
+			tab_file_4_md5 = hashlib.md5(open(tab_file_4, 'rb').read()).hexdigest()
+
+		"""Handle potential tab files ..."""
 		update_process_attributes(conn, process_id, 'gzip_analysis_file', gzip_file)
 		update_process_attributes(conn, process_id, 'gzip_analysis_file_md5', gzip_file_md5)
+
 		update_process_attributes(conn, process_id, 'tab_analysis_file', tab_file_1)
 		update_process_attributes(conn, process_id, 'tab_analysis_file_md5', tab_file_1_md5)
+
 		update_process_attributes(conn, process_id, 'tab_analysis_file2', tab_file_2)
 		update_process_attributes(conn, process_id, 'tab_analysis_file2_md5', tab_file_2_md5)
+
+		update_process_attributes(conn, process_id, 'tab_analysis_file3', tab_file_3)
+		update_process_attributes(conn, process_id, 'tab_analysis_file3_md5', tab_file_3_md5)
+
+		update_process_attributes(conn, process_id, 'tab_analysis_file4', tab_file_4)
+		update_process_attributes(conn, process_id, 'tab_analysis_file4_md5', tab_file_4_md5)
 
 	return error_list
 
@@ -183,6 +205,24 @@ def get_sequencing_machine(instrument_platform):
 		return "ABI SOLiD"
 	if re.findall('(?i)Torrent',instrument_platform):
 		return "Ion Torrent"
+
+
+
+
+def execute_rivm_jovian(process_id, selection_id, prop):
+	fq1 = os.path.basename(default_attributes.get_attribute_value(conn, 'fastq1', process_id))
+	fq2 = os.path.basename(default_attributes.get_attribute_value(conn, 'fastq2', process_id))
+	pair = default_attributes.get_attribute_value(conn, 'pair', process_id)
+	sequencing_platform = default_attributes.get_attribute_value(conn, 'instrument_platform', process_id)
+	run_accession = default_attributes.get_attribute_value(conn, 'run_accession', process_id)
+	sample_accession = default_attributes.get_attribute_value(conn, 'sample_accession',  process_id)
+	database_dir = prop.dtu_cge_databases
+	workdir = prop.workdir + process_id + "/"
+	sequencing_machine = get_sequencing_machine(sequencing_platform)
+	jovian = RivmJovian(fq1, fq2, workdir, pair, run_accession, prop, sample_accession)
+	print(jovian.fq1, jovian.fq2, jovian.workdir, jovian.pair, jovian.run_accession, jovian.prop, jovian.sample_accession)
+	jobids = jovian.execute()
+	return jobids, jovian
 
 
 
@@ -364,6 +404,11 @@ def post_process_lsf_runs(jobid_exe, jobid_pipeline_obj):
 				pass
 
 
+# Returns True if End-Of-File is reached
+def EOF(f):
+	current_pos = f.tell()
+	file_size = os.fstat(f.fileno()).st_size
+	return current_pos >= file_size
 
 
 def post_process_lsf(jobid_exe, jobid_pipeline_obj, jobid, prop):
@@ -372,7 +417,10 @@ def post_process_lsf(jobid_exe, jobid_pipeline_obj, jobid, prop):
 	newexec = jobid_exe[jobid][0]
 	process_id = lsf_out.split('_')[-1].split('.')[0]
 	conn = get_connection(prop.dbuser, prop.dbpassword, prop.dbhost, prop.dbname, prop.dbport)
-	#bsub.poll(jid)
+	"""
+	Jovian is a special case that makes use of snakemake whose processes are not
+	properly tracked by lsf
+	"""
 	if os.path.isfile(lsf_out):
 		print('.' * 100)
 		print('Consulting lsf_out: {}'.format(lsf_out))
@@ -385,11 +433,20 @@ def post_process_lsf(jobid_exe, jobid_pipeline_obj, jobid, prop):
 				final_errors = lsf_out + ' with exit code ' + str(localexitcode) # + '\n' + error
 			newexec.set_error(conn, final_errors)
 			conn.close()
+			return False
 		else:
 			print('.' * 100)
 			print('exit code is not 0: --> {}'.format(localexitcode))
+			print(pipeline_obj.post_process())
 			print('.' * 100)
 			"""Post processing: Bundling the directories in an  archive directory and compressing them"""
+
+			"""
+			pipeline_name = default_attributes.get_attribute_value(conn, 'pipeline_name', process_id)
+			if pipeline_name.lower()== 'rivm_jovian':
+				if (EOF())
+			"""
+
 			try:
 				gzip_file, tab_files = pipeline_obj.post_process()
 				print('.' * 100)
@@ -501,8 +558,10 @@ if __name__ == '__main__':
 
 		while len(submitted_jobs) > 0:
 			time.sleep(sleep_time)
+			print("Jobs still in LSF, sleeping for: {}".format(sleep_time))
 			if sleep_time < 100:
 				sleep_time += 0.25
+
 			try:
 				queue_jobs = [x.split()[0] for x in sp.check_output(["bjobs"], shell=True).rstrip().decode().split("\n")[1:]]
 				done_jobs = submitted_jobs.difference(queue_jobs)
@@ -513,18 +572,19 @@ if __name__ == '__main__':
 				timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 				print("{} : {} jobs completed post-processing them".format(timestamp, len(done_jobs)))
 				""" Take advantage of multiple core to speed up postprocessing ..., batch_size=10"""
+
 				try:
+
 					results = Parallel(n_jobs=num_cores, verbose=100, max_nbytes=None, batch_size=25)(delayed(post_process_lsf)(jobid_exe, jobid_pipeline_obj, jid, prop) for jid in done_jobs)
-					print('*'*100)
-					print("RESULTS:{}".format(results))
-					print('*'*100)
 
 				except Exception:
 					process_ids = Parallel(n_jobs=num_cores, verbose=100, max_nbytes=None, batch_size=25)(delayed(get_process_id)(jobid_exe, jid) for jid in done_jobs)
 					timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 					print("{}: Post processing failed for {} with following error {}".format(timestamp, process_ids, str(sys.exc_info()[1])))
+
 				print("{} out of {} job ids Completed...".format(len(done_jobs), len(submitted_jobs)))
-				print("Parallel post-processing was {}".format(results))
+				if results:
+					print("Parallel post-processing was {}".format(results))
 				submitted_jobs = {x for x in submitted_jobs if x not in done_jobs}
 				timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 				print("{}: Remaining {} job ids".format(timestamp, len(submitted_jobs)))

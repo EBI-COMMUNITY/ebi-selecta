@@ -28,11 +28,20 @@ class default_attributes:
     global analyst_webin_id_key
     global pair_key
     global gzip_analysis_file_key
-    global tab_analysis_file_key
-    global tab_analysis_file2_key
     global gzip_analysis_file_md5_key
+
+    global tab_analysis_file_key
     global tab_analysis_file_md5_key
+
+    global tab_analysis_file2_key
     global tab_analysis_file2_md5_key
+
+    global tab_analysis_file3_key
+    global tab_analysis_file3_md5_key
+
+    global tab_analysis_file4_key
+    global tab_analysis_file4_md5_key
+
     global ruler
     ruler = '*' * 100
     selection_id_key = 'selection_id'
@@ -59,11 +68,19 @@ class default_attributes:
     analyst_webin_id_key = 'analyst_webin'
     pair_key = 'pair'
     gzip_analysis_file_key = 'gzip_analysis_file'
-    tab_analysis_file_key = 'tab_analysis_file'
-    tab_analysis_file2_key = 'tab_analysis_file2'
     gzip_analysis_file_md5_key = 'gzip_analysis_file_md5'
+    tab_analysis_file_key = 'tab_analysis_file'
     tab_analysis_file_md5_key = 'tab_analysis_file_md5'
+
+    tab_analysis_file2_key = 'tab_analysis_file2'
     tab_analysis_file2_md5_key = 'tab_analysis_file2_md5'
+
+    tab_analysis_file3_key = 'tab_analysis_file3'
+    tab_analysis_file3_md5_key = 'tab_analysis_file3_md5'
+
+    tab_analysis_file4_key = 'tab_analysis_file4'
+    tab_analysis_file4_md5_key = 'tab_analysis_file4_md5'
+
 
     def __init__(self, process_id, selection_id, datahub, tax_id, scientific_name, sample_accession,
                  secondary_sample_acc, experiment_accession, study_accession, secondary_study_acc, run_accession,
@@ -85,11 +102,17 @@ class default_attributes:
         self.provider_webin_id = provider_webin_id
         self.instrument_platform = instrument_platform
         self.gzip_analysis_file = ''
-        self.tab_analysis_file = ''
-        self.tab_analysis_file2 = ''
         self.gzip_analysis_file_md5 = ''
+        self.tab_analysis_file = ''
         self.tab_analysis_file_md5 = ''
+        self.tab_analysis_file2 = ''
         self.tab_analysis_file2_md5 =''
+        self.tab_analysis_file3 = ''
+        self.tab_analysis_file3_md5 = ''
+        self.tab_analysis_file4 = ''
+        self.tab_analysis_file4_md5 = ''
+
+
         files = list()
         if ";" in fastq_files:
             #files = fastq_files.split(";")
@@ -187,15 +210,21 @@ class default_attributes:
         self.insert_into_process_attributes(conn, self.process_id, fastq2_md5_key, self.fastq2_md5)
         self.insert_into_process_attributes(conn, self.process_id, public_key, self.public)
         self.insert_into_process_attributes(conn, self.process_id, analyst_webin_id_key, self.analyst_webin_id)
+
         self.insert_into_process_attributes(conn, self.process_id, gzip_analysis_file_key, self.gzip_analysis_file)
+        self.insert_into_process_attributes(conn, self.process_id, gzip_analysis_file_md5_key, self.gzip_analysis_file_md5)
+
         self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file_key, self.tab_analysis_file)
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file_md5_key, self.tab_analysis_file_md5)
+
         self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file2_key, self.tab_analysis_file2)
-        self.insert_into_process_attributes(conn, self.process_id, gzip_analysis_file_md5_key,
-                                            self.gzip_analysis_file_md5)
-        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file_md5_key,
-                                            self.tab_analysis_file_md5)
-        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file2_md5_key,
-                                            self.tab_analysis_file2_md5)
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file2_md5_key, self.tab_analysis_file2_md5)
+
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file3_key, self.tab_analysis_file3)
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file3_md5_key, self.tab_analysis_file3_md5)
+
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file4_key, self.tab_analysis_file4)
+        self.insert_into_process_attributes(conn, self.process_id, tab_analysis_file4_md5_key, self.tab_analysis_file4_md5)
 
         self.insert_into_process_attributes(conn, self.process_id, pair_key, self.pair)
 
@@ -351,6 +380,9 @@ class stages:
         query = ("update process_stages set stage_error='{}'"
                  " where process_id='{}'"
                  " and stage_name='{}'").format(error, self.process_id, self.stage_list)
+        print('*' * 100)
+        print("SET_ERROR QUERY:\n{}".format(query))
+        print('*' * 100)
         cursor = conn.cursor()
         try:
             cursor.execute(query)

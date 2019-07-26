@@ -1,7 +1,7 @@
 WORKDIR:/hps/nobackup/nucleotide/blaise/selecta/development_blaise/process/
 ARCHIVEDIR:/hps/nobackup/nucleotide/blaise/selecta/development_blaise/archive/
 DBUSER:selectauser
-DBPASSWORD:selectapass
+DBPASSWORD:XXX
 DBHOST:mysql-ena-dev
 DBNAME:SELECTADB_DEVELOPMENT_BLAISE
 DBPORT:4498

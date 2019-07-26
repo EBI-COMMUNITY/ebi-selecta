@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Data_provider script: Given list of not start process_id in
+Data_provider script: Given list of not started process_id in
 SELECTADB_PRODUCTION.process_stages fetch corresponding fastqs
 from the Pathogen portal
 """

@@ -58,6 +58,7 @@ class properties:
             dtu_cge_databases_provided = False
             dtu_cge_version_provided= False
             pipeline_version_provided =False
+
             emc_slim_program_provided = False
             emc_slim_property_file_provided = False
             emc_slim_version_provided = False
@@ -65,6 +66,10 @@ class properties:
             uantwerp_bacpipe_program_provided = False
             uantwerp_bacpipe_version_provided = False
             uantwerp_bacpipe_dep_provided = False
+
+            rivm_jovian_base_provided = False
+            rivm_jovian_version_provided = False
+            rivm_jovian_profile_provided = False
 
             prokka_program_provided = False
             prokka_program_version_provided = False
@@ -170,6 +175,16 @@ class properties:
                     self.uantwerp_bacpipe_dep = pair[1]
                     uantwerp_bacpipe_dep_provided = True
 
+                elif pair[0].lower() =='rivm_jovian_base':
+                    self.rivm_jovian_base = pair[1]
+                    rivm_jovian_base_provided = True
+                elif pair[0].lower() == 'rivm_jovian_version':
+                    self.rivm_jovian_version = pair[1]
+                    rivm_jovian_version_provided = True
+                elif pair[0].lower() == 'rivm_jovian_profile':
+                    self.rivm_jovian_profile = pair[1]
+                    rivm_jovian_profile_provided = True
+
                 elif pair[0].lower() == 'prokka_program':
                     self.prokka_program = pair[1]
                     prokka_program_provided = True
@@ -244,6 +259,13 @@ class properties:
                 self.emc_slim_version = ''
             if not dtu_cge_version_provided:
                 self.dtu_cge_version =''
+
+            if not rivm_jovian_base_provided:
+                self.rivm_jovian_base = ''
+            if not rivm_jovian_version_provided:
+                self.rivm_jovian_version = ''
+            if not rivm_jovian_profile_provided:
+                self.rivm_jovian_profile = ''
 
             if not uantwerp_bacpipe_program_provided:
                 self.uantwerp_bacpipe_program = ''
