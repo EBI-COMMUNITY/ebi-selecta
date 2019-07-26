@@ -203,19 +203,9 @@ ALTER TABLE ONLY public.process_selection ALTER COLUMN selection_id SET DEFAULT 
 --
 
 COPY public.account (account_id, email, password, account_type) FROM stdin;
-dcc_allison	\N	=clZ5Yja182d	datahub
-dcc_beard	\N	=smchdHe0cWb	datahub
-dcc_beethoven	\N	=IDUihHOQhDe	datahub
-dcc_benoit	\N	=UWVkVmexZzS	datahub
-dcc_blake	\N	=MkTwZFOptEV	datahub
-dcc_bley	\N	=0Ud1QDNnh1V	datahub
-dcc_bromhead	\N	=s2MyFWQ30UR	datahub
-dcc_cole	\N	=EHUVJGZ0gVY	datahub
-dcc_dvorak	\N	=cUeoN1VzEVS	datahub
-dcc_handel	\N	=oHOWpXclhWW	datahub
-dcc_schumann	\N	=ITQ3J3UtNVY	datahub
-dcc_vivaldi	\N	=M1V2YUb5tWT	datahub
-Webin-45433	\N	==gNxAjMzl2c5xWYuFUY0NWZsV2U	webin
+dcc_vallison	\N	=_clZ5Yja182d_	datahub
+dcc_avivaldi	\N	=_M1V2YUb5tWT_	datahub
+Webin-345433	\N	==_gNxAjMzl2c5xWYuFUY0NWZsV2U_	webin
 \.
 
 
