@@ -51,11 +51,8 @@ Setup a directory structure to include the following directories:
  * Logs (to house the log files)
  * Cron (for cronjobs to run the individual stages)
  
-Set up timely cronjobs for the following c-shell scripts (housed in Cron folder): selection_to_attribute.csh,
-data_provider.csh, core_executor.csh, analysis_reporter.csh and process_archival.csh. The purpose of these scripts is
-to set the environment and run the appropriately coupled python script, with the output saved to a log file.
-Additionally this provides a method to distinguish between development and production instances, handled outside of the
-main SELECTA codebase.
+Set up timely cronjobs for c-shell scripts (housed in Cron folder), one for each stage script (shown in fig.X).
+[Run Workflow](#run-workflow) provides more information.
 
 Ensure the following dependencies have been met:
  - Python - v3.0+
@@ -110,10 +107,10 @@ dependencies have been met, etc):
 
 ###### Automated
 For steps described above, create individual cronjobs to run in a timely manner. Note that individual wrapper scripts 
-for each python script are required to ensure that environmental dependencies are set accordingly and script output 
-is fed into log files. This will also enable for separation of development and production instances. Processing will be 
-carried out for each selection introduced to the process_selection table. This setup also enables for multiple 
-selections to be processed at once.
+(c-shell or bash) for each python script are required to ensure that environmental dependencies are set accordingly 
+and script output is fed into log files. This will also enable for separation of development and production instances. 
+Processing will be carried out for each selection introduced to the process_selection table. This setup also enables 
+for multiple selections to be processed at once.
 
 ---
 
