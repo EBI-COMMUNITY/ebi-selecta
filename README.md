@@ -1,14 +1,14 @@
 # ebi-selecta
 
 ##### Contents:
-1. What is SELECTA?(#what-is-selecta?)
-2. Installation(#installation)
-    - Easy Install(#easy-installation)
-    - Advanced (Source) Install(#advanced-(source)-install)
-3. Usage(#usage)
-4. Background(#background)
-    - Workflow(#workflow)
-    - Database(#database)
+1. [What is SELECTA?](#what-is-selecta?)
+2. [Installation](#installation)
+    - [Easy Install](#easy-installation)
+    - [Advanced (Source) Install](#advanced-(source)-install)
+3. [Usage](#usage)
+4. [Background](#background)
+    - [Workflow](#workflow)
+    - [Database](#database)
 
 
 ### What is SELECTA?
