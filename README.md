@@ -1,6 +1,6 @@
 # ebi-selecta
 
-##### Contents:
+#### Contents:
 1. [What is SELECTA?](#what-is-selecta?)
 2. [Installation](#installation)
     - [Easy Install](#easy-installation)
@@ -28,10 +28,10 @@ consistently and accurately recorded.
 ---
 
 ### Installation
-##### Easy Install
+#### Easy Install
 
 
-##### Advanced (Source) Install
+#### Advanced (Source) Install
 
 Clone this repository:
 `git clone <repo>`
@@ -43,7 +43,7 @@ The codebase for the integrated pipelines can be found here:
  - RIVM_Jovian
  
 Setup the SELECTA database and ensure credentials have been included in the `resources/properties.txt` file. See 
-SELECTA Database for more information.
+[Database](#database) for more information.
 
 Setup a directory structure to include the following directories:
  * Process (for pipeline analysis processing)
@@ -79,7 +79,7 @@ _For more detailed instructions of advanced installation, please see the PDF doc
 
 ### Usage
 
-##### Populate with Selection
+#### Populate with Selection
 Introduce a selection into the process_selection table.
 
 Example for a run:
@@ -94,7 +94,7 @@ to 'study'. Alternatively for a datahub, provide a valid datahub name (study_acc
 required) and set 
 process_type to 'datahub'.
 
-##### Run SELECTA Workflow
+#### Run SELECTA Workflow
 ###### Manual
 If manually running each SELECTA stage, run each of the following scripts, one after the other:
 selection_to_attribute.py, data_provider.py, core_executor.py, analysis_reporter.py and process_archival.py. In each 
@@ -119,7 +119,7 @@ selections to be processed at once.
 
 ### Background
 
-##### Workflow
+#### Workflow
 
 ![alt text] (https://)
 
@@ -151,7 +151,7 @@ include:
  - A study or project (this includes one or more individual runs).
  - A datahub (group), which includes one or more studies/projects.
  
-##### Database
+#### Database
 SELECTA utilises a database for storing, accessing and updating key information required for tracking the various 
 processes. The database consists of 5 tables:
  - account
@@ -162,3 +162,4 @@ processes. The database consists of 5 tables:
  
 The image below presents the fields for each table:
 ![alt text] (https://)
+
