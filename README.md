@@ -28,10 +28,12 @@ consistently and accurately recorded.
 ---
 
 ### Installation
-#### Easy Install
+#### Ansible-Docker Install
+
+Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) and [Docker](https://docs.docker.com/install/).
 
 
-#### Advanced (Source) Install
+#### Source Install
 
 Clone this repository:
 `git clone <repo>`
@@ -52,7 +54,7 @@ Setup a directory structure to include the following directories:
  * Cron (for cronjobs to run the individual stages)
  
 Set up timely cronjobs for c-shell scripts (housed in Cron folder), one for each stage script (shown in fig.X).
-[Run Workflow](#run-workflow) provides more information.
+[Run SELECTA Workflow](#run-selecta-workflow) provides more information.
 
 Ensure the following dependencies have been met:
  - Python - v3.0+
@@ -70,7 +72,7 @@ Edit the `resources/properties.txt` appropriately. Note if implementing
 development and production instances, ensure the properties file reflects this.
 
 
-_For more detailed instructions of advanced installation, please see the PDF documentation._
+_For more detailed instructions of source installation, please see the PDF documentation._
 
 ---
 
@@ -118,7 +120,7 @@ for multiple selections to be processed at once.
 
 #### Workflow
 
-![alt text] (https://)
+![alt text](fig/Usage.jpg)
 
 The SELECTA workflow includes the stages shown in the image above. For each stage, an associated python script/s is run.
 The workflow can be recreated through cron jobs which run these scripts, note the order of the scripts. 
@@ -158,5 +160,6 @@ processes. The database consists of 5 tables:
  - process_report
  
 The image below presents the fields for each table:
-![alt text] (https://)
+
+![alt text](/fig/SELECTA_Database_Schema.jpg)
 
