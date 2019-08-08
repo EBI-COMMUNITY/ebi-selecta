@@ -42,7 +42,7 @@ If utilising for COMPARE you will want to obtain the following codebases for the
  - [DTU_CGE](https://bitbucket.org/genomicepidemiology/cge-tools-docker/src/master/)
  - [EMC_SLIM](https://github.com/EBI-COMMUNITY/slim_emc)
  - [UAntwerp_Bacpipe](https://github.com/wholeGenomeSequencingAnalysisPipeline/BacPipe)
- - RIVM_Jovian
+ - [RIVM_Jovian](https://github.com/DennisSchmitz/Jovian) (private, request by email)
 
 Alternatively obtain the codebases of the analysis pipelines that you wish to implement in SELECTA.
 
