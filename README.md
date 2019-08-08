@@ -14,16 +14,16 @@
 ### What is SELECTA?
 SELECTA is a rule-based workflow engine which runs analytical pipelines, and was initially developed to manage 
 pipelines specific to the COMPARE community. SELECTA is a combined pipeline scheduler, runner and automatic analysis 
-submitter. This provides an automated complete processing of COMPARE-specific data, which consolidates different 
-analysis pipelines developed within the COMPARE consortium into a sole computing and COMPARE-data access environment. 
+submitter. This provides an automated complete processing of datasets, consolidating different 
+analysis pipelines into a sole computing and data access environment. 
 Set criteria have been implemented in order to automatically acquire private datahub (group) reads for processing from 
 the European Nucleotide Archive (ENA), with different complexity at the data grouping level. This translates to data 
 being processed at the datahub level, which includes various ENA projects with runs associated to these projects. 
 However the flexibility of SELECTA also enables for data processing to occur at the study level (including all runs 
 within the study) and at the level of a single run. Upon acquiring the relevant data, SELECTA’s rule definition 
-automatically instructs the processing and analysis of the reads. Finally, automatic submission of analysis results 
-back to the ENA mitigates the burden for a submitter when handling bulk submissions and ensures analysis results are 
-consistently and accurately recorded.
+automatically instructs the processing and analysis of the reads, against a specific pipeline from those available.
+Finally, automatic submission of analysis results back to the ENA mitigates the burden for a submitter when handling 
+bulk submissions and ensures analysis results are consistently and accurately recorded.
 
 ---
 
@@ -38,12 +38,14 @@ Install [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/int
 Clone this repository:
 `git clone <repo>`
 
-The codebase for the integrated pipelines can be found here:
+If utilising for COMPARE you will want to obtain the following codebases for the integrated COMPARE pipelines:
  - DTU_CGE
  - EMC_SLIM
  - UAntwerp_Bacpipe
  - RIVM_Jovian
- 
+
+Alternatively obtain the codebases of the analysis pipelines that you wish to implement in SELECTA.
+
 Setup the SELECTA database and ensure credentials have been included in the `resources/properties.txt` file. See 
 [Database](#database) for more information.
 
@@ -90,8 +92,7 @@ selection_provided_date, audit_time, webin, process_type, continuity) VALUES (24
 
 To create a selection for a study, provide a valid study_accession (run_accession is not required) and set process_type
 to 'study'. Alternatively for a datahub, provide a valid datahub name (study_accession and run_accession are not 
-required) and set 
-process_type to 'datahub'.
+required) and set process_type to 'datahub'.
 
 #### Run SELECTA Workflow
 ###### Manual
@@ -122,7 +123,7 @@ for multiple selections to be processed at once.
 
 ![alt text](fig/Usage.jpg)
 
-The SELECTA workflow includes the stages shown in the image above. For each stage, an associated python script/s is run.
+The SELECTA workflow includes the stages shown in the image above. For each stage, an associated python script(s) is run.
 The workflow can be recreated through cron jobs which run these scripts, note the order of the scripts. 
 
 1. To process a run through SELECTA, introduce information about this run as a new selection in the process_selection
