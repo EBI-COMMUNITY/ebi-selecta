@@ -15,7 +15,7 @@
 SELECTA is a rule-based workflow engine which runs analytical pipelines, and was initially developed to manage 
 pipelines specific to the COMPARE community. SELECTA is a combined pipeline scheduler, runner and automatic analysis 
 submitter. This provides an automated complete processing of datasets, consolidating different 
-analysis pipelines into a sole computing and data access environment. 
+analysis pipelines into a sole computing and data access environment.
 Set criteria have been implemented in order to automatically acquire private datahub (group) reads for processing from 
 the European Nucleotide Archive (ENA), with different complexity at the data grouping level. This translates to data 
 being processed at the datahub level, which includes various ENA projects with runs associated to these projects. 
@@ -39,9 +39,9 @@ Clone this repository:
 `git clone <repo>`
 
 If utilising for COMPARE you will want to obtain the following codebases for the integrated COMPARE pipelines:
- - DTU_CGE
- - EMC_SLIM
- - UAntwerp_Bacpipe
+ - [DTU_CGE](https://bitbucket.org/genomicepidemiology/cge-tools-docker/src/master/)
+ - [EMC_SLIM](https://github.com/EBI-COMMUNITY/slim_emc)
+ - [UAntwerp_Bacpipe](https://github.com/wholeGenomeSequencingAnalysisPipeline/BacPipe)
  - RIVM_Jovian
 
 Alternatively obtain the codebases of the analysis pipelines that you wish to implement in SELECTA.
