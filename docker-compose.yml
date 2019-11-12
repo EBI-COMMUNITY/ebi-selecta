@@ -1,0 +1,180 @@
+version: '3.5'
+
+services:
+
+  postgres:
+    container_name: postgres_container
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-letmein}
+      POSTGRES_DB: "selectadb_production"
+      SCHEMA: public
+    volumes:
+       - ./initdb:/docker-entrypoint-initdb.d
+       - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5400:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'selecta@ebi.ac.uk'
+      PGADMIN_DEFAULT_PASSWORD: 'selecta'
+    volumes:
+       - ./pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  registry:
+    container_name: selecta_registry
+    image: registry:2.5
+    volumes:
+      - ./registry-data:/var/lib/registry
+    ports:
+      - "4000:5000"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  selection_to_attribute:
+    container_name: selecta_selection_to_attribute
+    build: ./service_selection_to_attribute
+    image: embl-ebi/selecta_selection_to_attribute:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  data_provider:
+    container_name: selecta_data_provider
+    build: ./service_data_provider
+    image: embl-ebi/selecta_data_provider:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  core_executor:
+    container_name: selecta_core_executor
+    build: ./service_core_executor
+    image: embl-ebi/selecta_core_executor:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  analysis_provider:
+    container_name: selecta_analysis_reporter
+    build: ./service_analysis_reporter
+    image: embl-ebi/selecta_analysis_reporter:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  process_archival:
+    container_name: selecta_process_archival
+    build: ./service_process_archival
+    image: embl-ebi/selecta_process_archival:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  reporting:
+    container_name: selecta_reporting
+    build: ./service_reporting
+    image: embl-ebi/selecta_reporting:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  selecta_api:
+    container_name: selecta_api
+    build: ./service_api
+    image: embl-ebi/selecta_api:1.0
+    volumes:
+      - ./api_service/:/usr/src/app
+    ports:
+      - "5002:80"
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+networks:
+  postgres:
+#    driver: bridge
+
+volumes:
+    pgdata:
+    pgadmin:
+    process:
+    archives:
+    workdir:
+    logs:
+    tools:
+    db:
+    registry-data:
+
+

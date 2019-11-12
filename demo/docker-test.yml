@@ -1,0 +1,79 @@
+version: '3.5'
+
+services:
+
+  postgres:
+    container_name: postgres_container
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-letmein}
+      POSTGRES_DB: "selectadb_production"
+      SCHEMA: public
+    volumes:
+       - ./initdb:/docker-entrypoint-initdb.d
+       - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5400:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'selecta@ebi.ac.uk'
+      PGADMIN_DEFAULT_PASSWORD: 'selecta'
+    volumes:
+       - ./pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+    depends_on:
+      - postgres
+  registry:
+    container_name: selecta_registry
+    image: registry:2.5
+    volumes:
+      - ./registry-data:/var/lib/registry
+    ports:
+      - "4000:5000"
+    networks:
+      - postgres
+    restart: unless-stopped
+
+  selection_to_attribute:
+    container_name: selecta_selection_to_attribute
+    build: ./selecta_selection_to_attribute_test
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    pgdata:
+    pgadmin:
+    process:
+    archives:
+    workdir:
+    logs:
+    tools:
+    db:
+    registry-data:
+
+

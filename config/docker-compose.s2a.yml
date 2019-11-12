@@ -1,0 +1,145 @@
+version: '3.5'
+
+services:
+
+  postgres:
+    container_name: postgres_container
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-letmein}
+      POSTGRES_DB: "selectadb_production"
+      SCHEMA: public
+    volumes:
+       - ./initdb:/docker-entrypoint-initdb.d
+       - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5400:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'admin@example.com'
+      PGADMIN_DEFAULT_PASSWORD: 'admin'
+    volumes:
+       - ./pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+  selection_to_attribute:
+    container_name: selecta_selection_to_attribute
+    build: ./selecta_selection_to_attribute
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  data_provider:
+    container_name: selecta_data_provider
+    build: ./selecta_data_provider
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  core_executor:
+    container_name: selecta_core_executor
+    build: ./selecta_core_executor
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  analysis_provider:
+    container_name: selecta_analysis_reporter
+    build: ./selecta_analysis_reporter
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  process_archival:
+    container_name: selecta_process_archival
+    build: ./selecta_process_archival
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+  selecta_api:
+    container_name: selecta_api
+    build: ./selecta_api
+    volumes:
+      - ./selecta_api/:/usr/src/app
+    ports:
+      - "5002:80"
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+    pgdata:
+    pgadmin:
+    process:
+    archives:
+    workdir:
+    logs:
+    tools:
+    db:
+
+

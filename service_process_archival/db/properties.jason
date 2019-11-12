@@ -1,0 +1,66 @@
+{
+  "account_id": "XXX",
+  "account_type": "datahub/webin",
+  "action": "update/select/validate/submit",
+  "rules": [
+    { 
+      "rule_name":"XXX"
+      "attribute_id":["XXX","XXX","XXX"],
+      "account_id":"XXX"
+      "domain": "XXX",
+      "taxid": "XXX",
+      "Study":"XXX",
+      "run_id":"XXX",
+      "analysis_id":"XXX"
+      "analysis_object":"run/analysis"
+      "pipeline_id": "XXX"
+    },
+    {
+      "rule_name":"XXX"
+      "attribute_id":["XXX","XXX","XXX"],
+      "account_id":"XXX"
+      "domain": "XXX",
+      "taxid": "XXX",
+      "Study":"XXX",
+      "run":"XXX",
+      "analysis":"XXX"
+      "analysis_object":"run/analysis"
+      "pipeline_id": "XXX"
+    },
+    {
+      "rule_name":"XXX"
+      "attribute_id":["XXX","XXX","XXX"],
+      "account_id":"XXX"
+      "domain": "XXX",
+      "taxid": "XXX",
+      "Study":"XXX",
+      "run":"XXX",
+      "analysis":"XXX"
+      "analysis_object":"run/analysis"
+      "pipeline_id": "XXX"
+    }
+  ],
+  "attributes": [
+    {
+      "attribute_id":"XXX",
+      "name": ["XXX","XXX","XXX"],
+      "db": "XXX",
+      "query": "XXX"
+      "value":"XXX"
+    },
+    {
+      "attribute_id":"XXX",
+      "name": ["XXX","XXX","XXX"],
+      "db": "XXX",
+      "query": "XXX"
+      "value":"XXX"
+    },
+    {
+      "attribute_id":"XXX",
+      "name": ["XXX","XXX","XXX"],
+      "db": "XXX",
+      "query": "XXX"
+      "value":"XXX"
+    }
+  ],
+}

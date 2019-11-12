@@ -1,0 +1,7 @@
+Flask==0.12.2
+flask-restful==0.3.6
+markdown==2.6.11
+psycopg2
+sqlalchemy 
+flask_jsonpify 
+flask_jwt

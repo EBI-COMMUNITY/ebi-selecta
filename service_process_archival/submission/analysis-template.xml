@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ANALYSIS_SET>
+    <ANALYSIS alias="TODO1:FILENAE-DATE-TIME" 
+        center_name="TODO2:DATA-CENTRE-NAME"
+        analysis_center="TODO3:ANALYSIS-CENTRE-NAME" 
+        analysis_date="TODO4:ANALYSIS-DATE-TIME">
+        <TITLE>TODO5:TITLE-RUNID</TITLE>
+        <DESCRIPTION>TODO6:ANALYSIS-DESCRIPTION</DESCRIPTION>
+        <STUDY_REF accession="TODO7:STUDYID"/>
+        <SAMPLE_REF accession="TODO8:SAMPLEID"/>        
+        <RUN_REF accession="TODO9:RUNID"/>      
+        <ANALYSIS_TYPE>
+            <SEQUENCE_ANNOTATION/>
+        </ANALYSIS_TYPE>
+        <FILES>
+             <FILE filename="TODO10:FILE-TO-SUBMIT" filetype="tab" checksum_method="MD5" checksum="TODO11:FILE-CHECKSUM"/>
+        </FILES>
+        <ANALYSIS_ATTRIBUTES>
+            <ANALYSIS_ATTRIBUTE>
+                <TAG>PIPELINE_NAME</TAG>
+                <VALUE>DTU_CGE or EMC_SLIM</VALUE>
+            </ANALYSIS_ATTRIBUTE>
+            <ANALYSIS_ATTRIBUTE>
+                <TAG>PIPELINE_VERSION</TAG>
+                <VALUE>DTU_CGE_VERSION or EMC_SLIM_VERSION </VALUE>
+            </ANALYSIS_ATTRIBUTE>
+        </ANALYSIS_ATTRIBUTES>
+    </ANALYSIS>
+</ANALYSIS_SET>

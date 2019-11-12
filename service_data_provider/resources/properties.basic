@@ -1,0 +1,7 @@
+WORKDIR:/Users/nimap/Google-Drive/workspace/ebi-selecta/process/
+ARCHIVEDIR:/Users/nimap/Google-Drive/workspace/ebi-selecta/archive/
+DBUSER:selectauser
+DBPASSWORD:xxxxx
+DBHOST:localhost
+DBNAME:selectadb
+DTU_CGE_DATABASES:/Users/nimap/Google-Drive/workspace/ebi-selecta/databases/dtu-databases/

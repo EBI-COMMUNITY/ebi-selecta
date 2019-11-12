@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xsi:noNamespaceSchemaLocation="ftp://ftp.sra.ebi.ac.uk/meta/xsd/sra_1_5/SRA.submission.xsd">
+<SUBMISSION alias="TODO1:UNIQUE_NAME" 
+ center_name="TODO2:CENTER_NAME">
+        <ACTIONS>
+         <ACTION>
+            <TODO3:ACTION source="TODO4:ANALYSIS_FILE" schema="analysis"/>
+         </ACTION>
+      </ACTIONS>
+   </SUBMISSION>
+</SUBMISSION_SET>

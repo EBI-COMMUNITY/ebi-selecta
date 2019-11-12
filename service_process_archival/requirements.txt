@@ -1,0 +1,10 @@
+joblib==0.11
+lxml==4.1.1
+psycopg2==2.7.6.1
+psycopg2-binary==2.8.2
+PyMySQL==0.8.0
+ruamel-yaml==0.15.35
+ruamel.yaml==0.15.81
+tabulate==0.8.2
+cx-Oracle==7.2.2
+datetime==4.3

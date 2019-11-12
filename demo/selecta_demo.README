@@ -1,0 +1,124 @@
+
+# Create new selection.
+#------------------------
+runaccession='ERR1102130' or ERR1102227
+pipeline_name='UAntwerp_bacpipe'
+public='NO'
+webin='Webin-45433'
+process_type='run'
+continuity='yes'
+datahub='dcc_dvorak'
+
+# Create account.
+account_id='dcc_dvorak'
+password='=cUeoN1VzEVS'
+account_type='datahub'
+
+# Create account webin
+account_id='Webin-45433'
+password='==gNxAjMzl2c5xWYuFUY0NWZsV2U'
+account_type='webin'
+
+-------------------------------------------------------------------
+
+
+Run SELECTA in one Node (SWARM 1)
+No images, no containers
+-docker images
+-docker container  ps
+
+spawn images and run containers
+-docker-compose up --build
+2-3mins;
+
+-List images
+docker images 
+
+-List containers
+docker container ps
+
+-examine a container
+docker exec -it contain_id csh
+
+Kitematic to show live containers
+
+- examine running databases;
+pgadmin
+selecta@ebi.ac.uk
+letmein
+
+
+API:
+1- API documentation, README.md
+
+1- Get  Analysis:
+localhost:5002/analysis
+
+2- Get studies
+localhost:5002/studies
+
+2- POST 
+POST localhost:5002/input2selection
+
+{"datahub":"dcc_XXXX",
+ "pipeline_name":"Pipeline_XXX",
+ "public": "NO",
+ "webin": "Webin-45433",
+ "continuity": "YES",
+ "process_type": "datahub"
+}
+
+3- Get selections;
+GET localhost:5002/selections
+find: Pipeline_XXX
+
+
+3- Create account:
+POST localhost:5002/account
+
+{"account_id":"dcc_test",
+ "account_type":"datahub",
+ "email": "selecta@ebi.ac.uk",
+ "password": "letmein",
+}
+
+Get accounts:
+localhost:5002/accounts
+
+----------- SWARM --------
+
+Swarm with 5 nodes
+Initialize the swarm
+-manager
+-workers
+./init_swarm.sh
+
+confirm cluster creation
+docker node ls
+
+docker node inspect node-id
+
+show visualizer:
+localhost:8080
+
+show docker-stack-compose stack file definition.
+
+
+Deploy services to a swarm cluster
+	docker stack deploy -c docker-stack.yml selecta
+
+ Visualize the swarm cluster (2-3min to render)
+http://localhost:8080
+
+Scale up core_executor service:
+docker service scale selecta_core_executor=10
+Confirm via swarm visualizer
+
+Scale down core_executor service
+	docker service scale selecta_core_executor=1
+Confirm via swarm visualizer
+
+Remove the swarm
+./rm_swarm.sh
+Confirm via swarm visualizer
+-docker node ls

@@ -1,0 +1,225 @@
+version: '3'
+
+services:
+
+  postgres:
+    container_name: postgres_container
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-letmein}
+      POSTGRES_DB: "selectadb_production"
+      SCHEMA: public
+    volumes:
+       - ./initdb:/docker-entrypoint-initdb.d
+       - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5400:5432"
+    networks:
+      - selecta_stack
+    restart: unless-stopped
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'selecta@ebi.ac.uk'
+      PGADMIN_DEFAULT_PASSWORD: 'selecta'
+    volumes:
+       - ./pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - selecta_stack
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  selection_to_attribute:
+    container_name: selecta_selection_to_attribute
+    image: embl-ebi/selecta_selection_to_attribute:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - selecta_stack
+    restart: always
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  data_provider:
+    container_name: selecta_data_provider
+    image: embl-ebi/selecta_data_provider:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - selecta_stack
+    restart: always
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  core_executor:
+    container_name: selecta_core_executor
+    image: embl-ebi/selecta_core_executor:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - selecta_stack
+    restart: always
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  analysis_provider:
+    container_name: selecta_analysis_reporter
+    image: embl-ebi/selecta_analysis_reporter:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - selecta_stack
+    restart: always
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  process_archival:
+    container_name: selecta_process_archival
+    image: embl-ebi/selecta_process_archival:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - selecta_stack
+    restart: always
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  reporting:
+    container_name: selecta_reporting
+    image: embl-ebi/selecta_reporting:1.0
+    volumes:
+      - ./process:/usr/src/app/process
+      - ./archives:/usr/src/app/archives
+      - ./workdir:/usr/src/app/workdir
+      - ./logs:/usr/src/app/logs
+      - ./tools:/usr/src/app/tools
+      - ./db:/usr/src/app/db
+    depends_on:
+      - postgres
+    networks:
+      - selecta_stack
+    restart: always
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+  selecta_api:
+    container_name: selecta_api
+    image: embl-ebi/selecta_api:1.0
+    volumes:
+      - ./api_service/:/usr/src/app
+    ports:
+      - "5002:80"
+    depends_on:
+      - postgres
+    networks:
+      - selecta_stack
+    restart: always
+    deploy:
+      replicas: 5
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  swarm_visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - selecta_stack
+
+visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  selecta_stack:
+#    driver: overlay
+
+volumes:
+    pgdata:
+    pgadmin:
+    process:
+    archives:
+    workdir:
+    logs:
+    tools:
+    db:
