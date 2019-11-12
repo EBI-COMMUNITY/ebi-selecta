@@ -1,0 +1,68 @@
+version: '3.5'
+
+services:
+
+  postgres:
+    container_name: postgres_container
+    image: postgres:12-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-letmein}
+      POSTGRES_DB: "selectadb_production"
+      SCHEMA: public
+    volumes:
+       - ./initdb:/docker-entrypoint-initdb.d
+       - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - "5400:5432"
+    networks:
+      - postgres
+    restart: unless-stopped
+  
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: 'selecta@ebi.ac.uk'
+      PGADMIN_DEFAULT_PASSWORD: 'selecta'
+    volumes:
+       - ./pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    networks:
+      - postgres
+    restart: unless-stopped
+    depends_on:
+      - postgres
+
+
+  selecta_api:
+    container_name: selecta_api
+    build: ./service_api
+    image: embl-ebi/selecta_api:1.0
+    volumes:
+      - ./service_api/:/usr/src/app
+    ports:
+      - "5002:80"
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
+networks:
+  postgres:
+#    driver: bridge
+
+volumes:
+    pgdata:
+    pgadmin:
+    process:
+    archives:
+    workdir:
+    logs:
+    tools:
+    db:
+    registry-data:
+
+

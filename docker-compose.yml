@@ -153,7 +153,7 @@ services:
     build: ./service_api
     image: embl-ebi/selecta_api:1.0
     volumes:
-      - ./api_service/:/usr/src/app
+      - ./service_api/:/usr/src/app
     ports:
       - "5002:80"
     depends_on:

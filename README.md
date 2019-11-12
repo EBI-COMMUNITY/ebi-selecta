@@ -3,32 +3,32 @@
 
 #### Contents:
 1. [What is SELECTA?](#what-is-selecta?)
-2. [SELECTA framework Docker-Compose version](#SELECTA framework Docker-Compose version)
+2. [SELECTA framework Docker-Compose version](#SELECTA-framework-Docker-Compose-version)
 3. [Installation](#installation)
-    - [On Ubuntu](#On Ubuntu)
-    - [On Windows and Mac](#On Windows and Mac)
-4. [Retrieving the SELECTA docker-compose version](#Retrieving the SELECTA docker-compose version)
-5. [Usage on a single computer](#Usage on a single machine)
-    - [Launch SELECTA](#Launch SELECTA)
-6. [SELECTA API](#SELECTA API)
-7. [Minimum requirement for a SELECTA processing](#Minimum requirement for a SELECTA processing)
-    - [Create a SELECTA user account](#Create a SELECTA user account)
-    - [Create a SELECTA rule](#Create a SELECTA rule)
-8. [Retrieved database data](#Retrieved database data) 
-    - [Via SELECTA API](#Via API)
-    - [Via Postgres PgAdmin client](#Via Postgres PgAdmin client)
-8. [Run SELECTA Workflow manually](#Run SELECTA Workflow manually)
+    - [On Ubuntu](#On-Ubuntu)
+    - [On Windows and Mac](#On-Windows-and-Mac)
+4. [Retrieving the SELECTA docker-compose version](#Retrieving-the-SELECTA-docker-compose-version)
+5. [Usage on a single computer](#Usage-on-a-single-machine)
+    - [Launch SELECTA](#Launch-SELECTA)
+6. [SELECTA API](#SELECTA-API)
+7. [Minimum requirement for a SELECTA processing](#Minimum-requirement-for-a-SELECTA-processing)
+    - [Create a SELECTA user account](#Create-a-SELECTA-user-account)
+    - [Create a SELECTA rule](#Create-a-SELECTA-rule)
+8. [Retrieved database data](#Retrieved-database-data) 
+    - [Via SELECTA API](#Via-API)
+    - [Via Postgres PgAdmin client](#Via-Postgres-PgAdmin-client)
+9. [Run SELECTA Workflow manually](#Run-SELECTA-Workflow-manually)
     - [Selection_to_attribute](#Selection_to_attribute)
     - [data_provider](#data_provider)
     - [core_executor](#core_executor)
     - [analysis_reporter](#analysis_reporter)
     - [process_archival](#process_archival)
-9. [Run SELECTA Workflow automatically](#Run SELECTA Workflow automatically)               
-10. [Usage on a SWARM cluster](#Usage on a SWARM cluster)
-    - [initialize the swarm cluster](#initialize the swarm cluster)
-    - [Launch SELECTA](#Launch SELECTA on a single computer)
-    - [remove the swarm cluster](#remove the swarm cluster)
-11. [Background](#background)
+10. [Run SELECTA Workflow automatically](#Run-SELECTA-Workflow-automatically)               
+11. [Usage on a SWARM cluster](#Usage-on-a-SWARM-cluster)
+    - [initialize the swarm cluster](#initialize-the-swarm-cluster)
+    - [Launch SELECTA](#Launch-SELECTA-on-a-single-computer)
+    - [remove the swarm cluster](#remove-the-swarm-cluster)
+12. [Background](#background)
     - [Workflow](#workflow)
     - [Database](#database)
 
@@ -156,11 +156,12 @@ curl -d '{"account_id":"dcc_test","account_type":"datahub","email": "selecta@ebi
 
 The PROCESS_SELECTION table sports the processing rules for each datahub. Here we define the analytical workflow name that
 is responsible for analyzing the data from a specific datahub or study or run. 
-The following command creates a rule in the PROCESS_SELECTION table for processing data from datahub dcc_XXXX with analysis workflow Pipeline_XXX; the rule ensures that the analysis of the datahub is an ongoing process by setting the CONTINUITY flag to YES.  This specific rule continually analyzes data in the dcc_XXXX datahub.
+The following command creates a rule in the PROCESS_SELECTION table for processing data from datahub dcc_dvorak with analysis workflow UAntwerp_Bacpipe; the rule ensures that the analysis of the run is an ongoing process by setting the CONTINUITY flag to YES.  
+This specific rule continually analyzes a specific run data in the dcc_dvorak datahub.
 
 
 ```json
-curl -d '{"datahub":"dcc_XXXX","pipeline_name":"Pipeline_XXX","public": "NO","webin": "Webin-45433","continuity": "YES","process_type": "datahub"}' -H "Content-Type: application/json" -X POST http://localhost:5002/account
+curl -d '{"datahub": "dcc_dvorak","run_accession": "ERR1102130","pipeline_name": "UAntwerp_Bacpipe","public": "NO","webin": "Webin-45433","continuity": "YES","process_type": "run"}' -H "Content-Type: application/json" -X POST http://localhost:5002/input2selection
 ```
 
 ### Retrieved database data
@@ -170,13 +171,13 @@ curl -d '{"datahub":"dcc_XXXX","pipeline_name":"Pipeline_XXX","public": "NO","we
 ##### Fetch all SELECTA account 
 
 ```
-curl  -H "Content-Type: application/json" -X POST http://localhost:5002/accounts
+curl  -H "Content-Type: application/json" -X GET http://localhost:5002/accounts
 
 ```
 ##### Fetch all SELECTA rules
 
 ```
-curl  -H "Content-Type: application/json" -X POST http://localhost:5002/selections
+curl  -H "Content-Type: application/json" -X GET http://localhost:5002/selections
 
 ```
 
