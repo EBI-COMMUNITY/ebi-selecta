@@ -14,7 +14,7 @@
 7. [Minimum requirement for a SELECTA processing](#Minimum-requirement-for-a-SELECTA-processing)
     - [Create a SELECTA user account](#Create-a-SELECTA-user-account)
     - [Create a SELECTA rule](#Create-a-SELECTA-rule)
-8. [Retrieved database data](#Retrieved-database-data) 
+8. [Retrieve SELECTA database data](#Retrieve-SELECTA-database-data) 
     - [Via SELECTA API](#Via-API)
     - [Via Postgres PgAdmin client](#Via-Postgres-PgAdmin-client)
 9. [Run SELECTA Workflow manually](#Run-SELECTA-Workflow-manually)
@@ -164,7 +164,7 @@ This specific rule continually analyzes a specific run data in the dcc_dvorak da
 curl -d '{"datahub": "dcc_dvorak","run_accession": "ERR1102130","pipeline_name": "UAntwerp_Bacpipe","public": "NO","webin": "Webin-45433","continuity": "YES","process_type": "run"}' -H "Content-Type: application/json" -X POST http://localhost:5002/input2selection
 ```
 
-### Retrieved database data
+### Retrieve SELECTA database data
 
 #### Via API
 
