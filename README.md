@@ -193,27 +193,27 @@ selection_to_attribute.py, data_provider.py, core_executor.py, analysis_reporter
 
 #### Selection_to_attribute Stage
 ```
-docker run -ti --rm --network=selecta_postgres embl-ebi/selecta_selection_to_attribute:1.0 /usr/scr/app/scripts/selection_to_attribute.py -p /usr/scr/app/resources/properties.txt
+docker run -ti --rm --network=ebi-selecta_postgres embl-ebi/selecta_selection_to_attribute:1.0 /usr/scr/app/scripts/selection_to_attribute.py -p /usr/scr/app/resources/properties.txt
 ```
 
 #### Data_provider Stage
 ```
-docker run -ti --rm --network=selecta_postgres embl-ebi/selecta_data_provider:1.0 /usr/scr/app/scripts/data_provider.py -p /usr/scr/app/resources/properties.txt
+docker run -ti --rm --network=ebi-selecta_postgres embl-ebi/selecta_data_provider:1.0 /usr/scr/app/scripts/data_provider.py -p /usr/scr/app/resources/properties.txt
 ```
 
 #### Core_executor Stage
 ```
-docker run -ti --rm --network=selecta_postgres embl-ebi/selecta_core_executor:1.0 /usr/scr/app/scripts/core_executor.py -p /usr/scr/app/resources/properties.txt
+docker run -ti --rm --network=ebi-selecta_postgres embl-ebi/selecta_core_executor:1.0 /usr/scr/app/scripts/core_executor.py -p /usr/scr/app/resources/properties.txt
 ```
 
 #### Analysis_reporter Stage
 ```
-docker run -ti --rm --network=selecta_postgres  embl-ebi/selecta_analysis_reporter:1.0 /usr/scr/app/submission/analysis_reporter.py -p /usr/scr/app/resources/properties.txt
+docker run -ti --rm --network=ebi-selecta_postgres  embl-ebi/selecta_analysis_reporter:1.0 /usr/scr/app/submission/analysis_reporter.py -p /usr/scr/app/resources/properties.txt
 ```
 
 #### Process_archival Stage
 ```
-docker run -ti --rm --network=selecta_postgres embl-ebi/selecta_process_archival:1.0 /usr/scr/app/scripts/process_archival.py -p /usr/scr/app/resources/properties.txt
+docker run -ti --rm --network=ebi-selecta_postgres embl-ebi/selecta_process_archival:1.0 /usr/scr/app/scripts/process_archival.py -p /usr/scr/app/resources/properties.txt
 ```
 
 
