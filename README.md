@@ -18,15 +18,15 @@
     - [Via SELECTA API](#Via-API)
     - [Via Postgres PgAdmin client](#Via-Postgres-PgAdmin-client)
 9. [Run SELECTA Workflow manually](#Run-SELECTA-Workflow-manually)
-    - [Selection_to_attribute](#Selection_to_attribute)
-    - [data_provider](#data_provider)
-    - [core_executor](#core_executor)
-    - [analysis_reporter](#analysis_reporter)
-    - [process_archival](#process_archival)
+    - [Selection_to_attribute Stage](#Selection_to_attribute-Stage)
+    - [Data_provider Stage](#Data_provider-Stage)
+    - [Core_executor Stage](#Core_executor-Stage)
+    - [Analysis_reporter Stage](#Analysis_reporter-Stage)
+    - [Process_archival Stage](#Process_archival-Stage)
 10. [Run SELECTA Workflow automatically](#Run-SELECTA-Workflow-automatically)               
 11. [Usage on a SWARM cluster](#Usage-on-a-SWARM-cluster)
-    - [initialize the swarm cluster](#initialize-the-swarm-cluster)
-    - [Launch SELECTA](#Launch-SELECTA-on-a-single-computer)
+    - [Initialize SELECTA swarm cluster](#Initialize-SELECTA-swarm-cluster)
+    - [launch SELECTA in the swarm cluster](#launch-SELECTA-in-the-swarm-cluster)
     - [remove the swarm cluster](#remove-the-swarm-cluster)
 12. [Background](#background)
     - [Workflow](#workflow)
@@ -119,7 +119,7 @@ If utilising for COMPARE you will want to obtain the following codebases for the
 Alternatively, obtain the codebases of the analysis pipelines that you wish to implement in SELECTA.
 
 
-### Usage on a single computer:
+### Usage on a single computer
 
 To launch the SELECTA framework on a single machine.
 Access the SELECTA docker repository:
@@ -145,14 +145,14 @@ We provide in this repository SELECTA API [documentation](service_api/README.md)
 The SELECTA framework is database-centric. Two main tables, the Account and the Process_Selection tables, contain mandatory requirements to enact SELECTA processing. SELECTA API facilitates populating these tables with the required attributes. 
 The API listens to port 5002 on the localhost, and the accompanying docker-compose.yml file defines this port.
 
-- #### Create SELECTA account
+- #### Create a SELECTA user account
 
 The following command will create an account for dcc_xxxx 
 
 ```json
 curl -d '{"account_id":"dcc_test","account_type":"datahub","email": "selecta@ebi.ac.uk","password": "letmein"}' -H "Content-Type: application/json" -X POST http://localhost:5002/account
 ```
-- #### Create SELECTA rules
+- #### Create SELECTA rule
 
 The PROCESS_SELECTION table sports the processing rules for each datahub. Here we define the analytical workflow name that
 is responsible for analyzing the data from a specific datahub or study or run. 
@@ -220,13 +220,13 @@ docker run -ti --rm --network=selecta_postgres embl-ebi/selecta_process_archival
 ### Run SELECTA Workflow automatically
 To automate the steps described above, create individual cronjobs for each stage to run periodically. 
 
-### Launching the application in a swarm cluster
+### Usage on a SWARM cluster
 
 Access the SELECTA docker repository:
 ```
 Cd </path/to/ebi-selecta>
 ```
-Initialize SELECTA swarm cluster.
+### Initialize SELECTA swarm cluster
 ```
 ./init_swarm.sh
 ```
@@ -236,6 +236,7 @@ Confirm cluster creation
 docker node ls
 docker node inspect node-id
 ```
+### launch SELECTA in the swarm cluster
 To launch SELECTA in the swarm cluster, issue the following command:
 ```
 Docker stack deploy -c docker-stack-compose.yml selecta
@@ -261,6 +262,7 @@ docker service scale selecta_core_executor=1
 ```
 Confirm that the service has scaled up via swarm visualizer at http://localhost:8080
 
+### remove the swarm cluster
 To remove the swarm cluster, issue the following command:
 ```
 rm_swarm.sh
