@@ -35,16 +35,14 @@
 
 ### What is SELECTA?
 
-SELECTA is a rule-based workflow engine that runs analytical pipelines, developed to managed pipeline specific to the COMPARE community. 
-SELECTA automatically submits the analysis results back to the ENA mitigating the burden for a submitter when handling bulk submissions 
-and ensures a consistent and accurate record of the analysis results.
+SELECTA is a rule-based workflow engine that runs analytical pipelines, first developed to manage pipelines specifically for the COMPARE community. However, SELECTA can also be setup to manage other user provided analytical pipelines.
+SELECTA automatically submits the analysis results output by the analytical pipelines back to the European Nucleotide Archive (ENA) mitigating the burden for a submitter when handling bulk submissions and ensures a consistent and accurate record of the analysis results.
 
 ### SELECTA framework Docker-Compose version.
 
 This repository provides SELECTA toolkits as a set of Dockerfiles, configuration docker-compose files to launch the SELECTA 
-framework without the requirement of installing every SELECTA component individually. This repository also provides a script (init_swarm.sh) 
-to initialize a docker swarm environment and a stack file to launch the framework in a docker swarm cluster.
- There is also a script to remove altogether (rm_swarm.sh) the created swarm cluster environment.
+framework without the requirement of installing every SELECTA component individually. This repository also provides a script (init_swarm.sh) to initialize a docker swarm environment and a stack file to launch the framework in a docker swarm cluster.
+ There is also a script to remove entirely (rm_swarm.sh) the created swarm cluster environment.
 
 
 
@@ -110,7 +108,7 @@ Clone this repository:
 git clone <repo>
 ```
 
-If utilising for COMPARE you will want to obtain the following codebases for the integrated COMPARE pipelines:
+If utilising for COMPARE you will also want to obtain the following codebases for the integrated COMPARE pipelines:
  - [DTU_CGE](https://bitbucket.org/genomicepidemiology/cge-tools-docker/src/master/)
  - [EMC_SLIM](https://github.com/EBI-COMMUNITY/slim_emc)
  - [UAntwerp_Bacpipe](https://github.com/wholeGenomeSequencingAnalysisPipeline/BacPipe)
