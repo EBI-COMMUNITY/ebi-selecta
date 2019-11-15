@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>submission &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">selecta</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>submission</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for submission</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">xml.etree.ElementTree</span> <span class="k">as</span> <span class="nn">ET</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">hashlib</span>
+<span class="kn">import</span> <span class="nn">ftplib</span>
+
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Nima Pakseresht, Blaise Alako&#39;</span>
+
+
+<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../submission.html#submission.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">():</span>
+    
+    <span class="k">global</span> <span class="n">runid</span>
+    <span class="k">global</span> <span class="n">studyid</span>
+    <span class="k">global</span> <span class="n">analysis_temp</span>
+    <span class="k">global</span> <span class="n">submission_temp</span>
+    <span class="k">global</span> <span class="n">program_name</span>
+    <span class="k">global</span> <span class="n">sampleid</span>
+    <span class="k">global</span> <span class="n">file_name</span>
+    <span class="k">global</span> <span class="n">action</span>
+    <span class="k">global</span> <span class="n">analysis_centre</span>
+    <span class="k">global</span> <span class="n">submission_centre</span>
+    <span class="c1"># Assign description to the help doc</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Script retrieves schedules from a given server&#39;</span><span class="p">)</span>
+    <span class="c1"># Add arguments</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-anacentre&#39;</span><span class="p">,</span> <span class="s1">&#39;--analysis-centre&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run Id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-subcentre&#39;</span><span class="p">,</span> <span class="s1">&#39;--submission-centre&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run Id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-run&#39;</span><span class="p">,</span> <span class="s1">&#39;--runid&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run Id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-study&#39;</span><span class="p">,</span> <span class="s1">&#39;--studyid&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run Id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-analysistemp&#39;</span><span class="p">,</span> <span class="s1">&#39;--analysis-temp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run Id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-subtemp&#39;</span><span class="p">,</span> <span class="s1">&#39;--submission-temp&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run Id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-program&#39;</span><span class="p">,</span> <span class="s1">&#39;--program-name&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Run Id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-sample&#39;</span><span class="p">,</span> <span class="s1">&#39;--sampleid&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sample id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>    <span class="c1">#, nargs=&#39;+&#39; </span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-file&#39;</span><span class="p">,</span> <span class="s1">&#39;--file-name&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sample id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-account&#39;</span><span class="p">,</span> <span class="s1">&#39;--ENA-account&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sample id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-pass&#39;</span><span class="p">,</span> <span class="s1">&#39;--password&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Sample id of the reads&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-action&#39;</span><span class="p">,</span> <span class="s1">&#39;--action&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;The action that need to be taken: assembly,annotation,quality,contamination,submission&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">analysis_centre</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+       <span class="n">analysis_centre</span><span class="o">=</span><span class="s2">&quot;EMBL-EBI&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+       <span class="n">analysis_centre</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">analysis_centre</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">submission_centre</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+       <span class="n">submission_centre</span><span class="o">=</span><span class="s2">&quot;EMBL-EBI&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+       <span class="n">submission_centre</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">submission_centre</span>
+    <span class="n">runid</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">runid</span>
+    <span class="n">studyid</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">studyid</span>
+    <span class="n">analysis_temp</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">analysis_temp</span>
+    <span class="n">submission_temp</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">submission_temp</span>
+    <span class="n">program_name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">program_name</span>
+    <span class="n">sampleid</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">sampleid</span>
+    <span class="n">file_name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">file_name</span>
+    <span class="n">action</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">action</span></div>
+    <span class="c1"># Match return values from get_arguments()</span>
+    <span class="c1"># and assign to their respective variables</span>
+    
+    
+<div class="viewcode-block" id="convertAnalysisTemp"><a class="viewcode-back" href="../submission.html#submission.convertAnalysisTemp">[docs]</a><span class="k">def</span> <span class="nf">convertAnalysisTemp</span><span class="p">(</span><span class="n">tempAnalysisFile</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tempAnalysisFile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">template_file</span><span class="p">:</span>
+         <span class="n">content</span> <span class="o">=</span> <span class="n">template_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO1:FILENAE-DATE-TIME&quot;</span><span class="p">,</span><span class="n">getAlias</span><span class="p">(</span><span class="s2">&quot;analysis&quot;</span><span class="p">))</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO2:DATA-CENTRE-NAME&quot;</span><span class="p">,</span><span class="n">submission_centre</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO3:ANALYSIS-CENTRE-NAME&quot;</span><span class="p">,</span><span class="n">analysis_centre</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO4:ANALYSIS-DATE-TIME&quot;</span><span class="p">,</span><span class="n">dateTime</span><span class="p">)</span>  <span class="c1">#2015-12-28T00:00:00</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO5:TITLE-RUNID&quot;</span><span class="p">,</span><span class="s2">&quot;ERASMUS Virus Discovery&quot;</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO6:ANALYSIS-DESCRIPTION&quot;</span><span class="p">,</span><span class="s2">&quot;ERASMUS Virus Discovery on Read data&quot;</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO7:STUDYID&quot;</span><span class="p">,</span><span class="n">studyid</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO8:SAMPLEID&quot;</span><span class="p">,</span><span class="n">sampleid</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO9:RUNID&quot;</span><span class="p">,</span><span class="n">runid</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO10:FILE-TO-SUBMIT&quot;</span><span class="p">,</span><span class="n">file_name</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO11:FILE-CHECKSUM&quot;</span><span class="p">,</span> <span class="n">calculateMd5</span><span class="p">(</span><span class="n">file_name</span><span class="p">))</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">analysisXmlFile</span><span class="p">,</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div>
+    
+    
+<div class="viewcode-block" id="convertSubmissionTemp"><a class="viewcode-back" href="../submission.html#submission.convertSubmissionTemp">[docs]</a><span class="k">def</span> <span class="nf">convertSubmissionTemp</span><span class="p">(</span><span class="n">tempSubmissionFile</span><span class="p">):</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tempSubmissionFile</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">template_file</span><span class="p">:</span>
+         <span class="n">content</span> <span class="o">=</span> <span class="n">template_file</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO1:UNIQUE_NAME&quot;</span><span class="p">,</span><span class="n">getAlias</span><span class="p">(</span><span class="s2">&quot;submission&quot;</span><span class="p">))</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO2:CENTER_NAME&quot;</span><span class="p">,</span><span class="n">analysis_centre</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO3:ACTION&quot;</span><span class="p">,</span><span class="s2">&quot;ADD&quot;</span><span class="p">)</span>
+    <span class="n">content</span><span class="o">=</span><span class="n">content</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;TODO4:ANALYSIS_FILE&quot;</span><span class="p">,</span><span class="n">analysisXmlFile</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">submissionXmlFile</span><span class="p">,</span><span class="s2">&quot;w&quot;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span>  
+    <span class="nb">print</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="getDateTime"><a class="viewcode-back" href="../submission.html#submission.getDateTime">[docs]</a><span class="k">def</span> <span class="nf">getDateTime</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span><span class="p">)</span></div>
+    
+
+<div class="viewcode-block" id="getAlias"><a class="viewcode-back" href="../submission.html#submission.getAlias">[docs]</a><span class="k">def</span> <span class="nf">getAlias</span><span class="p">(</span><span class="nb">type</span><span class="p">):</span>
+    <span class="n">alias</span><span class="o">=</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;-&quot;</span><span class="o">+</span><span class="nb">type</span><span class="o">+</span><span class="s2">&quot;-&quot;</span><span class="o">+</span><span class="n">getDateTime</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">alias</span></div>
+    
+<div class="viewcode-block" id="calculateMd5"><a class="viewcode-back" href="../submission.html#submission.calculateMd5">[docs]</a><span class="k">def</span> <span class="nf">calculateMd5</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="k">return</span>  <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+    
+    
+<div class="viewcode-block" id="uploadFileToEna"><a class="viewcode-back" href="../submission.html#submission.uploadFileToEna">[docs]</a><span class="k">def</span> <span class="nf">uploadFileToEna</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="n">ftp</span> <span class="o">=</span> <span class="n">ftplib</span><span class="o">.</span><span class="n">FTP</span><span class="p">(</span><span class="s2">&quot;xx.xx.xx.xx&quot;</span><span class="p">)</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">login</span><span class="p">(</span><span class="s2">&quot;UID&quot;</span><span class="p">,</span> <span class="s2">&quot;PSW&quot;</span><span class="p">)</span>
+    <span class="n">myfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+    <span class="n">ftp</span><span class="o">.</span><span class="n">storlines</span><span class="p">(</span><span class="s1">&#39;STOR &#39;</span> <span class="o">+</span> <span class="n">filename</span><span class="p">,</span> <span class="n">myfile</span><span class="p">)</span>
+    <span class="n">myfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+        
+<span class="c1">#curl -F &quot;SUBMISSION=@submission.xml&quot;  -F &quot;ANALYSIS=@analysis.xml&quot; &quot;https://www-test.ebi.ac.uk/ena/submit/drop-box/submit/?auth=ENA%20USERNAME%20PASSWORD</span>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    
+     <span class="k">global</span> <span class="n">dateTime</span>
+     <span class="k">global</span> <span class="n">submissionXmlFile</span>
+     <span class="k">global</span> <span class="n">analysisXmlFile</span>
+     <span class="n">get_args</span><span class="p">()</span>
+     <span class="n">dateTime</span><span class="o">=</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span><span class="p">)</span>
+     <span class="n">submissionXmlFile</span><span class="o">=</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;-submission.xml&quot;</span>
+     <span class="n">analysisXmlFile</span><span class="o">=</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;-analysis.xml&quot;</span>
+     <span class="n">convertAnalysisTemp</span><span class="p">(</span><span class="n">analysis_temp</span><span class="p">)</span>
+     <span class="n">convertSubmissionTemp</span><span class="p">(</span><span class="n">submission_temp</span><span class="p">)</span>
+     <span class="n">uploadFileToEna</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

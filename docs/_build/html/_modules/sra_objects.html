@@ -1,0 +1,333 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>sra_objects &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">selecta</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>sra_objects</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for sra_objects</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">lxml</span> <span class="k">import</span> <span class="n">etree</span>
+<span class="kn">import</span> <span class="nn">lxml.builder</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Nima Pakseresht, Blaise Alako&#39;</span>
+
+
+<span class="c1"># sudo pip install --upgrade setuptools</span>
+<span class="c1"># wget https://bootstrap.pypa.io/ez_setup.py -O - | sudo python</span>
+<span class="c1"># sudo pip install lxml</span>
+
+<div class="viewcode-block" id="analysis_pathogen_analysis"><a class="viewcode-back" href="../sra_objects.html#sra_objects.analysis_pathogen_analysis">[docs]</a><span class="k">class</span> <span class="nc">analysis_pathogen_analysis</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">centre_name</span><span class="p">,</span> <span class="n">sample_accession</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">study_accession</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">,</span>
+                 <span class="n">pipeline_version</span><span class="p">,</span> <span class="n">selecta_version</span><span class="p">,</span>
+                 <span class="n">analysis_date</span><span class="p">,</span> <span class="n">analysis_files</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span> <span class="n">analysis_xml_file</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis_xml_file</span> <span class="o">=</span> <span class="n">analysis_xml_file</span>
+        <span class="c1"># self.analysis_centre=analysis_centre</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">centre_name</span> <span class="o">=</span> <span class="n">centre_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_accession</span> <span class="o">=</span> <span class="n">run_accession</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sample_accession</span> <span class="o">=</span> <span class="n">sample_accession</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">study_accession</span> <span class="o">=</span> <span class="n">study_accession</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span> <span class="o">=</span> <span class="n">pipeline_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipeline_version</span> <span class="o">=</span> <span class="n">pipeline_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selecta_version</span> <span class="o">=</span> <span class="n">selecta_version</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis_date</span> <span class="o">=</span> <span class="n">analysis_date</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span> <span class="o">=</span> <span class="n">analysis_files</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">description</span>
+
+<div class="viewcode-block" id="analysis_pathogen_analysis.buildEtreeSubElt"><a class="viewcode-back" href="../sra_objects.html#sra_objects.analysis_pathogen_analysis.buildEtreeSubElt">[docs]</a>    <span class="k">def</span> <span class="nf">buildEtreeSubElt</span><span class="p">(</span><span class="n">analysis_file</span><span class="p">):</span>
+        <span class="n">fileElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="n">analysis_file</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span>
+                                   <span class="n">filetype</span><span class="o">=</span><span class="n">analysis_file</span><span class="o">.</span><span class="n">file_type</span><span class="p">,</span> <span class="n">checksum_method</span><span class="o">=</span><span class="s2">&quot;MD5&quot;</span><span class="p">,</span>
+                                   <span class="n">checksum</span><span class="o">=</span><span class="n">analysis_file</span><span class="o">.</span><span class="n">file_md5</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">fileElt</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="analysis_pathogen_analysis.build_analysis"><a class="viewcode-back" href="../sra_objects.html#sra_objects.analysis_pathogen_analysis.build_analysis">[docs]</a>    <span class="k">def</span> <span class="nf">build_analysis</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">analysis_set</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;ANALYSIS_SET&#39;</span><span class="p">)</span>
+
+        <span class="n">analysis_xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">analysis_set</span><span class="p">)</span>
+        <span class="n">analysisElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_set</span><span class="p">,</span> <span class="s1">&#39;ANALYSIS&#39;</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="p">,</span> <span class="n">center_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">centre_name</span><span class="p">,</span>
+                                       <span class="n">analysis_date</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_date</span><span class="p">)</span>
+        <span class="n">title</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;TITLE&#39;</span><span class="p">)</span>
+        <span class="n">title</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">title</span>
+        <span class="n">description</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;DESCRIPTION&#39;</span><span class="p">)</span>
+        <span class="n">description</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">description</span>
+        <span class="n">studyrefElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;STUDY_REF&#39;</span><span class="p">,</span> <span class="n">accession</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">study_accession</span><span class="p">)</span>
+        <span class="n">samplerefElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;SAMPLE_REF&#39;</span><span class="p">,</span> <span class="n">accession</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">sample_accession</span><span class="p">)</span>
+        <span class="n">runrefElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;RUN_REF&#39;</span><span class="p">,</span> <span class="n">accession</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">run_accession</span><span class="p">)</span>
+
+        <span class="n">analysis_type</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;ANALYSIS_TYPE&#39;</span><span class="p">)</span>
+        <span class="nb">type</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_type</span><span class="p">,</span> <span class="s1">&#39;PATHOGEN_ANALYSIS&#39;</span><span class="p">)</span>
+
+        <span class="n">files</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;FILES&#39;</span><span class="p">)</span>
+
+        <span class="n">file1Elt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span>
+                                    <span class="n">filetype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">file_type</span><span class="p">,</span> <span class="n">checksum_method</span><span class="o">=</span><span class="s2">&quot;MD5&quot;</span><span class="p">,</span>
+                                    <span class="n">checksum</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">file_md5</span><span class="p">)</span>
+        <span class="n">file2Elt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span>
+                                    <span class="n">filetype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">file_type</span><span class="p">,</span> <span class="n">checksum_method</span><span class="o">=</span><span class="s2">&quot;MD5&quot;</span><span class="p">,</span>
+                                    <span class="n">checksum</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">file_md5</span><span class="p">)</span>
+
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">analysis_set</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">file1Elt</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">file2Elt</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">)</span> <span class="o">&gt;</span><span class="mi">2</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;No cgMLTSFinder result files ......&quot;</span><span class="p">)</span>
+            <span class="n">file3Elt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span>
+                                        <span class="n">filetype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">file_type</span><span class="p">,</span> <span class="n">checksum_method</span><span class="o">=</span><span class="s2">&quot;MD5&quot;</span><span class="p">,</span>
+                                        <span class="n">checksum</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">file_md5</span><span class="p">)</span>
+
+            <span class="n">file4Elt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span>
+                                        <span class="n">filetype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">file_type</span><span class="p">,</span> <span class="n">checksum_method</span><span class="o">=</span><span class="s2">&quot;MD5&quot;</span><span class="p">,</span>
+                                        <span class="n">checksum</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">file_md5</span><span class="p">)</span>
+
+            <span class="n">file5Elt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">files</span><span class="p">,</span> <span class="s1">&#39;FILE&#39;</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span>
+                                        <span class="n">filetype</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">file_type</span><span class="p">,</span> <span class="n">checksum_method</span><span class="o">=</span><span class="s2">&quot;MD5&quot;</span><span class="p">,</span>
+                                        <span class="n">checksum</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">file_md5</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Could not test on existance of cgMLTSFinder result...&quot;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">analysis_file</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Analysis_file.file_name:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">Analysis_file.file_type</span><span class="si">{}</span><span class="se">\n</span><span class="s2">Analysis_file.file_md5:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">analysis_file</span><span class="o">.</span><span class="n">file_name</span><span class="p">,</span> <span class="n">analysis_file</span><span class="o">.</span><span class="n">file_type</span><span class="p">,</span> <span class="n">analysis_file</span><span class="o">.</span><span class="n">file_md5</span><span class="p">))</span>
+
+        <span class="sd">&quot;&quot;&quot; Analysis Attributes &quot;&quot;&quot;</span>
+        <span class="n">analysis_attributes</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysisElt</span><span class="p">,</span> <span class="s1">&#39;ANALYSIS_ATTRIBUTES&#39;</span><span class="p">)</span>
+
+        <span class="n">analysis_attribute</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attributes</span><span class="p">,</span> <span class="s1">&#39;ANALYSIS_ATTRIBUTE&#39;</span><span class="p">)</span>
+        <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attribute</span><span class="p">,</span> <span class="s2">&quot;TAG&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;SELECTA_VERSION&quot;</span>
+        <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attribute</span><span class="p">,</span> <span class="s2">&quot;VALUE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">selecta_version</span>
+
+        <span class="n">analysis_attribute</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attributes</span><span class="p">,</span> <span class="s1">&#39;ANALYSIS_ATTRIBUTE&#39;</span><span class="p">)</span>
+        <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attribute</span><span class="p">,</span> <span class="s2">&quot;TAG&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;PIPELINE_NAME&quot;</span>
+        <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attribute</span><span class="p">,</span> <span class="s2">&quot;VALUE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span>
+
+        <span class="n">analysis_attribute</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attributes</span><span class="p">,</span> <span class="s1">&#39;ANALYSIS_ATTRIBUTE&#39;</span><span class="p">)</span>
+        <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attribute</span><span class="p">,</span> <span class="s2">&quot;TAG&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s2">&quot;PIPELINE_VERSION&quot;</span>
+        <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">analysis_attribute</span><span class="p">,</span> <span class="s2">&quot;VALUE&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pipeline_version</span>
+
+        <span class="sd">&quot;&quot;&quot; End Analysis Attributes &quot;&quot;&quot;</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Analysis XML dump</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Analysis files: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_files</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">analysis_xml</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="n">analysis_xml</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">analysis_xml_file</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="submission"><a class="viewcode-back" href="../sra_objects.html#sra_objects.submission">[docs]</a><span class="k">class</span> <span class="nc">submission</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">submission_centre</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">submission_xml_file</span><span class="p">,</span> <span class="n">source_xml</span><span class="p">,</span> <span class="n">schema</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submission_centre</span> <span class="o">=</span> <span class="n">submission_centre</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_xml</span> <span class="o">=</span> <span class="n">source_xml</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alias</span> <span class="o">=</span> <span class="n">alias</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">submission_xml_file</span> <span class="o">=</span> <span class="n">submission_xml_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schema</span> <span class="o">=</span> <span class="n">schema</span>
+
+<div class="viewcode-block" id="submission.build_submission"><a class="viewcode-back" href="../sra_objects.html#sra_objects.submission.build_submission">[docs]</a>    <span class="k">def</span> <span class="nf">build_submission</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">submission_set</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;SUBMISSION_SET&#39;</span><span class="p">)</span>
+        <span class="n">submission_xml</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="n">submission_set</span><span class="p">)</span>
+        <span class="n">submissionElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">submission_set</span><span class="p">,</span> <span class="s1">&#39;SUBMISSION&#39;</span><span class="p">,</span> <span class="n">alias</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">alias</span><span class="p">,</span>
+                                         <span class="n">center_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">submission_centre</span><span class="p">)</span>
+        <span class="n">actionsElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">submissionElt</span><span class="p">,</span> <span class="s1">&#39;ACTIONS&#39;</span><span class="p">)</span>
+        <span class="n">actionElt</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">actionsElt</span><span class="p">,</span> <span class="s1">&#39;ACTION&#39;</span><span class="p">)</span>
+        <span class="n">actionSub</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span><span class="n">actionElt</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">action</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">source_xml</span><span class="p">,</span> <span class="n">schema</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">schema</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">lxml</span><span class="o">.</span><span class="n">etree</span><span class="o">.</span><span class="n">tostring</span><span class="p">(</span><span class="n">submission_xml</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">))</span>
+        <span class="n">submission_xml</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">submission_xml_file</span><span class="p">,</span> <span class="n">pretty_print</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">xml_declaration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;UTF-8&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="analysis_file"><a class="viewcode-back" href="../sra_objects.html#sra_objects.analysis_file">[docs]</a><span class="k">class</span> <span class="nc">analysis_file</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">file_type</span><span class="p">,</span> <span class="n">file_md5</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_name</span> <span class="o">=</span> <span class="n">file_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_type</span> <span class="o">=</span> <span class="n">file_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_md5</span> <span class="o">=</span> <span class="n">file_md5</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

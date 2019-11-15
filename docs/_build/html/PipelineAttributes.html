@@ -1,0 +1,315 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>PipelineAttributes module &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="analysis_reporter module" href="analysis_reporter.html" />
+    <link rel="prev" title="selecta" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">selecta</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">PipelineAttributes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis_reporter.html">analysis_reporter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bsub.html">bsub module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_executor.html">core_executor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider.html">data_provider module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_to_selection.html">input_to_selection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lsf_stats.html">lsf_stats module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipelines.html">pipelines module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process_archival.html">process_archival module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html">reporting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selecta_processing_reports.html">selecta_processing_reports module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selectadb.html">selectadb module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selection_to_attribute.html">selection_to_attribute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sra_objects.html">sra_objects module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="submission.html">submission module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">selecta</a> &raquo;</li>
+        
+      <li>PipelineAttributes module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/PipelineAttributes.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-PipelineAttributes">
+<span id="pipelineattributes-module"></span><h1>PipelineAttributes module<a class="headerlink" href="#module-PipelineAttributes" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="PipelineAttributes.default_attributes">
+<em class="property">class </em><code class="sig-prename descclassname">PipelineAttributes.</code><code class="sig-name descname">default_attributes</code><span class="sig-paren">(</span><em class="sig-param">process_id</em>, <em class="sig-param">selection_id</em>, <em class="sig-param">datahub</em>, <em class="sig-param">tax_id</em>, <em class="sig-param">scientific_name</em>, <em class="sig-param">sample_accession</em>, <em class="sig-param">secondary_sample_acc</em>, <em class="sig-param">experiment_accession</em>, <em class="sig-param">study_accession</em>, <em class="sig-param">secondary_study_acc</em>, <em class="sig-param">run_accession</em>, <em class="sig-param">pipeline_name</em>, <em class="sig-param">provider_center_name</em>, <em class="sig-param">provider_webin_id</em>, <em class="sig-param">instrument_platform</em>, <em class="sig-param">fastq_files</em>, <em class="sig-param">fastq_md5</em>, <em class="sig-param">public</em>, <em class="sig-param">analyst_webin_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#default_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.default_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="PipelineAttributes.default_attributes.get_all_attributes">
+<em class="property">static </em><code class="sig-name descname">get_all_attributes</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">process_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#default_attributes.get_all_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.default_attributes.get_all_attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.default_attributes.get_attribute_value">
+<em class="property">static </em><code class="sig-name descname">get_attribute_value</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">attribute_key</em>, <em class="sig-param">process_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#default_attributes.get_attribute_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.default_attributes.get_attribute_value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.default_attributes.insert_all_into_process_stages">
+<code class="sig-name descname">insert_all_into_process_stages</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#default_attributes.insert_all_into_process_stages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.default_attributes.insert_all_into_process_stages" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div><p>insert_all_into_process_stages functions calls on insert_into_process_attributes, shouldnt be the function</p>
+</div></blockquote>
+<p>insert_all_into_process_attributes?</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.default_attributes.insert_into_process_attributes">
+<code class="sig-name descname">insert_into_process_attributes</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">process_id</em>, <em class="sig-param">attribute_key</em>, <em class="sig-param">attribute_value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#default_attributes.insert_into_process_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.default_attributes.insert_into_process_attributes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="PipelineAttributes.stages">
+<em class="property">class </em><code class="sig-prename descclassname">PipelineAttributes.</code><code class="sig-name descname">stages</code><span class="sig-paren">(</span><em class="sig-param">process_id</em>, <em class="sig-param">selection_id</em>, <em class="sig-param">stage_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="attribute">
+<dt id="PipelineAttributes.stages.analysis_reporter_stage_name">
+<code class="sig-name descname">analysis_reporter_stage_name</code><em class="property"> = 'analysis_reporter'</em><a class="headerlink" href="#PipelineAttributes.stages.analysis_reporter_stage_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.stages.check_started">
+<code class="sig-name descname">check_started</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages.check_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages.check_started" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="PipelineAttributes.stages.core_executor_stage_name">
+<code class="sig-name descname">core_executor_stage_name</code><em class="property"> = 'core_executor'</em><a class="headerlink" href="#PipelineAttributes.stages.core_executor_stage_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="PipelineAttributes.stages.data_provider_stage_name">
+<code class="sig-name descname">data_provider_stage_name</code><em class="property"> = 'data_provider'</em><a class="headerlink" href="#PipelineAttributes.stages.data_provider_stage_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.stages.insert_all_into_process_stages">
+<code class="sig-name descname">insert_all_into_process_stages</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages.insert_all_into_process_stages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages.insert_all_into_process_stages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.stages.insert_into_process_stages">
+<code class="sig-name descname">insert_into_process_stages</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">process_id</em>, <em class="sig-param">selection_id</em>, <em class="sig-param">stage_name</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages.insert_into_process_stages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages.insert_into_process_stages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="PipelineAttributes.stages.process_archival_stage_name">
+<code class="sig-name descname">process_archival_stage_name</code><em class="property"> = 'process_archival'</em><a class="headerlink" href="#PipelineAttributes.stages.process_archival_stage_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.stages.process_report_set_finished">
+<code class="sig-name descname">process_report_set_finished</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages.process_report_set_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages.process_report_set_finished" title="Permalink to this definition">¶</a></dt>
+<dd><p>” info is a dict with the following:
+process_archival.py add the finish date to end_time</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.stages.set_error">
+<code class="sig-name descname">set_error</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">error</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages.set_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages.set_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.stages.set_finished">
+<code class="sig-name descname">set_finished</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages.set_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages.set_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="PipelineAttributes.stages.set_started">
+<code class="sig-name descname">set_started</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/PipelineAttributes.html#stages.set_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#PipelineAttributes.stages.set_started" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="analysis_reporter.html" class="btn btn-neutral float-right" title="analysis_reporter module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="modules.html" class="btn btn-neutral float-left" title="selecta" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

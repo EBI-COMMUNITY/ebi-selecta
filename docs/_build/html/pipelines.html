@@ -1,0 +1,531 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>pipelines module &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="process_archival module" href="process_archival.html" />
+    <link rel="prev" title="lsf_stats module" href="lsf_stats.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">selecta</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="PipelineAttributes.html">PipelineAttributes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis_reporter.html">analysis_reporter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bsub.html">bsub module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_executor.html">core_executor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider.html">data_provider module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_to_selection.html">input_to_selection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lsf_stats.html">lsf_stats module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pipelines module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process_archival.html">process_archival module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html">reporting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selecta_processing_reports.html">selecta_processing_reports module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selectadb.html">selectadb module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selection_to_attribute.html">selection_to_attribute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sra_objects.html">sra_objects module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="submission.html">submission module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">selecta</a> &raquo;</li>
+        
+      <li>pipelines module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/pipelines.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-pipelines">
+<span id="pipelines-module"></span><h1>pipelines module<a class="headerlink" href="#module-pipelines" title="Permalink to this headline">¶</a></h1>
+<p>Pipeline module.</p>
+<dl class="class">
+<dt id="pipelines.DtuCge">
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">DtuCge</code><span class="sig-paren">(</span><em class="sig-param">fq1</em>, <em class="sig-param">fq2</em>, <em class="sig-param">database_dir</em>, <em class="sig-param">workdir</em>, <em class="sig-param">sequencing_machine</em>, <em class="sig-param">pair</em>, <em class="sig-param">run_accession</em>, <em class="sig-param">prop</em>, <em class="sig-param">instrument_model</em>, <em class="sig-param">sample_accession</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>docker run -ti –rm -v /analysis/cbs/databases:/databases -v    /analysis/nima/cge-workspace/workspace:/workdir         cgetools BAP –wdir /workdir –fq1 /workdir/ERR1698597_1.fastq.gz        –fq2 /workdir/ERR1698597_2.fastq.gz –Asp Illumina –Ast paired</p>
+<dl class="method">
+<dt id="pipelines.DtuCge.command_builder">
+<code class="sig-name descname">command_builder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.command_builder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.command_builder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command builder for tool in question
+:return: a mock command for the purpose of quick testing</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.command_builder_mock">
+<code class="sig-name descname">command_builder_mock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.command_builder_mock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.command_builder_mock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mock command builder for quick prototyping</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.copy_src_into_dest">
+<code class="sig-name descname">copy_src_into_dest</code><span class="sig-paren">(</span><em class="sig-param">src</em>, <em class="sig-param">dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.copy_src_into_dest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.copy_src_into_dest" title="Permalink to this definition">¶</a></dt>
+<dd><p>copy pipeline intermediate files into a destination directory for the
+purpose of archiving.
+:param src:  Source directory
+:param dest: Destination directory
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.del_file">
+<em class="property">static </em><code class="sig-name descname">del_file</code><span class="sig-paren">(</span><em class="sig-param">filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.del_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.del_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete a single file name
+:param filename: file name to delete
+:return:  None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.delete_empty_files">
+<em class="property">static </em><code class="sig-name descname">delete_empty_files</code><span class="sig-paren">(</span><em class="sig-param">folder</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.delete_empty_files"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.delete_empty_files" title="Permalink to this definition">¶</a></dt>
+<dd><p>Delete empty files from a directory
+:param folder: directory containing empty files
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.execute">
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute pipeline calling on command_builder and run methods
+defined in the same class
+:return: jobs ids or None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.make_tar_gzip">
+<em class="property">static </em><code class="sig-name descname">make_tar_gzip</code><span class="sig-paren">(</span><em class="sig-param">src</em>, <em class="sig-param">des</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.make_tar_gzip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.make_tar_gzip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and archive and compressed it
+:param src: directory to be archived
+:param des: name of the archive and compressed directory
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.post_process">
+<code class="sig-name descname">post_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.post_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.post_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Postprocess analysis result of a pipeline.
+We should account for multiplexing in fastqs. We should add the name of the sample in the final file summary and chuncks that will be
+submitted to the FTP server. This is from the the observation that the same samples from the same processed runs will have similar name
+however their checksum values is different.
+Examples:
+dcc_allison PRJEB2059 ERR023804 (12)–
+dcc_allison PRJEB2059 ‘ERR028305’,’ERR028650’
+:return: compressed archived folder of pipeline runs and summary file(s)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">command</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>run the command constructed by the command builder method
+:param command: compare pipeline-tool name to call
+:return: job id if LSF used otherwise none</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.DtuCge.zip_dir">
+<em class="property">static </em><code class="sig-name descname">zip_dir</code><span class="sig-paren">(</span><em class="sig-param">src</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#DtuCge.zip_dir"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.DtuCge.zip_dir" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compress a directory with zip tool
+:param src: directory to compress
+:return:  None</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pipelines.EmcSlim">
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">EmcSlim</code><span class="sig-paren">(</span><em class="sig-param">fq1</em>, <em class="sig-param">fq2</em>, <em class="sig-param">emc_slim_property_file</em>, <em class="sig-param">workdir</em>, <em class="sig-param">sequencing_machine</em>, <em class="sig-param">pair</em>, <em class="sig-param">run_accession</em>, <em class="sig-param">emc_slim_program</em>, <em class="sig-param">prop</em>, <em class="sig-param">instrument_model</em>, <em class="sig-param">sample_accession</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#EmcSlim"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.EmcSlim" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class handle the EMC_SLIM pipeline parameter, execution and postprocessing.</p>
+<dl class="method">
+<dt id="pipelines.EmcSlim.command_builder">
+<code class="sig-name descname">command_builder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#EmcSlim.command_builder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.EmcSlim.command_builder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Command builder
+:return: command to run</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.EmcSlim.command_builder_mock">
+<code class="sig-name descname">command_builder_mock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#EmcSlim.command_builder_mock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.EmcSlim.command_builder_mock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mock command builder for fast prototyping.
+:return:  mock command</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.EmcSlim.execute">
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#EmcSlim.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.EmcSlim.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute pipeline calling on command_builder and run methods
+defined in the same class
+:return: jobs ids or None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.EmcSlim.post_process">
+<code class="sig-name descname">post_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#EmcSlim.post_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.EmcSlim.post_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Postprocess analysis result of a pipeline.
+We should account for multiplexing in fastqs. We should add the name of the sample in the final file summary and chuncks that will be
+submitted to the FTP server. This is from the the observation that the same samples from the same processed runs will have similar name
+however their checksum values is different.
+Examples:
+dcc_allison PRJEB2059 ERR023804 (12)–
+dcc_allison PRJEB2059 ‘ERR028305’,’ERR028650’
+:return: compressed archived folder of pipeline runs and summary file(s)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.EmcSlim.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">command</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#EmcSlim.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.EmcSlim.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>run the command constructed by the command builder method
+:param command: compare pipeline-tool name to call
+:return: job id if LSF used otherwise none</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pipelines.FliRiems">
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">FliRiems</code><span class="sig-paren">(</span><em class="sig-param">fastq1</em>, <em class="sig-param">fastq2</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#FliRiems"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.FliRiems" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>To document …</p>
+<dl class="method">
+<dt id="pipelines.FliRiems.command_builder">
+<code class="sig-name descname">command_builder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#FliRiems.command_builder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.FliRiems.command_builder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.FliRiems.command_builder_mock">
+<code class="sig-name descname">command_builder_mock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#FliRiems.command_builder_mock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.FliRiems.command_builder_mock" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.FliRiems.post_process">
+<code class="sig-name descname">post_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#FliRiems.post_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.FliRiems.post_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.FliRiems.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#FliRiems.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.FliRiems.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pass
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pipelines.RivmJovian">
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">RivmJovian</code><span class="sig-paren">(</span><em class="sig-param">fq1</em>, <em class="sig-param">fq2</em>, <em class="sig-param">workdir</em>, <em class="sig-param">pair</em>, <em class="sig-param">run_accession</em>, <em class="sig-param">prop</em>, <em class="sig-param">sample_accession</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>To document…</p>
+<dl class="method">
+<dt id="pipelines.RivmJovian.command_builder">
+<code class="sig-name descname">command_builder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian.command_builder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian.command_builder" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:
+change into process_id dir prior jovian run</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.RivmJovian.command_builder_mock">
+<code class="sig-name descname">command_builder_mock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian.command_builder_mock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian.command_builder_mock" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:
+Below hard coded path should be removed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.RivmJovian.copy_src_into_dest">
+<code class="sig-name descname">copy_src_into_dest</code><span class="sig-paren">(</span><em class="sig-param">src</em>, <em class="sig-param">dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian.copy_src_into_dest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian.copy_src_into_dest" title="Permalink to this definition">¶</a></dt>
+<dd><p>copy pipeline intermediate files into a destination directory for the
+purpose of archiving.
+:param src:  Source directory
+:param dest: Destination directory
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.RivmJovian.execute">
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.RivmJovian.jovian_init">
+<code class="sig-name descname">jovian_init</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian.jovian_init"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian.jovian_init" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a directory with:</p>
+</dd>
+</dl>
+<p>1 - bin folder copied therein
+2- A simling to profile, envs, snakefile
+3- Creation of fastq directory where fastqs file are moved</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.RivmJovian.post_process">
+<code class="sig-name descname">post_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian.post_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian.post_process" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pipelines.RivmJovian.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">command</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#RivmJovian.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.RivmJovian.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="pipelines.UAntwerpBacpipe">
+<em class="property">class </em><code class="sig-prename descclassname">pipelines.</code><code class="sig-name descname">UAntwerpBacpipe</code><span class="sig-paren">(</span><em class="sig-param">workdir</em>, <em class="sig-param">yamlconfig</em>, <em class="sig-param">prop</em>, <em class="sig-param">sample_accession</em>, <em class="sig-param">pair</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class handle the UAntwerp_Bacpipe pipeline parameter, execution and postprocessing.</p>
+<dl class="method">
+<dt id="pipelines.UAntwerpBacpipe.command_builder">
+<code class="sig-name descname">command_builder</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe.command_builder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe.command_builder" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return: python ./Pipeline_blaise.py –config configure.yaml –os unix –processors 20</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.UAntwerpBacpipe.command_builder_mock">
+<code class="sig-name descname">command_builder_mock</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe.command_builder_mock"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe.command_builder_mock" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="pipelines.UAntwerpBacpipe.config">
+<code class="sig-name descname">config</code><em class="property"> = {'Output': {'deactivate': 'no'}, 'Resfams': {'deactivate': 'no'}, 'VirDBSearch': {'deactivate': 'no'}, 'bacpipe': {'bacpipe_path': '/hps/nobackup/nucleotide/blaise/selecta/tools/bacpipe'}, 'cardSearch': {'deactivate': 'no'}, 'directories': {'output': '', 'reads': ''}, 'emmTyping': {'deactivate': 'no'}, 'mlst_typing': {'deactivate': 'no', 'organism': 'lsalivarius'}, 'parSNP': {'deactivate': 'yes', 'parSNP_reference': '', 'parSNP_reference_fsa': ''}, 'plasmids_finder': {'deactivate': 'no', 'identity_threshold': 95, 'plasmids_database': 'gram_positive'}, 'prokka': {'deactivate': 'no', 'prokka_path': '/hps/nobackup/nucleotide/blaise/selecta/python/anaconda2/bin/prokka'}, 'resfinder': {'deactivate': 'no', 'identity_threshold': 95, 'min_length': 0.6, 'resistance_database': 'aminoglycoside,beta-lactamase,colistin,fosfomycin,fusidicacid,macrolide,nitroimidazole,oxazolidinone,phenicol,quinolone,rifampicin,sulphonamide,tetracycline,trimethoprim,glycopeptide'}, 'spades': {'Mode': 'paired', 'deactivate': 'no', 'kmer': 77}, 'trim_galore': {'deactivate': 'no', 'quality_threshold': 25, 'reads_type': 'paired'}, 'virulencefinder': {'deactivate': 'no', 'identity_threshold': 95, 'virulence_database': 'virulence_ecoli'}}</em><a class="headerlink" href="#pipelines.UAntwerpBacpipe.config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="pipelines.UAntwerpBacpipe.copy_src_into_dest">
+<code class="sig-name descname">copy_src_into_dest</code><span class="sig-paren">(</span><em class="sig-param">src</em>, <em class="sig-param">dest</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe.copy_src_into_dest"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe.copy_src_into_dest" title="Permalink to this definition">¶</a></dt>
+<dd><p>copy pipeline intermediate files into a destination directory for the
+purpose of archiving.
+:param src:  Source directory
+:param dest: Destination directory
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.UAntwerpBacpipe.execute">
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.UAntwerpBacpipe.make_tar_gzip">
+<code class="sig-name descname">make_tar_gzip</code><span class="sig-paren">(</span><em class="sig-param">src</em>, <em class="sig-param">des</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe.make_tar_gzip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe.make_tar_gzip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and archive and compressed it
+:param src: directory to be archived
+:param des: name of the archive and compressed directory
+:return: None</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.UAntwerpBacpipe.post_process">
+<code class="sig-name descname">post_process</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe.post_process"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe.post_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="pipelines.UAntwerpBacpipe.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param">command</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pipelines.html#UAntwerpBacpipe.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pipelines.UAntwerpBacpipe.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>pass
+:return:</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="process_archival.html" class="btn btn-neutral float-right" title="process_archival module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="lsf_stats.html" class="btn btn-neutral float-left" title="lsf_stats module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

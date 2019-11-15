@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reporting module &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="selecta_processing_reports module" href="selecta_processing_reports.html" />
+    <link rel="prev" title="process_archival module" href="process_archival.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">selecta</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="PipelineAttributes.html">PipelineAttributes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis_reporter.html">analysis_reporter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bsub.html">bsub module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_executor.html">core_executor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider.html">data_provider module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_to_selection.html">input_to_selection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lsf_stats.html">lsf_stats module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipelines.html">pipelines module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process_archival.html">process_archival module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">reporting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selecta_processing_reports.html">selecta_processing_reports module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selectadb.html">selectadb module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selection_to_attribute.html">selection_to_attribute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sra_objects.html">sra_objects module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="submission.html">submission module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">selecta</a> &raquo;</li>
+        
+      <li>reporting module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/reporting.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-reporting">
+<span id="reporting-module"></span><h1>reporting module<a class="headerlink" href="#module-reporting" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="reporting.Oracle">
+<em class="property">class </em><code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">Oracle</code><a class="reference internal" href="_modules/reporting.html#Oracle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.Oracle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="reporting.Oracle.connect">
+<code class="sig-name descname">connect</code><span class="sig-paren">(</span><em class="sig-param">username</em>, <em class="sig-param">password</em>, <em class="sig-param">hostname</em>, <em class="sig-param">port</em>, <em class="sig-param">servicename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#Oracle.connect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.Oracle.connect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to the database.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reporting.Oracle.disconnect">
+<code class="sig-name descname">disconnect</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#Oracle.disconnect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.Oracle.disconnect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disconnect from the database. If this fails, for instance
+if the connection instance doesn’t exist, ignore the exception.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="reporting.Oracle.execute">
+<code class="sig-name descname">execute</code><span class="sig-paren">(</span><em class="sig-param">sql</em>, <em class="sig-param">bindvars=None</em>, <em class="sig-param">commit=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#Oracle.execute"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.Oracle.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute whatever SQL statements are passed to the method;
+commit if specified. Do not specify fetchall() in here as
+the SQL statement may not be a select.
+bindvars is a dictionary of variables you pass to execute.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="reporting.Process_report">
+<em class="property">class </em><code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">Process_report</code><span class="sig-paren">(</span><em class="sig-param">select</em>, <em class="sig-param">attr</em>, <em class="sig-param">error_list</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#Process_report"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.Process_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="method">
+<dt id="reporting.Process_report.log_process_report_info">
+<code class="sig-name descname">log_process_report_info</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#Process_report.log_process_report_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.Process_report.log_process_report_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="reporting.already_ran_runs">
+<code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">already_ran_runs</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#already_ran_runs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.already_ran_runs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get previously ran run accessions from the Process
+report table ….</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="reporting.get_process_id">
+<code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">get_process_id</code><span class="sig-paren">(</span><em class="sig-param">id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#get_process_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.get_process_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="reporting.insert_default_stages">
+<code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">insert_default_stages</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">process_id</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#insert_default_stages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.insert_default_stages" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="reporting.process_report_set_started">
+<code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">process_report_set_started</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#process_report_set_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.process_report_set_started" title="Permalink to this definition">¶</a></dt>
+<dd><p>info is a dict with the following:
+study_id, datahub, run_id,process_id, selection_id, start_time</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="reporting.set_finished">
+<code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">set_finished</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#set_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.set_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="reporting.set_started">
+<code class="sig-prename descclassname">reporting.</code><code class="sig-name descname">set_started</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/reporting.html#set_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#reporting.set_started" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="selecta_processing_reports.html" class="btn btn-neutral float-right" title="selecta_processing_reports module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="process_archival.html" class="btn btn-neutral float-left" title="process_archival module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

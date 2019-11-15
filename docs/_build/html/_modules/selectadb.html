@@ -1,0 +1,475 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>selectadb &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">selecta</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>selectadb</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for selectadb</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This Module populate or provide the starting material</span>
+<span class="sd">for running the SELECTA workflow.</span>
+<span class="sd">Information from the process_selection table as well</span>
+<span class="sd">as the SELECTA propertie.txt files are consumed here.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Nima Pakseresht, Blaise Alako&#39;</span>
+
+
+<div class="viewcode-block" id="selection"><a class="viewcode-back" href="../selectadb.html#selectadb.selection">[docs]</a><span class="k">class</span> <span class="nc">selection</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This Class Initialise the SELECTA workflow from</span>
+<span class="sd">    entries in the process_selection table</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">datahub</span><span class="p">,</span> <span class="n">tax_id</span><span class="p">,</span> <span class="n">study_accession</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span>
+                 <span class="n">public</span><span class="p">,</span> <span class="n">selection_to_attribute_end</span><span class="p">,</span> <span class="n">analyst_webin_id</span><span class="p">,</span> <span class="n">process_type</span><span class="p">,</span> <span class="n">continuity</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_id</span> <span class="o">=</span> <span class="n">selection_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datahub</span> <span class="o">=</span> <span class="n">datahub</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tax_id</span> <span class="o">=</span> <span class="n">tax_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">study_accession</span> <span class="o">=</span> <span class="n">study_accession</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">run_accession</span> <span class="o">=</span> <span class="n">run_accession</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pipeline_name</span> <span class="o">=</span> <span class="n">pipeline_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analysis_id</span> <span class="o">=</span> <span class="n">analysis_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">public</span> <span class="o">=</span> <span class="n">public</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">analyst_webin_id</span> <span class="o">=</span> <span class="n">analyst_webin_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_type</span> <span class="o">=</span> <span class="n">process_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">continuity</span> <span class="o">=</span> <span class="n">continuity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_to_attribute_end</span> <span class="o">=</span> <span class="n">selection_to_attribute_end</span></div>
+
+
+
+<div class="viewcode-block" id="properties"><a class="viewcode-back" href="../selectadb.html#selectadb.properties">[docs]</a><span class="k">class</span> <span class="nc">properties</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This Class populate SELECTA properties.txt</span>
+<span class="sd">    configuration file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_file</span><span class="p">):</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">property_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+            <span class="c1">#print(&#39;~&#39; * 50)</span>
+            <span class="c1">#print(type(lines))</span>
+            <span class="c1">#print(&#39;~&#39; * 50)</span>
+            <span class="n">workdir_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">workdir_input_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">archivedir_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">dbuser_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">dbpassword_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">dbhost_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">dbname_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">dbport_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">lsf_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">rmem_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">lmem_provided</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">selecta_version_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">dtu_cge_databases_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">dtu_cge_version_provided</span><span class="o">=</span> <span class="kc">False</span>
+            <span class="n">pipeline_version_provided</span> <span class="o">=</span><span class="kc">False</span>
+
+            <span class="n">emc_slim_program_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">emc_slim_property_file_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">emc_slim_version_provided</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">uantwerp_bacpipe_program_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">uantwerp_bacpipe_version_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">uantwerp_bacpipe_dep_provided</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">rivm_jovian_base_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">rivm_jovian_version_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">rivm_jovian_profile_provided</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">prokka_program_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">prokka_program_version_provided</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">analysis_submission_mode_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">analysis_submission_action_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">analysis_submission_url_dev_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">analysis_submission_url_prod_provided</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="n">max_core_job_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">nproc_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">cgetools_provided</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">bgroup_provided</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+
+                <span class="n">pair</span> <span class="o">=</span> <span class="n">l</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;:&quot;</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;workdir&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">workdir</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">workdir_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;max_core_job&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">max_core_job</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">max_core_job_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;workdir_input&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">workdir_input</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">workdir_input_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;archivedir&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">archivedir</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">archivedir_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dbuser&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dbuser</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dbuser_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dbpassword&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dbpassword</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dbpassword_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dbhost&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dbhost</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dbhost_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dbname&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dbname</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dbname_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dbport&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dbport</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">dbport_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;nproc&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">nproc</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="n">nproc_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;lsf&#39;</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;yes&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lsf</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;no&#39;</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lsf</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="n">lsf_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;rmem&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rmem</span><span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">rmem_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;lmem&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">lmem</span><span class="o">=</span><span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">lmem_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;bgroup&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">bgroup</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">bgroup_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;seqmachine&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">seq_machine</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">seq_machine_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;emc_slim_program&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">emc_slim_program</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">emc_slim_program_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;emc_slim_property_file&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">emc_slim_property_file</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">emc_slim_property_file_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dtu_cge_databases&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dtu_cge_databases</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dtu_cge_databases_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;dtu_cge_version&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">dtu_cge_version</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">dtu_cge_version_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;emc_slim_version&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">emc_slim_version</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">emc_slim_version_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;selecta_version&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">selecta_version</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">selecta_version_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;cgetools&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">cgetools</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">cgetools_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="c1">#UAntwerp_BACPIPE_PROGRAM</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;uantwerp_bacpipe_program&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">uantwerp_bacpipe_program</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">uantwerp_bacpipe_program_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;uantwerp_bacpipe_version&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">uantwerp_bacpipe_version</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">uantwerp_bacpipe_version_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;uantwerp_bacpipe_dep&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">uantwerp_bacpipe_dep</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">uantwerp_bacpipe_dep_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;rivm_jovian_base&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rivm_jovian_base</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">rivm_jovian_base_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;rivm_jovian_version&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rivm_jovian_version</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">rivm_jovian_version_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;rivm_jovian_profile&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">rivm_jovian_profile</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">rivm_jovian_profile_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;prokka_program&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">prokka_program</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">prokka_program_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;prokka_program_version&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">prokka_program_version</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">prokka_program_version_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;analysis_submission_mode&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_mode</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">analysis_submission_mode_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;analysis_submission_action&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_action</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">analysis_submission_action_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;analysis_submission_url_dev&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_url_dev</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">analysis_submission_url_dev_provided</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">elif</span> <span class="n">pair</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;analysis_submission_url_prod&#39;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_url_prod</span> <span class="o">=</span> <span class="n">pair</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="n">analysis_submission_url_prod_provided</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">workdir_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">workdir</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">max_core_job_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">max_core_job</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">workdir_input_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">workdir_input</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">archivedir_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">archivedir</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dbuser_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dbuser_provided</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dbpassword_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dbpassword_provided</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dbhost_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dbhost</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dbname_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dbname</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dbport_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dbport</span> <span class="o">=</span> <span class="mi">3306</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">nproc_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">nproc</span> <span class="o">=</span> <span class="mi">10</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lsf_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lsf</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">seq_machine_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">seq_machine</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rmem_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rmem</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">lmem_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">lmem</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bgroup_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bgroup</span><span class="o">=</span><span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">emc_slim_program_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">emc_slim_program</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">emc_slim_property_file_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">emc_slim_property_file</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">analysis_submission_mode_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_mode</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dtu_cge_databases_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dtu_cge_databases</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dtu_cge_version_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dtu_cge_version</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">selecta_version_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">selecta_version</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">emc_slim_version_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">emc_slim_version</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dtu_cge_version_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dtu_cge_version</span> <span class="o">=</span><span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rivm_jovian_base_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rivm_jovian_base</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rivm_jovian_version_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rivm_jovian_version</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">rivm_jovian_profile_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rivm_jovian_profile</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">uantwerp_bacpipe_program_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">uantwerp_bacpipe_program</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">uantwerp_bacpipe_version_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">uantwerp_bacpipe_version</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prokka_program_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prokka_program</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">prokka_program_version_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">prokka_program_version</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">cgetools_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">cgetools</span> <span class="o">=</span><span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">analysis_submission_action_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_action</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">analysis_submission_url_dev_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_url_dev</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">analysis_submission_url_prod_provided</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">analysis_submission_url_prod</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

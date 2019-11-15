@@ -1,0 +1,1114 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>selection_to_attribute &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">selecta</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>selection_to_attribute</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for selection_to_attribute</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This scripts initiate the SELECTA workflow.</span>
+<span class="sd">Given selection in process_selection table with start date null</span>
+<span class="sd">and selection error null, it populate process_stages , process_attributes</span>
+<span class="sd">process_report with appropriate runs metadata</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">textwrap</span>
+<span class="kn">from</span> <span class="nn">selectadb</span> <span class="k">import</span> <span class="n">selection</span>
+<span class="kn">from</span> <span class="nn">selectadb</span> <span class="k">import</span> <span class="n">properties</span>
+<span class="kn">from</span> <span class="nn">PipelineAttributes</span> <span class="k">import</span> <span class="n">default_attributes</span>
+<span class="kn">from</span> <span class="nn">PipelineAttributes</span> <span class="k">import</span> <span class="n">stages</span>
+<span class="kn">from</span> <span class="nn">reporting</span> <span class="k">import</span> <span class="n">Process_report</span>
+<span class="kn">import</span> <span class="nn">bsub</span>
+<span class="kn">import</span> <span class="nn">psycopg2</span>
+
+<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+<span class="n">ruler</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Nima Pakseresht, Blaise Alako&#39;</span>
+
+
+
+<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Process property file and return various attribute</span>
+<span class="sd">	:return: various attribute of runs</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1">#global properties_file</span>
+	<span class="c1"># Assign description to the help doc</span>
+	<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+		<span class="n">description</span><span class="o">=</span><span class="s1">&#39;Populate various table with metadata for each datahub</span><span class="se">\</span>
+<span class="s1">		 to be processed from the process_selection table.&#39;</span><span class="p">)</span>
+	<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;--properties_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+						<span class="n">help</span><span class="o">=</span><span class="s1">&#39;Please provide the properties </span><span class="se">\</span>
+<span class="s1">						file that is required by SELECTA system&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+						<span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+	<span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">properties_file</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="n">properties_file</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">properties_file</span>
+	<span class="k">return</span> <span class="n">properties_file</span></div>
+
+
+<div class="viewcode-block" id="process_arguments"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.process_arguments">[docs]</a><span class="k">def</span> <span class="nf">process_arguments</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	process_arguments : this process the arguments passed</span>
+<span class="sd">	on the command line</span>
+<span class="sd">	:param args: list of arguments</span>
+<span class="sd">	:return: return the configuration file</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">global</span> <span class="n">properties_file</span>
+	<span class="sd">&quot;&quot;&quot; First, construct the parser &quot;&quot;&quot;</span>
+	<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Selection_to_attribute.py removes the processed &#39;</span>
+												 <span class="s1">&#39;submissions to make free space for incoming submissions.&#39;</span><span class="p">)</span>
+	<span class="sd">&quot;&quot;&quot;Lets us add the first argument &quot;&quot;&quot;</span>
+	<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span>
+						<span class="s1">&#39;--properties_file&#39;</span><span class="p">,</span>
+						<span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+						<span class="n">help</span><span class="o">=</span><span class="s2">&quot;Please provide the properties file that is required by SELECTA system&quot;</span><span class="p">,</span>
+						<span class="n">dest</span><span class="o">=</span><span class="s1">&#39;properties_file&#39;</span><span class="p">,</span>
+						<span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--db_live&#39;</span><span class="p">,</span>
+						<span class="n">help</span><span class="o">=</span><span class="s1">&#39;Check whether PostGresDB is live and accepting</span><span class="se">\</span>
+<span class="s1">								connection&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
+	<span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+	<span class="sd">&quot;&quot;&quot; Return the options &quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">options</span></div>
+
+
+<div class="viewcode-block" id="get_connection"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_connection">[docs]</a><span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="n">db_user</span><span class="p">,</span> <span class="n">db_password</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_database</span><span class="p">,</span> <span class="n">db_port</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Connect to PostGreSQL database</span>
+<span class="sd">	:param db_user: user name</span>
+<span class="sd">	:param db_password: passwd</span>
+<span class="sd">	:param db_host: PostGreSQL host server</span>
+<span class="sd">	:param db_database: DB name</span>
+<span class="sd">	:param db_port:  connection port on remote server</span>
+<span class="sd">	:return: connection handle</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">conn</span> <span class="o">=</span> <span class="n">psycopg2</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">db_host</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">db_database</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">db_user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">db_password</span><span class="p">,</span>  <span class="n">port</span><span class="o">=</span><span class="n">db_port</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">conn</span></div>
+
+
+<div class="viewcode-block" id="get_datahub_accounts"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_datahub_accounts">[docs]</a><span class="k">def</span> <span class="nf">get_datahub_accounts</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Extract the datahub name from SELECTADB_PRODUCTION</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param process_id: process_id</span>
+<span class="sd">	:return: datahub names</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">account_type</span> <span class="o">=</span> <span class="s1">&#39;datahub&#39;</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select account_id,password from account where account_type=&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account_type</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Getting account credentials from account table:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+	<span class="n">account</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+	<span class="n">accounts</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">password</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Encoded ACCOUNT_ID:</span><span class="si">{}</span><span class="s2">  PASSWORD:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="n">password</span><span class="p">))</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Decoded ACCOUNT_ID:</span><span class="si">{}</span><span class="s2">  PASSWORD:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span>
+														  <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">password</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">()))</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+		<span class="n">account</span><span class="p">[</span><span class="s1">&#39;account_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">account_id</span>
+		<span class="n">account</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">password</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+		<span class="sd">&quot;&quot;&quot; Previously the above read account[&#39;password&#39;] = base64.b64decode(password[::-1])</span>
+<span class="sd">		returning password prepended with key b&#39;&#39; for binary</span>
+<span class="sd">		base64 has two main functions that acts on byte oriented data</span>
+<span class="sd">		b64encode and  b64decode  &quot;&quot;&quot;</span>
+		<span class="n">accounts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">account</span><span class="p">)</span>
+		<span class="n">account</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">accounts</span></div>
+
+
+<span class="sd">&quot;&quot;&quot; TODO: Updat it to use process instead of sys &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="download_datahub_metadatafile"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.download_datahub_metadatafile">[docs]</a><span class="k">def</span> <span class="nf">download_datahub_metadatafile</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">workdir</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Fetch datahub metadata from the Pathogen portal given datahub credentials</span>
+<span class="sd">	:param account: datahub name</span>
+<span class="sd">	:param workdir:  working directory</span>
+<span class="sd">	:return:  datahub Metadata file</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">datahub</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;account_id&#39;</span><span class="p">]</span>
+	<span class="n">password</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
+	<span class="n">inputfile</span> <span class="o">=</span> <span class="n">datahub</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;dcc_&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;_run_metadata_*.tsv&quot;</span>
+	<span class="n">outputfile</span> <span class="o">=</span> <span class="n">workdir</span> <span class="o">+</span> <span class="n">datahub</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;dcc_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_run_metadata.tsv&#39;</span>
+	<span class="n">url</span> <span class="o">=</span> <span class="s2">&quot;ftp://</span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">@ftp.dcc-private.ebi.ac.uk/meta/</span><span class="si">{}</span><span class="s2">/reports/</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datahub</span><span class="p">,</span>
+																			<span class="n">password</span><span class="p">,</span>
+																			<span class="n">datahub</span><span class="p">,</span>
+																			<span class="n">inputfile</span><span class="p">)</span>
+	<span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;wget -t 2 </span><span class="si">{}</span><span class="s2"> -O </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">outputfile</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">outputfile</span><span class="p">):</span>
+		<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span>
+	<span class="n">sp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+	<span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;standard output of subprocess: </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;standard error of subprocess: </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+		<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="sd">&quot;&quot;&quot; print(s, end=&quot;&quot;, file=depend)  &quot;&quot;&quot;</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;returncode of subprocess: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">returncode</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">outputfile</span></div>
+
+
+<div class="viewcode-block" id="fetch_datahub_metadatafile"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.fetch_datahub_metadatafile">[docs]</a><span class="k">def</span> <span class="nf">fetch_datahub_metadatafile</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">lsf</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Fetch datahub metadata file via pathogen portal</span>
+<span class="sd">	curl -o output.txt -X GET --header &#39;Accept: application/json&#39; -u</span>
+<span class="sd">	dcc_beethoven:xxxx &#39;https://www.ebi.ac.uk/ena/portal/api/search?</span>
+<span class="sd">	result=read_run&amp;dataPortal=pathogen&amp;dccDataOnly=true&amp;fields=tax_id,</span>
+<span class="sd">	scientific_name,sample_accession,secondary_sample_accession,experiment_accession,</span>
+<span class="sd">	study_accession,secondary_study_accession,run_accession,center_name,fastq_ftp,</span>
+<span class="sd">	fastq_md5&amp;sortFields=scientific_name,sample_accession&amp;limit=0&#39;</span>
+<span class="sd">	:param account: datahub account</span>
+<span class="sd">	:param workdir: working directory</span>
+<span class="sd">	:param lsf: bo0lean</span>
+<span class="sd">	:return: Metadata file</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;In fetch_datahub_metadatafile&quot;</span><span class="p">)</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">datahub</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;account_id&#39;</span><span class="p">]</span>
+	<span class="n">password</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;password&#39;</span><span class="p">]</span>
+	<span class="c1">#inputfile = datahub.replace(&#39;dcc_&#39;, &#39;&#39;) + &quot;_run_metadata_*.tsv&quot;</span>
+	<span class="n">outputfile</span> <span class="o">=</span> <span class="n">workdir</span> <span class="o">+</span> <span class="n">datahub</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;dcc_&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;_run_metadata.tsv&#39;</span>
+	<span class="n">retrieved_fields</span> <span class="o">=</span> <span class="p">(</span>
+		<span class="s2">&quot;fields=tax_id,scientific_name,sample_accession,secondary_sample_accession,experiment_accession,&quot;</span>
+		<span class="s2">&quot;study_accession,secondary_study_accession,run_accession,center_name,instrument_platform,fastq_ftp,&quot;</span>
+		<span class="s2">&quot;fastq_md5&amp;sortFields=scientific_name,sample_accession&amp;limit=0&#39; -k&quot;</span><span class="p">)</span>
+	<span class="n">correct_ftp_path</span> <span class="o">=</span> <span class="s2">&quot; &amp;&amp; perl -p -i -e &#39;~s/ftp\.sra\.ebi\.ac\.uk\/vol1\/|ftp\.dcc\-private\.ebi\.ac\.uk\/vol1\///g&#39; </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span>
+
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Below correct_ftp_path reflect a quick hack to be able to process dcc_bromhead ... </span>
+<span class="sd">	Should resume to the above for normal mode of action.....</span>
+<span class="sd">	correct_ftp_path = &quot; &amp;&amp; egrep -v -e &#39;SAMEA104423915|SAMEA4058395|SAMEA4058397|SAMEA4058405|SAMEA4058441&#39;&quot; \</span>
+<span class="sd">					   &quot;&#39;SELECTA_REMOVE&#39; \</span>
+<span class="sd">					   {} &gt;{}.tmp &amp;&amp; mv {}.tmp {} &amp;&amp; \</span>
+<span class="sd">						perl -p -i -e &#39;~s/ftp\.sra\.ebi\.ac\.uk\/vol1\///g&#39; {} &quot;.format(outputfile,</span>
+<span class="sd">																						outputfile,</span>
+<span class="sd">																						outputfile,</span>
+<span class="sd">																						outputfile,</span>
+<span class="sd">																						outputfile)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="n">base_command</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;curl -o </span><span class="si">{}</span><span class="s2"> -X GET --header &#39;Accept:</span><span class="se">\</span>
+<span class="s2">	 application/json&#39; -u </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> &quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outputfile</span><span class="p">,</span>
+										  <span class="n">datahub</span><span class="p">,</span>
+										  <span class="n">password</span><span class="p">)</span>
+	<span class="n">base_command</span> <span class="o">=</span> <span class="n">base_command</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot; &#39;https://www.ebi.ac.uk/ena/portal/api/search?&quot;</span><span class="p">)</span>
+	<span class="n">base_command</span> <span class="o">=</span> <span class="n">base_command</span> <span class="o">+</span> <span class="p">(</span><span class="s2">&quot;result=read_run&amp;dataPortal=pathogen&amp;dccDataOnly=true&amp;&quot;</span><span class="p">)</span>
+
+	<span class="n">command</span> <span class="o">=</span> <span class="n">base_command</span> <span class="o">+</span> <span class="n">retrieved_fields</span> <span class="o">+</span> <span class="n">correct_ftp_path</span>
+
+	<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">outputfile</span><span class="p">):</span>
+		<span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span>
+	<span class="k">if</span> <span class="ow">not</span> <span class="n">lsf</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FETCHMETADATA COMMAND:</span><span class="se">\n\t</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LSF VALUE=&quot;</span><span class="p">,</span> <span class="n">lsf</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+		<span class="n">sp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+		<span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+		<span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">standard output of subprocess: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">standard error of subprocess: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">returncode of subprocess:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">returncode</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LSF value is YES, still need implementation at the moment ...&quot;</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Working dir: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">workdir</span><span class="p">))</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running: &quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="n">job_id</span> <span class="o">=</span> <span class="n">bsub</span><span class="o">.</span><span class="n">bsub</span><span class="p">(</span><span class="s2">&quot;selection_2_attribute&quot;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">command</span><span class="p">)</span>  <span class="c1"># , R=&quot;rusage[mem=1]&quot;)</span>
+			<span class="n">bsub</span><span class="o">.</span><span class="n">bsub</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="n">job_id</span><span class="p">)</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+			<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;ERROR MESSAGE:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">lsf</span><span class="p">:</span>
+		<span class="k">return</span> <span class="p">[</span><span class="n">outputfile</span><span class="p">,</span> <span class="n">job_id</span><span class="p">]</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="k">return</span> <span class="p">[</span><span class="n">outputfile</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="get_selection_to_attributes_account"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_selection_to_attributes_account">[docs]</a><span class="k">def</span> <span class="nf">get_selection_to_attributes_account</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Get_selection_to_attribute_account:</span>
+<span class="sd">	Get those selection_id from process_selection where start_date is null</span>
+<span class="sd">	:param conn:</span>
+<span class="sd">	:return: selection_ids</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1">#query = &quot;select distinct datahub from process_selection where public=&#39;NO&#39; and selection_to_attribute_start is NULL&quot;</span>
+	<span class="c1">#query = &quot;select distinct datahub from process_selection where selection_to_attribute_start IS NULL;&quot;</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;SELECT DISTINCT datahub from process_selection WHERE selection_to_attribute_start IS NULL and public=&#39;NO&#39;&quot;</span>
+	<span class="sd">&quot;&quot;&quot; update process_selection set selection_to_attribute_start=NULL where selection_id in (12,13,14) &quot;&quot;&quot;</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Getting datahub info from process_selection:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+	<span class="n">selections</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">rows</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+		<span class="n">rows</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ROWS:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">rows</span><span class="p">))</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+	<span class="k">for</span> <span class="n">datahub</span> <span class="ow">in</span> <span class="n">rows</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Datahub:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datahub</span><span class="p">))</span>
+		<span class="n">selections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">datahub</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+	<span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">selections</span></div>
+
+
+<div class="viewcode-block" id="get_selection_info_old"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_selection_info_old">[docs]</a><span class="k">def</span> <span class="nf">get_selection_info_old</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">datahub</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Obselete.....</span>
+<span class="sd">	:param conn: connection</span>
+<span class="sd">	:param datahub: datahub</span>
+<span class="sd">	:return: selection_ids</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;select selection_id,tax_id,study_accession,run_accession,pipeline_name,analysis_id,public,webin,</span><span class="se">\</span>
+<span class="s2">	continuity from process_selection where datahub = &#39;</span><span class="si">{}</span><span class="s2">&#39; and public = &#39;NO&#39;</span><span class="se">\</span>
+<span class="s2">	 and selection_to_attribute_start is NULL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datahub</span><span class="p">)</span>
+
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">GET_SELECTION_INFO query:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+	<span class="n">selection_all</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">tax_id</span><span class="p">,</span> <span class="n">study_accession</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span> <span class="n">public</span><span class="p">,</span> <span class="n">webin</span><span class="p">,</span> <span class="n">process_type</span><span class="p">,</span>
+		 <span class="n">continuity</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+		<span class="n">selectatb</span> <span class="o">=</span> <span class="n">selection</span><span class="p">(</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">datahub</span><span class="p">,</span> <span class="n">tax_id</span><span class="p">,</span> <span class="n">study_accession</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span>
+							  <span class="n">public</span><span class="p">,</span> <span class="n">webin</span><span class="p">,</span> <span class="n">process_type</span><span class="p">,</span> <span class="n">continuity</span><span class="p">)</span>
+		<span class="n">selection_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selectatb</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">selection_all</span></div>
+
+
+<div class="viewcode-block" id="get_selection_info"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_selection_info">[docs]</a><span class="k">def</span> <span class="nf">get_selection_info</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">datahub</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	get_selection_info:</span>
+<span class="sd">	Fetch from process_selection those selection_id without start date and not public</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param datahub: Datahub</span>
+<span class="sd">	:return: all selection ids satisfying the description above</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;select selection_id,tax_id,study_accession,run_accession,pipeline_name,analysis_id,public,&quot;</span>
+			 <span class="s2">&quot;selection_to_attribute_end, webin, process_type, continuity from process_selection where </span><span class="se">\</span>
+<span class="s2">			 datahub = &#39;</span><span class="si">{}</span><span class="s2">&#39; and public = &#39;NO&#39; and selection_to_attribute_start is NULL&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">datahub</span><span class="p">)</span>
+
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">GET_SELECTION_INFO query:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+	<span class="n">selection_all</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="k">for</span> <span class="p">(</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">tax_id</span><span class="p">,</span> <span class="n">study_accession</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span> <span class="n">public</span><span class="p">,</span>
+		 <span class="n">selection_to_attribute_end</span><span class="p">,</span> <span class="n">webin</span><span class="p">,</span> <span class="n">process_type</span><span class="p">,</span> <span class="n">continuity</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+		<span class="sd">&quot;&quot;&quot; Continuity is NO Exclude selection with selection_to_attribute_end &quot;&quot;&quot;</span>
+
+		<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CONTINUITY:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">continuity</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+		<span class="k">if</span> <span class="n">continuity</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;no&#39;</span> <span class="ow">and</span> <span class="n">selection_to_attribute_end</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+			<span class="k">continue</span>
+		<span class="sd">&quot;&quot;&quot; When continuity is YES, we need access to run_id to filter run</span>
+<span class="sd">		that need to be pushed into Process_stage and Process_report table, this should be handle in the </span>
+<span class="sd">		Process_report Class</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">selectatb</span> <span class="o">=</span> <span class="n">selection</span><span class="p">(</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">datahub</span><span class="p">,</span> <span class="n">tax_id</span><span class="p">,</span> <span class="n">study_accession</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span>
+							  <span class="n">public</span><span class="p">,</span> <span class="n">selection_to_attribute_end</span><span class="p">,</span> <span class="n">webin</span><span class="p">,</span> <span class="n">process_type</span><span class="p">,</span> <span class="n">continuity</span><span class="p">)</span>
+		<span class="n">selection_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">selectatb</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">selection_all</span></div>
+
+
+<div class="viewcode-block" id="log_error"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.log_error">[docs]</a><span class="k">def</span> <span class="nf">log_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">message_type</span><span class="p">,</span> <span class="n">log_file</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	log_error: log any encounter error into fil</span>
+<span class="sd">	:param message: Error found</span>
+<span class="sd">	:param message_type: message type (ERROR, WARNING, INFO)</span>
+<span class="sd">	:param log_file: log file</span>
+<span class="sd">	:return: None</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="n">file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s1">&#39;error&#39;</span><span class="p">:</span>
+		<span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;ERROR: &#39;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;ERROR: &#39;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	<span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s1">&#39;warnning&#39;</span><span class="p">:</span>
+		<span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARNNING: &#39;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;WARNNING: &#39;</span> <span class="o">+</span> <span class="n">message</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	<span class="k">elif</span> <span class="n">message_type</span> <span class="o">==</span> <span class="s1">&#39;info&#39;</span><span class="p">:</span>
+		<span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">message</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;wrong message type&quot;</span><span class="p">)</span>
+	<span class="n">file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_default_attributes"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_default_attributes">[docs]</a><span class="k">def</span> <span class="nf">get_default_attributes</span><span class="p">(</span><span class="n">tsv_file</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	get_default_attributes:</span>
+<span class="sd">	parse datahub metadata file for runs details</span>
+<span class="sd">	Read the header line of the tsv for purpose of labelling columns</span>
+<span class="sd">	:param tsv_file: metadata file</span>
+<span class="sd">	:return: A default_attribute object</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">tsv_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">fname</span><span class="p">:</span>
+		<span class="n">lines</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">readlines</span><span class="p">()</span>
+	<span class="n">values</span> <span class="o">=</span> <span class="n">lines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+	<span class="n">header_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span>
+	<span class="n">tax_id_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;tax_id&quot;</span><span class="p">)</span>
+	<span class="n">scientific_name_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;scientific_name&quot;</span><span class="p">)</span>
+	<span class="n">sample_accession_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;sample_accession&quot;</span><span class="p">)</span>
+	<span class="n">secondary_sample_acc_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;secondary_sample_accession&quot;</span><span class="p">)</span>
+	<span class="n">experiment_accession_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;experiment_accession&quot;</span><span class="p">)</span>
+	<span class="n">study_accession_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;study_accession&quot;</span><span class="p">)</span>
+	<span class="n">secondary_study_acc_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;secondary_study_accession&quot;</span><span class="p">)</span>
+	<span class="n">run_accession_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;run_accession&quot;</span><span class="p">)</span>
+	<span class="n">center_name_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;center_name&quot;</span><span class="p">)</span>
+	<span class="n">instrument_model_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s1">&#39;instrument_platform&#39;</span><span class="p">)</span>
+	<span class="n">fastq_files_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fastq_ftp&quot;</span><span class="p">)</span>
+	<span class="n">fastq_md5_index</span> <span class="o">=</span> <span class="n">values</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;fastq_md5&quot;</span><span class="p">)</span>
+
+	<span class="sd">&quot;&quot;&quot; Now skip the header line  and fetch column contents  &quot;&quot;&quot;</span>
+
+	<span class="n">attributes_all</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+	<span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">lines</span><span class="p">:</span>
+		<span class="n">val</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">&quot;</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">!=</span> <span class="n">header_len</span><span class="p">:</span>
+				<span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Line number:</span><span class="si">{}</span><span class="s2"> has wrong number of column : </span><span class="si">{}</span><span class="s2"> vs </span><span class="si">{}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">val</span><span class="p">),</span> <span class="n">header_len</span><span class="p">)</span>
+				<span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+				<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ERROR:</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">val</span><span class="p">))</span>
+				<span class="n">log_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">selection_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+				<span class="n">process_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+				<span class="n">datahub</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+				<span class="n">tax_id</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">tax_id_index</span><span class="p">]</span>
+				<span class="n">scientific_name</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">scientific_name_index</span><span class="p">]</span>
+				<span class="n">sample_accession</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">sample_accession_index</span><span class="p">]</span>
+				<span class="n">secondary_sample_acc</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">secondary_sample_acc_index</span><span class="p">]</span>
+				<span class="n">experiment_accession</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">experiment_accession_index</span><span class="p">]</span>
+				<span class="n">study_accession</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">study_accession_index</span><span class="p">]</span>
+				<span class="n">secondary_study_acc</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">secondary_study_acc_index</span><span class="p">]</span>
+				<span class="n">run_accession</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">run_accession_index</span><span class="p">]</span>
+				<span class="n">pipeline_name</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+				<span class="n">provider_center_name</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">center_name_index</span><span class="p">]</span>
+				<span class="n">provider_webin_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>  <span class="c1"># val[provider_webin_id_index]</span>
+				<span class="n">instrument_model</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">instrument_model_index</span><span class="p">]</span>
+				<span class="n">fastq_files</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">fastq_files_index</span><span class="p">]</span>
+				<span class="n">fastq_md5</span> <span class="o">=</span> <span class="n">val</span><span class="p">[</span><span class="n">fastq_md5_index</span><span class="p">]</span>
+				<span class="n">public</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+				<span class="n">analyst_webin_id</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+				<span class="n">attr</span> <span class="o">=</span> <span class="n">default_attributes</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">datahub</span><span class="p">,</span> <span class="n">tax_id</span><span class="p">,</span> <span class="n">scientific_name</span><span class="p">,</span>
+										  <span class="n">sample_accession</span><span class="p">,</span> <span class="n">secondary_sample_acc</span><span class="p">,</span> <span class="n">experiment_accession</span><span class="p">,</span>
+										  <span class="n">study_accession</span><span class="p">,</span> <span class="n">secondary_study_acc</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">,</span>
+										  <span class="n">provider_center_name</span><span class="p">,</span> <span class="n">provider_webin_id</span><span class="p">,</span> <span class="n">instrument_model</span><span class="p">,</span> <span class="n">fastq_files</span><span class="p">,</span> <span class="n">fastq_md5</span><span class="p">,</span>
+										  <span class="n">public</span><span class="p">,</span> <span class="n">analyst_webin_id</span><span class="p">)</span>
+
+				<span class="n">attributes_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+		<span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+	<span class="k">return</span> <span class="n">attributes_all</span></div>
+
+
+<div class="viewcode-block" id="get_list_of_study"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_list_of_study">[docs]</a><span class="k">def</span> <span class="nf">get_list_of_study</span><span class="p">(</span><span class="n">selections</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	get_list_of_study: list of studies per metadata files</span>
+<span class="sd">	:param selections:  default_attributes object</span>
+<span class="sd">	:return: list of studies</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">studies</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="k">for</span> <span class="n">select</span> <span class="ow">in</span> <span class="n">selections</span><span class="p">:</span>
+		<span class="n">studies</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">study_accession</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">studies</span></div>
+
+
+<div class="viewcode-block" id="get_process_id"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.get_process_id">[docs]</a><span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	get_process_id: generate a string of dmYHMS</span>
+<span class="sd">	:param id: process_id</span>
+<span class="sd">	:return: unique name of string and dateyeartime</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="nb">id</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">%m%Y%H%M%S&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="insert_default_stages"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.insert_default_stages">[docs]</a><span class="k">def</span> <span class="nf">insert_default_stages</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	insert_default_stages: Populate process_stages with various</span>
+<span class="sd">	pipeline stages: data_provider, core_executor, analysis_reporter</span>
+<span class="sd">	process_archival with start, end time and errors</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param process_id: process id</span>
+<span class="sd">	:param selection_id: selection id</span>
+<span class="sd">	:return: None</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">stage_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">stages</span><span class="o">.</span><span class="n">data_provider_stage_name</span><span class="p">,</span> <span class="n">stages</span><span class="o">.</span><span class="n">core_executor_stage_name</span><span class="p">,</span> <span class="n">stages</span><span class="o">.</span><span class="n">analysis_reporter_stage_name</span><span class="p">,</span>
+				  <span class="n">stages</span><span class="o">.</span><span class="n">process_archival_stage_name</span><span class="p">]</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">stage_list</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">stage_list</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+	<span class="n">default_stage</span> <span class="o">=</span> <span class="n">stages</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">stage_list</span><span class="p">)</span>
+	<span class="n">default_stage</span><span class="o">.</span><span class="n">insert_all_into_process_stages</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="set_started"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.set_started">[docs]</a><span class="k">def</span> <span class="nf">set_started</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;update process_selection set selection_to_attribute_start=NOW() where selection_id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selection_id</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Cannot update process_stages set stage_start=NOW():&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="set_finished"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.set_finished">[docs]</a><span class="k">def</span> <span class="nf">set_finished</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	set_finished: Update process_selection table, set end time to curtime()</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param selection_id: selection id</span>
+<span class="sd">	:return: None</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;update process_selection set selection_to_attribute_end=NOW() where selection_id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selection_id</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Cannot update process_stages set stage_end=NOW():&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="process_report_set_started"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.process_report_set_started">[docs]</a><span class="k">def</span> <span class="nf">process_report_set_started</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	process_report_set_started: Populate process_report table</span>
+<span class="sd">	with various attributes: study_accession,datahub,run_accession,process_id,</span>
+<span class="sd">	selection_id,process_report_start_time</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param info: info is a dict with the following:</span>
+<span class="sd">		study_id, datahub, run_id,process_id, selection_id, start_time</span>
+<span class="sd">	:return: None</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">study_accession</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;study_accession&#39;</span><span class="p">]</span>
+	<span class="n">run_accession</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;run_accession&#39;</span><span class="p">]</span>
+	<span class="n">datahub</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;datahub&#39;</span><span class="p">]</span>
+	<span class="n">process_id</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;process_id&#39;</span><span class="p">]</span>
+	<span class="n">selection_id</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;selection_id&#39;</span><span class="p">]</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO process_report (study_accession,datahub,run_accession,process_id,</span><span class="se">\</span>
+<span class="s2">	selection_id,process_report_start_time) values(&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,now())&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">study_accession</span><span class="p">,</span>
+																						   <span class="n">datahub</span><span class="p">,</span>
+																						   <span class="n">run_accession</span><span class="p">,</span>
+																						   <span class="n">process_id</span><span class="p">,</span>
+																						   <span class="n">selection_id</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PROCESS_REPORT QUERY:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span>
+			<span class="s2">&quot;Error: Can not INSERT study:</span><span class="si">{}</span><span class="s2"> datahub:</span><span class="si">{}</span><span class="s2"> process_id:</span><span class="si">{}</span><span class="s2"> selection_id:</span><span class="si">{}</span><span class="s2"> run:</span><span class="si">{}</span><span class="s2"> in process_report &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">study_accession</span><span class="p">,</span>
+																													   <span class="n">datahub</span><span class="p">,</span>
+																													   <span class="n">process_id</span><span class="p">,</span>
+																													   <span class="n">selection_id</span><span class="p">,</span>
+																													   <span class="n">run_accession</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">traceb</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">trace_back</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+		<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: exc_info[0]:</span><span class="si">{}</span><span class="s2">, exc_info[1]:</span><span class="si">{}</span><span class="s2"> , exc_info[2]</span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">traceb</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">trace_back</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;show profiles&#39;</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="process_report_set_finished"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.process_report_set_finished">[docs]</a><span class="k">def</span> <span class="nf">process_report_set_finished</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">process_report_id</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	process_report_set_finished: Populate process_report table</span>
+<span class="sd">	with finish time this is called by process_archival script.</span>
+<span class="sd">	:param con: PostGreSQL connection</span>
+<span class="sd">	:param process_report_id:  process_report id</span>
+<span class="sd">	:return: None</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;update process_report set process_report_end_time=NOW()</span><span class="se">\</span>
+<span class="s2">	 where process_report_id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">process_report_id</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+		<span class="k">return</span> <span class="kc">True</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: can not set process_report_end_time to NOW():&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+		<span class="k">return</span> <span class="kc">False</span></div>
+
+
+
+<div class="viewcode-block" id="set_error"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.set_error">[docs]</a><span class="k">def</span> <span class="nf">set_error</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">error</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	set_error:</span>
+<span class="sd">	Upate process_selection table with any error that occur while populating process_stage,</span>
+<span class="sd">	process_attributes, process_report table with information from the datahub metadata file</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param selection_id: selection_id (process_selection table native)</span>
+<span class="sd">	:param error: Any error encounter during selection_to_attributes runs ...</span>
+<span class="sd">	:return: None</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">error</span> <span class="o">=</span> <span class="n">error</span><span class="p">[:</span><span class="mi">500</span><span class="p">]</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;update process_selection set selection_to_attribute_error=&#39;</span><span class="si">{}</span><span class="s2">&#39; where selection_id=&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">error</span><span class="p">,</span>
+																										  <span class="n">selection_id</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="mi">100</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;LENGTH OF ERROR:&quot;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">error</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+		<span class="k">return</span> <span class="kc">True</span>
+	<span class="k">except</span> <span class="p">(</span><span class="ne">Exception</span><span class="p">,</span> <span class="n">psycopg2</span><span class="o">.</span><span class="n">DatabaseError</span><span class="p">)</span> <span class="k">as</span> <span class="n">db_err</span><span class="p">:</span>
+		<span class="nb">print</span><span class="p">(</span><span class="n">db_err</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PostGreSQL ERROR AND WARNING </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">db_err</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: Cannot</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+		<span class="k">return</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="check_started"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.check_started">[docs]</a><span class="k">def</span> <span class="nf">check_started</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	check_started: Fetch entries from process_selection with null start</span>
+<span class="sd">	date.</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param selection_id: selection_id</span>
+<span class="sd">	:return: Boolean (True/False)</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select selection_id from process_selection where selection_to_attribute_start is null&quot;</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">CHECK_STARTED function query:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+	<span class="n">selection_id_all</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+		<span class="n">selection_id_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+	<span class="k">if</span> <span class="n">selection_id</span> <span class="ow">in</span> <span class="n">selection_id_all</span><span class="p">:</span>
+		<span class="sd">&quot;&quot;&quot;Not started&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="kc">False</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="sd">&quot;&quot;&quot;Started&quot;&quot;&quot;</span>
+		<span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="is_processing_type"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.is_processing_type">[docs]</a><span class="k">def</span> <span class="nf">is_processing_type</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	is_processing_type: what is type of processing will be carried out.</span>
+<span class="sd">	datahub -&gt; study -&gt; runs</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param selection_id: selection_id</span>
+<span class="sd">	:return: datahub or study or runs</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select distinct process_type from process_selection where selection_id=&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selection_id</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="n">process_type</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+	<span class="n">process_type</span> <span class="o">=</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Is the processing type:</span><span class="se">\n</span><span class="si">{}</span><span class="se">\n</span><span class="s2"> Process type is: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">,</span>
+																			  <span class="n">process_type</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">ruler</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+	<span class="k">return</span> <span class="n">process_type</span></div>
+
+
+<div class="viewcode-block" id="already_ran_runs"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.already_ran_runs">[docs]</a><span class="k">def</span> <span class="nf">already_ran_runs</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">processing_type</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	already_ran_runs: Get previously ran runs accession from the</span>
+<span class="sd">	Process_report table.</span>
+<span class="sd">	:param conn: PostGreSQL connection</span>
+<span class="sd">	:param selection_id: selection_id</span>
+<span class="sd">	:param processing_type:  processing type (datahub, study, run)</span>
+<span class="sd">	:return: ran run accessions.</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="k">if</span> <span class="n">processing_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;run&#39;</span><span class="p">:</span>
+		<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;Select distinct run_accession from process_report where process_report_start_time is not null and  process_report_end_time is null and selection_id =</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+			<span class="n">selection_id</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;Select distinct run_accession from process_report where process_report_start_time is not null and selection_id =</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selection_id</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+	<span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+		<span class="n">ran_accessions</span> <span class="o">=</span> <span class="p">[</span><span class="n">run</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">]</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+	<span class="k">return</span> <span class="n">ran_accessions</span></div>
+
+
+<div class="viewcode-block" id="exclude_processed_run"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.exclude_processed_run">[docs]</a><span class="k">def</span> <span class="nf">exclude_processed_run</span><span class="p">(</span><span class="n">select</span><span class="p">,</span> <span class="n">attributes_all</span><span class="p">,</span> <span class="n">already_ran_run_accs</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	exclude_processed_run: exclude those runs that have been processed.</span>
+<span class="sd">	This is actionable when the continuity is set to Yes in process_selection</span>
+<span class="sd">	table</span>
+<span class="sd">	:param select: an object from the attr list of objects</span>
+<span class="sd">	:param attributes_all: a list of attribute objects</span>
+<span class="sd">	:param already_ran_run_accs: already processed runs</span>
+<span class="sd">	:return: list of runs to exclude from the analysis</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">type_run_accs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;/&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PROCESS_TYPE:</span><span class="si">{}</span><span class="s2"> -&gt; Selection_id </span><span class="si">{}</span><span class="s2"> ,</span><span class="se">\</span>
+<span class="s2">	already_run:</span><span class="si">{}</span><span class="s2"> Against:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="p">,</span>
+									  <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span>
+									  <span class="nb">len</span><span class="p">(</span><span class="n">already_ran_run_accs</span><span class="p">),</span>
+									  <span class="nb">len</span><span class="p">([</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span><span class="p">])))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;/&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="k">if</span> <span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;study&#39;</span><span class="p">:</span>
+		<span class="n">type_run_accs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span> <span class="k">if</span> <span class="n">select</span><span class="o">.</span><span class="n">study_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="n">attr</span><span class="o">.</span><span class="n">study_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()])</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">type_run_accs</span><span class="p">))</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Length type run :</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">type_run_accs</span><span class="p">)))</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+	<span class="k">elif</span> <span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;datahub&#39;</span><span class="p">:</span>
+		<span class="n">type_run_accs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span><span class="p">])</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PROCESS_TYPE:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="p">))</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+	<span class="k">elif</span> <span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;run&#39;</span><span class="p">:</span>
+		<span class="n">type_run_accs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span> <span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="n">select</span><span class="o">.</span><span class="n">run_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()])</span>
+
+	<span class="n">type_to_run_accs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">type_run_accs</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">already_ran_run_accs</span><span class="p">)))</span>
+	<span class="n">type_attributes_all</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Processing type is </span><span class="si">{}</span><span class="s1"> and continuity is </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">continuity</span><span class="p">))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Runs accessions from metadatafile...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">type_run_accs</span><span class="p">)))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Runs already processed...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">already_ran_run_accs</span><span class="p">)))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> Runs accession that will be processed this time...&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">type_to_run_accs</span><span class="p">)))</span>
+	<span class="nb">print</span><span class="p">(</span><span class="n">type_to_run_accs</span><span class="p">)</span>
+	<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;_&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="ow">in</span> <span class="n">type_to_run_accs</span><span class="p">:</span>
+			<span class="n">type_attributes_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">attr</span><span class="p">)</span>
+	<span class="n">attributes_all</span> <span class="o">=</span> <span class="n">type_attributes_all</span>
+	<span class="k">return</span> <span class="n">attributes_all</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../selection_to_attribute.html#selection_to_attribute.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	Main call to the data_provider scripts.</span>
+<span class="sd">	:return: None</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="c1"># properties_file = get_args()</span>
+	<span class="n">options</span> <span class="o">=</span> <span class="n">process_arguments</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+	<span class="n">properties_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">properties_file</span>
+	<span class="n">prop</span> <span class="o">=</span> <span class="n">properties</span><span class="p">(</span><span class="n">properties_file</span><span class="p">)</span>
+	<span class="sd">&quot;&quot;&quot; From class SelectaDB Return a propertie object &quot;&quot;&quot;</span>
+	<span class="k">if</span> <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">db_live</span><span class="p">):</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PostGres DB is live and accepting connection&quot;</span><span class="p">)</span>
+			<span class="n">conn</span> <span class="o">=</span> <span class="n">get_connection</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">dbuser</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbpassword</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbhost</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbname</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbport</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">conn</span> <span class="o">=</span> <span class="n">get_connection</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">dbuser</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbpassword</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbhost</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbname</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbport</span><span class="p">)</span>
+		<span class="sd">&quot;&quot;&quot; From PostGreSQL return a connection object to localhost &quot;&quot;&quot;</span>
+		<span class="n">workdir</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">workdir_input</span>
+		<span class="n">lsf</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">lsf</span>
+		<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+		<span class="n">accounts</span> <span class="o">=</span> <span class="n">get_datahub_accounts</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+		<span class="sd">&quot;&quot;&quot; Accounts is list of dictionaries of users accounts and passwords &quot;&quot;&quot;</span>
+		<span class="n">selections</span> <span class="o">=</span> <span class="n">get_selection_to_attributes_account</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SELECTION_LIST: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selections</span><span class="p">))</span>
+		<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+
+		<span class="sd">&quot;&quot;&quot;Selections is a list of datahub account, eg: dcc_allison &quot;&quot;&quot;</span>
+		<span class="k">global</span> <span class="n">log_file</span>
+		<span class="n">log_file</span> <span class="o">=</span> <span class="s1">&#39;log.txt&#39;</span>
+		<span class="n">final_errors</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+		<span class="k">for</span> <span class="n">account</span> <span class="ow">in</span> <span class="n">accounts</span><span class="p">:</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Looping in account lists </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account</span><span class="p">))</span>
+			<span class="nb">print</span><span class="p">(</span><span class="n">selections</span><span class="p">)</span>
+			<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+			<span class="n">account_id</span> <span class="o">=</span> <span class="n">account</span><span class="p">[</span><span class="s1">&#39;account_id&#39;</span><span class="p">]</span>
+			<span class="k">if</span> <span class="n">account_id</span> <span class="ow">in</span> <span class="n">selections</span> <span class="ow">and</span> <span class="n">account_id</span> <span class="o">!=</span> <span class="s1">&#39;dcc_fake&#39;</span><span class="p">:</span>
+				<span class="n">outputfile</span><span class="p">,</span> <span class="n">job</span> <span class="o">=</span> <span class="n">fetch_datahub_metadatafile</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">workdir</span><span class="p">,</span> <span class="n">lsf</span><span class="p">)</span>
+				<span class="sd">&quot;&quot;&quot;Get metadata per datahub accounts&quot;&quot;&quot;</span>
+				<span class="n">localinfo</span> <span class="o">=</span> <span class="s2">&quot;account </span><span class="si">{}</span><span class="s2"> has the corresponding metadatafile </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account</span><span class="p">,</span> <span class="n">outputfile</span><span class="p">)</span>
+				<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+				<span class="nb">print</span><span class="p">(</span><span class="n">localinfo</span><span class="p">)</span>
+				<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+				<span class="sd">&quot;&quot;&quot; GET_SELECTION_INFO return a SELECTADB.class.SELECTION object</span>
+<span class="sd">				this object is made up of selection_id, tax_id, study_acc, run_acc,</span>
+<span class="sd">				pipeline_name, analysis_id, public, webin, datahub(eg:dcc_allison).</span>
+<span class="sd">				These are fetched from process_selection table</span>
+<span class="sd">				&quot;&quot;&quot;</span>
+				<span class="n">selection_all</span> <span class="o">=</span> <span class="n">get_selection_info</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">account_id</span><span class="p">)</span>
+				<span class="sd">&quot;&quot;&quot; &quot;&quot;&quot;</span>
+				<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+				<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span><span class="o">.</span><span class="vm">__dict__</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">selection_all</span><span class="p">])))</span>
+				<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+
+				<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">stat</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span><span class="o">.</span><span class="n">st_size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+					<span class="k">for</span> <span class="n">select</span> <span class="ow">in</span> <span class="n">selection_all</span><span class="p">:</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;File size is zero .....&#39;</span><span class="p">)</span>
+						<span class="n">message</span> <span class="o">=</span> <span class="s2">&quot;Failed to download the metadata file </span><span class="si">{}</span><span class="s2"> from account </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outputfile</span><span class="p">,</span> <span class="n">account_id</span><span class="p">)</span>
+						<span class="n">log_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
+						<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+						<span class="nb">print</span><span class="p">(</span><span class="n">outputfile</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">pipeline_name</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">datahub</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">study_accession</span><span class="p">,</span>
+							  <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+						<span class="n">final_errors</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">error_list</span><span class="p">)</span>
+						<span class="n">final_errors</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+						<span class="c1"># TODO: change it in a way if it doesn&#39;t find the metadata file, just log it into log file and clear the</span>
+						<span class="c1"># start column to be able to re-run it again</span>
+						<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+						<span class="nb">print</span><span class="p">(</span><span class="n">textwrap</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">final_errors</span><span class="p">,</span> <span class="mi">250</span><span class="p">))</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SELECION_ID: </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">))</span>
+						<span class="nb">print</span><span class="p">(</span><span class="n">ruler</span><span class="p">)</span>
+						<span class="n">set_error</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">final_errors</span><span class="p">)</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Metadata found with following id:</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account_id</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+					<span class="k">try</span><span class="p">:</span>
+						<span class="n">attributes_all</span> <span class="o">=</span> <span class="n">get_default_attributes</span><span class="p">(</span><span class="n">outputfile</span><span class="p">)</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;_&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing datahub :</span><span class="si">{}</span><span class="se">\n</span><span class="s2">Initial attribute_all length </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">account_id</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">attributes_all</span><span class="p">)))</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;_&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+						<span class="n">all_run_accs</span> <span class="o">=</span> <span class="p">[]</span>
+						<span class="sd">&quot;&quot;&quot; GET_DEFAULT_ATTRIBUTE, extract from the metadata tab delimited file the following information:</span>
+<span class="sd">						tax_id	scientific_name	sample_accession	secondary_sample_accession	experiment_accession</span>
+<span class="sd">						study_accession	secondary_study_accession	run_accession	center_name instrument_model fastq_ftp fastq_md5</span>
+<span class="sd">						attributes_all is a list containing all the data for a given dcc_user, with process_id,selection_id,datahub set to &#39;&#39;</span>
+<span class="sd">						since the latter are missing from the metadata file.</span>
+<span class="sd">						&quot;&quot;&quot;</span>
+					<span class="k">except</span><span class="p">:</span>
+						<span class="c1"># TODO in case the study exist, we shouldn&#39;t through database error and just log it and clear the</span>
+						<span class="c1"># satrt column to be able to re-run it again</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Cannot process </span><span class="si">{}</span><span class="s2"> file&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outputfile</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+						<span class="c1"># message=&quot;Exception: &quot;+str(sys.exc_info()[1])</span>
+						<span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+						<span class="n">err_lines</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">exc_type</span><span class="p">,</span> <span class="n">exc_value</span><span class="p">,</span> <span class="n">exc_traceback</span><span class="p">)</span>
+						<span class="n">message</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">err_lines</span><span class="p">)</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;message:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">))</span>
+						<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+						<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;ERROR: Cannot process </span><span class="si">{}</span><span class="s2"> file&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">outputfile</span><span class="p">))</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+					<span class="k">for</span> <span class="n">select</span> <span class="ow">in</span> <span class="n">selection_all</span><span class="p">:</span>
+						<span class="sd">&quot;&quot;&quot; selection_all= selection_id, tax_id, study_acc, run_acc,</span>
+<span class="sd">							pipeline_name, analysis_id, public, webin, selection_to_attribute_end, process_type, continuity, datahub(eg:dcc_allison).</span>
+<span class="sd">							These are fetch from process_selection.</span>
+<span class="sd">							What is the processing type:</span>
+<span class="sd">						&quot;&quot;&quot;</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Processing Selection_id:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">with process_type:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">and continuity:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">process_type</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">continuity</span><span class="p">))</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+						<span class="n">processing_type</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">process_type</span>
+						<span class="n">continuity</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">continuity</span>
+						<span class="n">selection_to_attribute_end</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_to_attribute_end</span>
+						<span class="k">if</span> <span class="ow">not</span> <span class="n">error_list</span><span class="p">:</span>
+							<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">The processing of the metadata with project:</span><span class="si">{}</span><span class="s2"> datahub:</span><span class="si">{}</span><span class="s2"> had zero errors:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">study_accession</span><span class="p">,</span>
+																															<span class="n">select</span><span class="o">.</span><span class="n">datahub</span><span class="p">))</span>
+
+							<span class="k">try</span><span class="p">:</span>
+								<span class="k">if</span> <span class="ow">not</span> <span class="n">check_started</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">):</span>
+									<span class="sd">&quot;&quot;&quot;&quot;</span>
+<span class="sd">									Check_started : return true or false for selection_process_start</span>
+<span class="sd">									ie Is selection_id from process_selection has (selection_to_attribute_start null)</span>
+<span class="sd">									&quot;&quot;&quot;</span>
+									<span class="n">set_started</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">)</span>
+									<span class="sd">&quot;&quot;&quot;&quot;</span>
+<span class="sd">									set_started: set selection_to_attribute_start to now() for selection_id in process_selection</span>
+<span class="sd">									Here we have to make use of the continuity value in select object to proceed further</span>
+<span class="sd">									&quot;&quot;&quot;</span>
+									<span class="c1">#study_to_run_acc = list()</span>
+									<span class="c1">#datahub_to_run_acc = list()</span>
+									<span class="c1">#run_to_run_acc = list()</span>
+
+									<span class="k">if</span> <span class="n">continuity</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;yes&quot;</span><span class="p">:</span>
+										<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">										update the process_stage and process_report table for</span>
+<span class="sd">										subset of run_id not already processed</span>
+<span class="sd">										&quot;&quot;&quot;</span>
+										<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CONTINUITY YES met&quot;</span><span class="p">)</span>
+										<span class="n">already_ran_run_accs</span> <span class="o">=</span> <span class="n">already_ran_runs</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">processing_type</span><span class="p">)</span>
+										<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Already ran runs: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">already_ran_run_accs</span><span class="p">)))</span>
+										<span class="sd">&quot;&quot;&quot; Excluded already processed runs if any &quot;&quot;&quot;</span>
+										<span class="nb">print</span><span class="p">([</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="mi">10</span><span class="p">])</span>
+										<span class="n">attributes_all</span> <span class="o">=</span> <span class="n">exclude_processed_run</span><span class="p">(</span><span class="n">select</span><span class="p">,</span> <span class="n">attributes_all</span><span class="p">,</span>
+																			   <span class="n">already_ran_run_accs</span><span class="p">)</span>
+										<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+										<span class="nb">print</span><span class="p">([</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span><span class="p">][</span><span class="mi">1</span><span class="p">:</span><span class="mi">10</span><span class="p">])</span>
+										<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+										<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+										<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;New attribute_all length </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">attributes_all</span><span class="p">)))</span>
+										<span class="nb">print</span><span class="p">(</span><span class="n">attributes_all</span><span class="p">)</span>
+										<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+
+									<span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span><span class="p">:</span>
+										<span class="sd">&quot;&quot;&quot; Select runs under study_id in process selection &quot;&quot;&quot;</span>
+										<span class="k">if</span> <span class="n">processing_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;study&#39;</span> <span class="ow">and</span> \
+														<span class="n">select</span><span class="o">.</span><span class="n">study_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="n">attr</span><span class="o">.</span><span class="n">study_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+											<span class="n">report_process</span> <span class="o">=</span> <span class="n">Process_report</span><span class="p">(</span><span class="n">select</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">error_list</span><span class="p">)</span>
+											<span class="n">report_process</span><span class="o">.</span><span class="n">log_process_report_info</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+										<span class="k">elif</span> <span class="n">processing_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;run&#39;</span> <span class="ow">and</span> \
+														<span class="n">select</span><span class="o">.</span><span class="n">run_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">():</span>
+											<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+											<span class="nb">print</span><span class="p">(</span><span class="n">processing_type</span><span class="p">)</span>
+											<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+											<span class="n">all_run_accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span> <span class="k">if</span> <span class="n">select</span><span class="o">.</span><span class="n">run_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="o">==</span> <span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span><span class="o">.</span><span class="n">strip</span><span class="p">()]</span>
+
+											<span class="sd">&quot;&quot;&quot; Select specific run id for processing &quot;&quot;&quot;</span>
+											<span class="n">report_process</span> <span class="o">=</span> <span class="n">Process_report</span><span class="p">(</span><span class="n">select</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">error_list</span><span class="p">)</span>
+											<span class="n">report_process</span><span class="o">.</span><span class="n">log_process_report_info</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+										<span class="k">elif</span> <span class="n">processing_type</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;datahub&#39;</span><span class="p">:</span>
+											<span class="n">all_run_accs</span> <span class="o">=</span> <span class="p">[</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span> <span class="k">for</span> <span class="n">attr</span> <span class="ow">in</span> <span class="n">attributes_all</span><span class="p">]</span>
+											<span class="sd">&quot;&quot;&quot; Select all runs under the dcc_hub account for processing &quot;&quot;&quot;</span>
+											<span class="n">report_process</span> <span class="o">=</span> <span class="n">Process_report</span><span class="p">(</span><span class="n">select</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">error_list</span><span class="p">)</span>
+											<span class="n">report_process</span><span class="o">.</span><span class="n">log_process_report_info</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+
+							<span class="k">except</span><span class="p">:</span>
+								<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Cannot process selection_id </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+								<span class="c1">#message = str(sys.exc_info()[1])</span>
+								<span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+								<span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+								<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+								<span class="n">final_errors</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">error_list</span><span class="p">)</span>
+								<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+								<span class="nb">print</span><span class="p">(</span><span class="n">final_errors</span><span class="p">)</span>
+								<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+								<span class="n">set_error</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">final_errors</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+								<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+
+						<span class="k">else</span><span class="p">:</span>
+							<span class="n">final_errors</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">error_list</span><span class="p">)</span>
+							<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERRORs: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">final_errors</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+							<span class="n">set_error</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="n">final_errors</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+						<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+						<span class="sd">&quot;&quot;&quot; Amend various SELECTA table with metadata from each SELECTION_ID&quot;&quot;&quot;</span>
+
+						<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;SELECT From SELECTION_ALL next Loop&#39;</span><span class="p">)</span>
+					<span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+		<span class="n">conn</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+	<span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

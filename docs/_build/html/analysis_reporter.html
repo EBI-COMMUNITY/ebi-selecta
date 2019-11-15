@@ -1,0 +1,319 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>analysis_reporter module &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="bsub module" href="bsub.html" />
+    <link rel="prev" title="PipelineAttributes module" href="PipelineAttributes.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">selecta</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="PipelineAttributes.html">PipelineAttributes module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">analysis_reporter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bsub.html">bsub module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_executor.html">core_executor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider.html">data_provider module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_to_selection.html">input_to_selection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lsf_stats.html">lsf_stats module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipelines.html">pipelines module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process_archival.html">process_archival module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html">reporting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selecta_processing_reports.html">selecta_processing_reports module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selectadb.html">selectadb module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selection_to_attribute.html">selection_to_attribute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sra_objects.html">sra_objects module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="submission.html">submission module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">selecta</a> &raquo;</li>
+        
+      <li>analysis_reporter module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/analysis_reporter.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-analysis_reporter">
+<span id="analysis-reporter-module"></span><h1>analysis_reporter module<a class="headerlink" href="#module-analysis_reporter" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="analysis_reporter.calculateMd5">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">calculateMd5</code><span class="sig-paren">(</span><em class="sig-param">file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#calculateMd5"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.calculateMd5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.create_analysis_xml">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">create_analysis_xml</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">analysis</em>, <em class="sig-param">prop</em>, <em class="sig-param">attributes</em>, <em class="sig-param">analysis_xml</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#create_analysis_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.create_analysis_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.create_submission_xml">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">create_submission_xml</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">analysis</em>, <em class="sig-param">analysis_xml</em>, <em class="sig-param">submission_xml</em>, <em class="sig-param">action</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#create_submission_xml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.create_submission_xml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="data">
+<dt id="analysis_reporter.error_list">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">error_list</code><em class="property"> = ''</em><a class="headerlink" href="#analysis_reporter.error_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>multiprocessing.cpu_count() - 2</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.extract_analysis_id">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">extract_analysis_id</code><span class="sig-paren">(</span><em class="sig-param">out</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#extract_analysis_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.extract_analysis_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.extract_submission_id">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">extract_submission_id</code><span class="sig-paren">(</span><em class="sig-param">out</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#extract_submission_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.extract_submission_id" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.get_account_pass">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">get_account_pass</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">user</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#get_account_pass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.get_account_pass" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.get_args">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">get_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#get_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.get_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.get_connection">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">get_connection</code><span class="sig-paren">(</span><em class="sig-param">db_user</em>, <em class="sig-param">db_password</em>, <em class="sig-param">db_host</em>, <em class="sig-param">db_database</em>, <em class="sig-param">db_port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#get_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.get_connection" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.get_list">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">get_list</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#get_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.get_list" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.post_submission">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">post_submission</code><span class="sig-paren">(</span><em class="sig-param">submission_error_messages</em>, <em class="sig-param">returncode</em>, <em class="sig-param">out</em>, <em class="sig-param">err</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#post_submission"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.post_submission" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.prepare_and_submit_analysis">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">prepare_and_submit_analysis</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">default_attributes</em>, <em class="sig-param">analysis_reporter_stage</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#prepare_and_submit_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.prepare_and_submit_analysis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.process_arguments">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">process_arguments</code><span class="sig-paren">(</span><em class="sig-param">args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#process_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.process_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>process_arguments : this process the arguments passed
+on the command line
+:param args: list of arguments
+:return: return the configuration file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.process_report_set_analysis">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">process_report_set_analysis</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">analysis_id</em>, <em class="sig-param">process_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#process_report_set_analysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.process_report_set_analysis" title="Permalink to this definition">¶</a></dt>
+<dd><p>info contains, process_report_id and analysis_id</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.process_report_set_submission">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">process_report_set_submission</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">submission_id</em>, <em class="sig-param">process_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#process_report_set_submission"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.process_report_set_submission" title="Permalink to this definition">¶</a></dt>
+<dd><p>info contains, process_report_id and analysis_id</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.submitAnalysis">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">submitAnalysis</code><span class="sig-paren">(</span><em class="sig-param">submission_xml</em>, <em class="sig-param">analysis_xml</em>, <em class="sig-param">user</em>, <em class="sig-param">passw</em>, <em class="sig-param">url</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#submitAnalysis"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.submitAnalysis" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.terminate">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">terminate</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">analysis_reporter_stage</em>, <em class="sig-param">analysis_id</em>, <em class="sig-param">submission_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#terminate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.terminate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="analysis_reporter.uploadFileToEna">
+<code class="sig-prename descclassname">analysis_reporter.</code><code class="sig-name descname">uploadFileToEna</code><span class="sig-paren">(</span><em class="sig-param">filename</em>, <em class="sig-param">user</em>, <em class="sig-param">passw</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/analysis_reporter.html#uploadFileToEna"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#analysis_reporter.uploadFileToEna" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="bsub.html" class="btn btn-neutral float-right" title="bsub module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="PipelineAttributes.html" class="btn btn-neutral float-left" title="PipelineAttributes module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,468 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>selection_to_attribute module &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script type="text/javascript" src="_static/jquery.js"></script>
+        <script type="text/javascript" src="_static/underscore.js"></script>
+        <script type="text/javascript" src="_static/doctools.js"></script>
+        <script type="text/javascript" src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="sra_objects module" href="sra_objects.html" />
+    <link rel="prev" title="selectadb module" href="selectadb.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">selecta</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="PipelineAttributes.html">PipelineAttributes module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis_reporter.html">analysis_reporter module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bsub.html">bsub module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="core_executor.html">core_executor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_provider.html">data_provider module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="input_to_selection.html">input_to_selection module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="lsf_stats.html">lsf_stats module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pipelines.html">pipelines module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="process_archival.html">process_archival module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reporting.html">reporting module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selecta_processing_reports.html">selecta_processing_reports module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="selectadb.html">selectadb module</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">selection_to_attribute module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="sra_objects.html">sra_objects module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="submission.html">submission module</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="modules.html">selecta</a> &raquo;</li>
+        
+      <li>selection_to_attribute module</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/selection_to_attribute.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-selection_to_attribute">
+<span id="selection-to-attribute-module"></span><h1>selection_to_attribute module<a class="headerlink" href="#module-selection_to_attribute" title="Permalink to this headline">¶</a></h1>
+<p>This scripts initiate the SELECTA workflow.
+Given selection in process_selection table with start date null
+and selection error null, it populate process_stages , process_attributes
+process_report with appropriate runs metadata</p>
+<dl class="function">
+<dt id="selection_to_attribute.already_ran_runs">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">already_ran_runs</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em>, <em class="sig-param">processing_type</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#already_ran_runs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.already_ran_runs" title="Permalink to this definition">¶</a></dt>
+<dd><p>already_ran_runs: Get previously ran runs accession from the
+Process_report table.
+:param conn: PostGreSQL connection
+:param selection_id: selection_id
+:param processing_type:  processing type (datahub, study, run)
+:return: ran run accessions.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.check_started">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">check_started</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#check_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.check_started" title="Permalink to this definition">¶</a></dt>
+<dd><p>check_started: Fetch entries from process_selection with null start
+date.
+:param conn: PostGreSQL connection
+:param selection_id: selection_id
+:return: Boolean (True/False)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.download_datahub_metadatafile">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">download_datahub_metadatafile</code><span class="sig-paren">(</span><em class="sig-param">account</em>, <em class="sig-param">workdir</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#download_datahub_metadatafile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.download_datahub_metadatafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch datahub metadata from the Pathogen portal given datahub credentials
+:param account: datahub name
+:param workdir:  working directory
+:return:  datahub Metadata file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.exclude_processed_run">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">exclude_processed_run</code><span class="sig-paren">(</span><em class="sig-param">select</em>, <em class="sig-param">attributes_all</em>, <em class="sig-param">already_ran_run_accs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#exclude_processed_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.exclude_processed_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>exclude_processed_run: exclude those runs that have been processed.
+This is actionable when the continuity is set to Yes in process_selection
+table
+:param select: an object from the attr list of objects
+:param attributes_all: a list of attribute objects
+:param already_ran_run_accs: already processed runs
+:return: list of runs to exclude from the analysis</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.fetch_datahub_metadatafile">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">fetch_datahub_metadatafile</code><span class="sig-paren">(</span><em class="sig-param">account</em>, <em class="sig-param">workdir</em>, <em class="sig-param">lsf</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#fetch_datahub_metadatafile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.fetch_datahub_metadatafile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fetch datahub metadata file via pathogen portal
+curl -o output.txt -X GET –header ‘Accept: application/json’ -u
+dcc_beethoven:xxxx ‘<a class="reference external" href="https://www.ebi.ac.uk/ena/portal/api/search">https://www.ebi.ac.uk/ena/portal/api/search</a>?
+result=read_run&amp;dataPortal=pathogen&amp;dccDataOnly=true&amp;fields=tax_id,
+scientific_name,sample_accession,secondary_sample_accession,experiment_accession,
+study_accession,secondary_study_accession,run_accession,center_name,fastq_ftp,
+fastq_md5&amp;sortFields=scientific_name,sample_accession&amp;limit=0’
+:param account: datahub account
+:param workdir: working directory
+:param lsf: bo0lean
+:return: Metadata file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_args">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_args" title="Permalink to this definition">¶</a></dt>
+<dd><p>Process property file and return various attribute
+:return: various attribute of runs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_connection">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_connection</code><span class="sig-paren">(</span><em class="sig-param">db_user</em>, <em class="sig-param">db_password</em>, <em class="sig-param">db_host</em>, <em class="sig-param">db_database</em>, <em class="sig-param">db_port</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_connection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_connection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Connect to PostGreSQL database
+:param db_user: user name
+:param db_password: passwd
+:param db_host: PostGreSQL host server
+:param db_database: DB name
+:param db_port:  connection port on remote server
+:return: connection handle</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_datahub_accounts">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_datahub_accounts</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_datahub_accounts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_datahub_accounts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the datahub name from SELECTADB_PRODUCTION
+:param conn: PostGreSQL connection
+:param process_id: process_id
+:return: datahub names</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_default_attributes">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_default_attributes</code><span class="sig-paren">(</span><em class="sig-param">tsv_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_default_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_default_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>get_default_attributes:
+parse datahub metadata file for runs details
+Read the header line of the tsv for purpose of labelling columns
+:param tsv_file: metadata file
+:return: A default_attribute object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_list_of_study">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_list_of_study</code><span class="sig-paren">(</span><em class="sig-param">selections</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_list_of_study"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_list_of_study" title="Permalink to this definition">¶</a></dt>
+<dd><p>get_list_of_study: list of studies per metadata files
+:param selections:  default_attributes object
+:return: list of studies</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_process_id">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_process_id</code><span class="sig-paren">(</span><em class="sig-param">id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_process_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_process_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>get_process_id: generate a string of dmYHMS
+:param id: process_id
+:return: unique name of string and dateyeartime</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_selection_info">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_selection_info</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">datahub</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_selection_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_selection_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>get_selection_info:
+Fetch from process_selection those selection_id without start date and not public
+:param conn: PostGreSQL connection
+:param datahub: Datahub
+:return: all selection ids satisfying the description above</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_selection_info_old">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_selection_info_old</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">datahub</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_selection_info_old"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_selection_info_old" title="Permalink to this definition">¶</a></dt>
+<dd><p>Obselete…..
+:param conn: connection
+:param datahub: datahub
+:return: selection_ids</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.get_selection_to_attributes_account">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">get_selection_to_attributes_account</code><span class="sig-paren">(</span><em class="sig-param">conn</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#get_selection_to_attributes_account"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.get_selection_to_attributes_account" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get_selection_to_attribute_account:
+Get those selection_id from process_selection where start_date is null
+:param conn:
+:return: selection_ids</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.insert_default_stages">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">insert_default_stages</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">process_id</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#insert_default_stages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.insert_default_stages" title="Permalink to this definition">¶</a></dt>
+<dd><p>insert_default_stages: Populate process_stages with various
+pipeline stages: data_provider, core_executor, analysis_reporter
+process_archival with start, end time and errors
+:param conn: PostGreSQL connection
+:param process_id: process id
+:param selection_id: selection id
+:return: None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.is_processing_type">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">is_processing_type</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#is_processing_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.is_processing_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>is_processing_type: what is type of processing will be carried out.
+datahub -&gt; study -&gt; runs
+:param conn: PostGreSQL connection
+:param selection_id: selection_id
+:return: datahub or study or runs</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.log_error">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">log_error</code><span class="sig-paren">(</span><em class="sig-param">message</em>, <em class="sig-param">message_type</em>, <em class="sig-param">log_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#log_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.log_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>log_error: log any encounter error into fil
+:param message: Error found
+:param message_type: message type (ERROR, WARNING, INFO)
+:param log_file: log file
+:return: None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.main">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.main" title="Permalink to this definition">¶</a></dt>
+<dd><p>Main call to the data_provider scripts.
+:return: None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.process_arguments">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">process_arguments</code><span class="sig-paren">(</span><em class="sig-param">args</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#process_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.process_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>process_arguments : this process the arguments passed
+on the command line
+:param args: list of arguments
+:return: return the configuration file</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.process_report_set_finished">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">process_report_set_finished</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">process_report_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#process_report_set_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.process_report_set_finished" title="Permalink to this definition">¶</a></dt>
+<dd><p>process_report_set_finished: Populate process_report table
+with finish time this is called by process_archival script.
+:param con: PostGreSQL connection
+:param process_report_id:  process_report id
+:return: None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.process_report_set_started">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">process_report_set_started</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">info</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#process_report_set_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.process_report_set_started" title="Permalink to this definition">¶</a></dt>
+<dd><p>process_report_set_started: Populate process_report table
+with various attributes: study_accession,datahub,run_accession,process_id,
+selection_id,process_report_start_time
+:param conn: PostGreSQL connection
+:param info: info is a dict with the following:</p>
+<blockquote>
+<div><p>study_id, datahub, run_id,process_id, selection_id, start_time</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.set_error">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">set_error</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em>, <em class="sig-param">error</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#set_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.set_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>set_error:
+Upate process_selection table with any error that occur while populating process_stage,
+process_attributes, process_report table with information from the datahub metadata file
+:param conn: PostGreSQL connection
+:param selection_id: selection_id (process_selection table native)
+:param error: Any error encounter during selection_to_attributes runs …
+:return: None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.set_finished">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">set_finished</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#set_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.set_finished" title="Permalink to this definition">¶</a></dt>
+<dd><p>set_finished: Update process_selection table, set end time to curtime()
+:param conn: PostGreSQL connection
+:param selection_id: selection id
+:return: None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="selection_to_attribute.set_started">
+<code class="sig-prename descclassname">selection_to_attribute.</code><code class="sig-name descname">set_started</code><span class="sig-paren">(</span><em class="sig-param">conn</em>, <em class="sig-param">selection_id</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/selection_to_attribute.html#set_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#selection_to_attribute.set_started" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="sra_objects.html" class="btn btn-neutral float-right" title="sra_objects module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="selectadb.html" class="btn btn-neutral float-left" title="selectadb module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

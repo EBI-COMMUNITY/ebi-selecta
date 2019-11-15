@@ -1,0 +1,393 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>reporting &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">selecta</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>reporting</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for reporting</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">PipelineAttributes</span> <span class="k">import</span> <span class="n">stages</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Nima Pakseresht, Blaise Alako&#39;</span>
+
+<span class="kn">import</span> <span class="nn">cx_Oracle</span>
+
+<div class="viewcode-block" id="Oracle"><a class="viewcode-back" href="../reporting.html#reporting.Oracle">[docs]</a><span class="k">class</span> <span class="nc">Oracle</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="Oracle.connect"><a class="viewcode-back" href="../reporting.html#reporting.Oracle.connect">[docs]</a>    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="p">,</span> <span class="n">hostname</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">servicename</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Connect to the database. &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">cx_Oracle</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span>
+                                <span class="p">,</span> <span class="n">hostname</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">port</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">servicename</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">cx_Oracle</span><span class="o">.</span><span class="n">DatabaseError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Log error as appropriate</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># If the database connection succeeded create the cursor</span>
+        <span class="c1"># we-re going to use.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Oracle.disconnect"><a class="viewcode-back" href="../reporting.html#reporting.Oracle.disconnect">[docs]</a>    <span class="k">def</span> <span class="nf">disconnect</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Disconnect from the database. If this fails, for instance</span>
+<span class="sd">        if the connection instance doesn&#39;t exist, ignore the exception.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">except</span> <span class="n">cx_Oracle</span><span class="o">.</span><span class="n">DatabaseError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="Oracle.execute"><a class="viewcode-back" href="../reporting.html#reporting.Oracle.execute">[docs]</a>    <span class="k">def</span> <span class="nf">execute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sql</span><span class="p">,</span> <span class="n">bindvars</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">commit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Execute whatever SQL statements are passed to the method;</span>
+<span class="sd">        commit if specified. Do not specify fetchall() in here as</span>
+<span class="sd">        the SQL statement may not be a select.</span>
+<span class="sd">        bindvars is a dictionary of variables you pass to execute.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">sql</span><span class="p">,</span> <span class="n">bindvars</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">cx_Oracle</span><span class="o">.</span><span class="n">DatabaseError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># Log error as appropriate</span>
+            <span class="k">raise</span>
+
+        <span class="c1"># Only commit if it-s necessary.</span>
+        <span class="k">if</span> <span class="n">commit</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="get_process_id"><a class="viewcode-back" href="../reporting.html#reporting.get_process_id">[docs]</a><span class="k">def</span> <span class="nf">get_process_id</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">id</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2">%m%Y%H%M%S&quot;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="set_started"><a class="viewcode-back" href="../reporting.html#reporting.set_started">[docs]</a><span class="k">def</span> <span class="nf">set_started</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;update process_selection set selection_to_attribute_start=NOW() where selection_id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selection_id</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Cannot update process_stages set stage_start=NOW():&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="set_finished"><a class="viewcode-back" href="../reporting.html#reporting.set_finished">[docs]</a><span class="k">def</span> <span class="nf">set_finished</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;update process_selection set selection_to_attribute_end=NOW() where selection_id=</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selection_id</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: Cannot update process_stages set stage_end=NOW():&quot;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="insert_default_stages"><a class="viewcode-back" href="../reporting.html#reporting.insert_default_stages">[docs]</a><span class="k">def</span> <span class="nf">insert_default_stages</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+    <span class="n">stage_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">stages</span><span class="o">.</span><span class="n">data_provider_stage_name</span><span class="p">,</span> <span class="n">stages</span><span class="o">.</span><span class="n">core_executor_stage_name</span><span class="p">,</span> <span class="n">stages</span><span class="o">.</span><span class="n">analysis_reporter_stage_name</span><span class="p">,</span>
+                  <span class="n">stages</span><span class="o">.</span><span class="n">process_archival_stage_name</span><span class="p">]</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">stage_list</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">stage_list</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+    <span class="n">default_stage</span> <span class="o">=</span> <span class="n">stages</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">stage_list</span><span class="p">)</span>
+    <span class="n">default_stage</span><span class="o">.</span><span class="n">insert_all_into_process_stages</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="process_report_set_started"><a class="viewcode-back" href="../reporting.html#reporting.process_report_set_started">[docs]</a><span class="k">def</span> <span class="nf">process_report_set_started</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">info</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;info is a dict with the following:</span>
+<span class="sd">	    study_id, datahub, run_id,process_id, selection_id, start_time</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+    <span class="n">study_accession</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;study_accession&#39;</span><span class="p">]</span>
+    <span class="n">run_accession</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;run_accession&#39;</span><span class="p">]</span>
+    <span class="n">datahub</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;datahub&#39;</span><span class="p">]</span>
+    <span class="n">process_id</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;process_id&#39;</span><span class="p">]</span>
+    <span class="n">selection_id</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;selection_id&#39;</span><span class="p">]</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;INSERT INTO process_report (study_accession,datahub,run_accession,process_id,selection_id,process_report_start_time) values(&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,&#39;</span><span class="si">{}</span><span class="s2">&#39;,now())&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">study_accession</span><span class="p">,</span> <span class="n">datahub</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PROCESS_REPORT QUERY:</span><span class="se">\n\t</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">query</span><span class="p">),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="o">=</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span>
+            <span class="s2">&quot;Error: Can not INSERT study:</span><span class="si">{}</span><span class="s2"> datahub:</span><span class="si">{}</span><span class="s2"> process_id:</span><span class="si">{}</span><span class="s2"> selection_id:</span><span class="si">{}</span><span class="s2"> run:</span><span class="si">{}</span><span class="s2"> in process_report &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">study_accession</span><span class="p">,</span> <span class="n">datahub</span><span class="p">,</span> <span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">traceb</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">tb</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+        <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: exc_info[0]:</span><span class="si">{}</span><span class="s2">, exc_info[1]:</span><span class="si">{}</span><span class="s2"> , exc_info[2] &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">traceb</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">tb</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;show profiles&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">row</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="already_ran_runs"><a class="viewcode-back" href="../reporting.html#reporting.already_ran_runs">[docs]</a><span class="k">def</span> <span class="nf">already_ran_runs</span> <span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Get previously ran run accessions from the Process</span>
+<span class="sd">        report table ....</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span><span class="s2">&quot;Select distinct run_accession from process_report where process_report_start_time is not null and selection_id =</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">selection_id</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+        <span class="n">ran_accessions</span> <span class="o">=</span> <span class="p">[</span><span class="n">run</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">]</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">ran_accessions</span></div>
+
+
+<div class="viewcode-block" id="Process_report"><a class="viewcode-back" href="../reporting.html#reporting.Process_report">[docs]</a><span class="k">class</span> <span class="nc">Process_report</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">select</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">error_list</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">select</span> <span class="o">=</span> <span class="n">select</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span> <span class="o">=</span> <span class="n">attr</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_list</span> <span class="o">=</span> <span class="n">error_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">continuity</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">continuity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">selection_to_attribute_end</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_to_attribute_end</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">selection_id</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">selection_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">datahub</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">datahub</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">pipeline_name</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">pipeline_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">public</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">public</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">analyst_webin_id</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">analyst_webin_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">process_id</span> <span class="o">=</span> <span class="n">get_process_id</span><span class="p">(</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="Process_report.log_process_report_info"><a class="viewcode-back" href="../reporting.html#reporting.Process_report.log_process_report_info">[docs]</a>    <span class="k">def</span> <span class="nf">log_process_report_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">conn</span>
+
+        <span class="sd">&quot;&quot;&quot;&quot; We need to update process_report with study_id, datahub, run_id,process_id, selection_id, start_time &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;study_accession&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">study_accession</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;datahub&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="o">.</span><span class="n">datahub</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;run_accession&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">run_accession</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;process_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">process_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;selection_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="o">.</span><span class="n">selection_id</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Process report info:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;=&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+
+        <span class="sd">&quot;&quot;&quot; GET_PROCESS_ID takes a run id and append to it the current date and time &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Contiguity is NO &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">insert_all_into_process_stages</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+
+        <span class="sd">&quot;&quot;&quot; INSERT_ALL_INTO_PROCESS_STAGE call on INSERT_INTO_PROCESS_STAGE process_stages</span>
+<span class="sd">            (process_id, selection_id, stage_name)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">insert_default_stages</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">process_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">attr</span><span class="o">.</span><span class="n">selection_id</span><span class="p">)</span>
+
+        <span class="sd">&quot;&quot;&quot;&quot; calls insert_all_into_process_stages to insert stage_list into process_stages</span>
+<span class="sd">            stage_list = [stages.data_provider_stage_name, stages.core_executor_stage_name,</span>
+<span class="sd">            stages.analysis_reporter_stage_name,stages.process_archival_stage_name] </span>
+<span class="sd">            Update process_report table </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot; Update process_report table &quot;&quot;&quot;</span>
+        <span class="n">process_report_set_started</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">error_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">final_errors</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">error_list</span><span class="p">)</span>
+            <span class="n">set_error</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">final_errors</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">set_finished</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">select</span><span class="o">.</span><span class="n">selection_id</span><span class="p">)</span>
+            <span class="sd">&quot;&quot;&quot;&quot;SET_FINISHED: updates process_selection by </span>
+<span class="sd">                setting selection_to_attribute_end</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span></div></div>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,666 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>analysis_reporter &mdash; Selecta 1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script type="text/javascript" src="../_static/jquery.js"></script>
+        <script type="text/javascript" src="../_static/underscore.js"></script>
+        <script type="text/javascript" src="../_static/doctools.js"></script>
+        <script type="text/javascript" src="../_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> Selecta
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">selecta</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Selecta</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="index.html">Module code</a> &raquo;</li>
+        
+      <li>analysis_reporter</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for analysis_reporter</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">ftplib</span>
+<span class="kn">from</span> <span class="nn">selectadb</span> <span class="k">import</span> <span class="n">properties</span>
+<span class="kn">from</span> <span class="nn">sra_objects</span> <span class="k">import</span> <span class="n">analysis_pathogen_analysis</span>
+<span class="kn">from</span> <span class="nn">sra_objects</span> <span class="k">import</span> <span class="n">analysis_file</span>
+<span class="kn">from</span> <span class="nn">sra_objects</span> <span class="k">import</span> <span class="n">submission</span>
+<span class="kn">from</span> <span class="nn">PipelineAttributes</span> <span class="k">import</span> <span class="n">stages</span>
+<span class="kn">from</span> <span class="nn">PipelineAttributes</span> <span class="k">import</span> <span class="n">default_attributes</span>
+<span class="kn">from</span> <span class="nn">lxml</span> <span class="k">import</span> <span class="n">etree</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">joblib</span> <span class="k">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">from</span> <span class="nn">reporting</span> <span class="k">import</span> <span class="n">Process_report</span>
+<span class="kn">import</span> <span class="nn">psycopg2</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s1">&#39;Nima Pakseresht, Blaise Alako&#39;</span>
+
+<span class="k">global</span> <span class="n">error_list</span>
+<span class="k">global</span> <span class="n">log_file</span>
+
+<span class="n">error_list</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+<span class="n">log_file</span> <span class="o">=</span> <span class="s1">&#39;analysis_reporter.log&#39;</span>
+
+
+<span class="c1"># TODO: Code will get benefit from writing a log file</span>
+<span class="c1"># TODO: Code also get benefit from checking the checksum of uploaded file.</span>
+
+<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">properties_file</span>
+    <span class="c1"># Assign description to the help doc</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="s1">&#39;Script rrmove the processed submissions to make free space for incoming submissions.&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;--properties_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Please provide the properties file that is required by SELECTA system&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">properties_file</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">properties_file</span></div>
+
+<div class="viewcode-block" id="process_arguments"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.process_arguments">[docs]</a><span class="k">def</span> <span class="nf">process_arguments</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	process_arguments : this process the arguments passed</span>
+<span class="sd">	on the command line</span>
+<span class="sd">	:param args: list of arguments</span>
+<span class="sd">	:return: return the configuration file</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">global</span> <span class="n">properties_file</span>
+	<span class="sd">&quot;&quot;&quot; First, construct the parser &quot;&quot;&quot;</span>
+	<span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s1">&#39;Selection_to_attribute.py removes the processed &#39;</span>
+												 <span class="s1">&#39;submissions to make free space for incoming submissions.&#39;</span><span class="p">)</span>
+	<span class="sd">&quot;&quot;&quot;Lets us add the first argument &quot;&quot;&quot;</span>
+	<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span>
+						<span class="s1">&#39;--properties_file&#39;</span><span class="p">,</span>
+						<span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+						<span class="n">help</span><span class="o">=</span><span class="s2">&quot;Please provide the properties file that is required by SELECTA system&quot;</span><span class="p">,</span>
+						<span class="n">dest</span><span class="o">=</span><span class="s1">&#39;properties_file&#39;</span><span class="p">,</span>
+						<span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+	<span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--db_live&#39;</span><span class="p">,</span>
+						<span class="n">help</span><span class="o">=</span><span class="s1">&#39;Check whether PostGresDB is live and accepting</span><span class="se">\</span>
+<span class="s1">								connection&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s1">&#39;store_true&#39;</span><span class="p">)</span>
+	<span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+	<span class="sd">&quot;&quot;&quot; Return the options &quot;&quot;&quot;</span>
+	<span class="k">return</span> <span class="n">options</span></div>
+
+<div class="viewcode-block" id="get_list"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.get_list">[docs]</a><span class="k">def</span> <span class="nf">get_list</span><span class="p">(</span><span class="n">conn</span><span class="p">):</span>
+    <span class="n">data_provider_stage</span> <span class="o">=</span> <span class="s1">&#39;data_provider&#39;</span>
+    <span class="n">core_executor_stage</span> <span class="o">=</span> <span class="s1">&#39;core_executor&#39;</span>
+    <span class="n">analysis_reporter_stage</span> <span class="o">=</span> <span class="s1">&#39;analysis_reporter&#39;</span>
+    <span class="n">process_archival_stage</span> <span class="o">=</span> <span class="s1">&#39;process_archival&#39;</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="s2">&quot;select process_id,selection_id from process_stages where stage_start is null and stage_end is null and stage_error &quot;</span>
+        <span class="s2">&quot;is null and stage_name=&#39;</span><span class="si">{}</span><span class="s2">&#39; and process_id not in (select distinct(process_id) from process_stages where &quot;</span>
+        <span class="s2">&quot;(stage_start is not null or stage_end is not null) and stage_name=&#39;</span><span class="si">{}</span><span class="s2">&#39;) and process_id in &quot;</span>
+        <span class="s2">&quot;(select distinct(process_id) from process_stages where stage_start is not null and stage_end is not null &quot;</span>
+        <span class="s2">&quot;and stage_error is null and stage_name=&#39;</span><span class="si">{}</span><span class="s2">&#39;) and process_id in  (select distinct(process_id) &quot;</span>
+        <span class="s2">&quot;from process_stages where stage_start is not null and stage_end is not null and stage_error is &quot;</span>
+        <span class="s2">&quot;null and stage_name=&#39;</span><span class="si">{}</span><span class="s2">&#39;)&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">analysis_reporter_stage</span><span class="p">,</span> <span class="n">process_archival_stage</span><span class="p">,</span> <span class="n">data_provider_stage</span><span class="p">,</span>
+                                            <span class="n">core_executor_stage</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="c1">#cursor.close()</span>
+    <span class="n">analysis_reporter_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">)</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="n">stage</span> <span class="o">=</span> <span class="n">stages</span><span class="p">(</span><span class="n">process_id</span><span class="p">,</span> <span class="n">selection_id</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="p">)</span>
+        <span class="n">analysis_reporter_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">stage</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">analysis_reporter_list</span></div>
+
+
+<div class="viewcode-block" id="get_connection"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.get_connection">[docs]</a><span class="k">def</span> <span class="nf">get_connection</span><span class="p">(</span><span class="n">db_user</span><span class="p">,</span> <span class="n">db_password</span><span class="p">,</span> <span class="n">db_host</span><span class="p">,</span> <span class="n">db_database</span><span class="p">,</span> <span class="n">db_port</span><span class="p">):</span>
+    <span class="n">conn</span> <span class="o">=</span> <span class="n">psycopg2</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">db_host</span><span class="p">,</span> <span class="n">database</span><span class="o">=</span><span class="n">db_database</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="n">db_user</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">db_password</span><span class="p">,</span>  <span class="n">port</span><span class="o">=</span><span class="n">db_port</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">conn</span></div>
+
+
+<div class="viewcode-block" id="calculateMd5"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.calculateMd5">[docs]</a><span class="k">def</span> <span class="nf">calculateMd5</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="create_analysis_xml"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.create_analysis_xml">[docs]</a><span class="k">def</span> <span class="nf">create_analysis_xml</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">analysis</span><span class="o">.</span><span class="n">process_id</span><span class="p">,</span> <span class="n">analysis</span><span class="o">.</span><span class="n">selection_id</span><span class="p">)</span>
+    <span class="n">run_accession</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;run_accession&#39;</span><span class="p">]</span>
+    <span class="n">gzip_analysis_file</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;gzip_analysis_file&#39;</span><span class="p">]</span>
+    <span class="n">tab_analysis_file</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file&#39;</span><span class="p">]</span>
+    <span class="n">gzip_analysis_file_md5</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;gzip_analysis_file_md5&#39;</span><span class="p">]</span>
+    <span class="n">tab_analysis_file_md5</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file_md5&#39;</span><span class="p">]</span>
+
+    <span class="n">tab_analysis_file2</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file2&#39;</span><span class="p">]</span>
+    <span class="n">tab_analysis_file3</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file3&#39;</span><span class="p">]</span>
+    <span class="n">tab_analysis_file4</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file4&#39;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file2</span><span class="p">)):</span>
+        <span class="n">tab_analysis_file2_md5</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file2_md5&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file3</span><span class="p">)):</span>
+        <span class="n">tab_analysis_file3_md5</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file3_md5&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file4</span><span class="p">)):</span>
+        <span class="n">tab_analysis_file4_md5</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file4_md5&#39;</span><span class="p">]</span>
+
+    <span class="n">pipeline_version</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">pipeline_name</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;pipeline_name&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">pipeline_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;dtu_cge&#39;</span><span class="p">:</span>
+        <span class="n">pipeline_version</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">dtu_cge_version</span>
+    <span class="k">elif</span> <span class="n">pipeline_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;emc_slim&#39;</span><span class="p">:</span>
+        <span class="n">pipeline_version</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">emc_slim_version</span>
+    <span class="k">elif</span> <span class="n">pipeline_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;uantwerp_bacpipe&#39;</span><span class="p">:</span>
+        <span class="n">pipeline_version</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">uantwerp_bacpipe_version</span>
+    <span class="k">elif</span> <span class="n">pipeline_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;rivm_jovian&#39;</span><span class="p">:</span>
+        <span class="n">pipeline_version</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">rivm_jovian_version</span>
+
+    <span class="n">selecta_version</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">selecta_version</span>
+    <span class="n">study_accession</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;study_accession&#39;</span><span class="p">]</span>
+    <span class="n">scientific_name</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;scientific_name&#39;</span><span class="p">]</span>
+    <span class="n">sample_accession</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;sample_accession&#39;</span><span class="p">]</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">run_accession</span><span class="p">,</span> <span class="n">gzip_analysis_file</span><span class="p">,</span> <span class="n">gzip_analysis_file_md5</span><span class="p">,</span> <span class="n">tab_analysis_file</span><span class="p">,</span> <span class="n">tab_analysis_file_md5</span><span class="p">)</span>
+    <span class="n">analysis_files</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">file1</span> <span class="o">=</span> <span class="n">analysis_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tab_analysis_file</span><span class="p">),</span> <span class="s1">&#39;tab&#39;</span><span class="p">,</span> <span class="n">tab_analysis_file_md5</span><span class="p">)</span>
+    <span class="n">analysis_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file1</span><span class="p">)</span>
+    <span class="n">file2</span> <span class="o">=</span> <span class="n">analysis_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">gzip_analysis_file</span><span class="p">),</span> <span class="s1">&#39;other&#39;</span><span class="p">,</span> <span class="n">gzip_analysis_file_md5</span><span class="p">)</span>
+    <span class="n">analysis_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file2</span><span class="p">)):</span>
+        <span class="n">file3</span><span class="o">=</span> <span class="n">analysis_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tab_analysis_file2</span><span class="p">),</span> <span class="s1">&#39;tab&#39;</span><span class="p">,</span> <span class="n">tab_analysis_file2_md5</span><span class="p">)</span>
+        <span class="n">analysis_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file3</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file3</span><span class="p">)):</span>
+        <span class="n">file4</span> <span class="o">=</span> <span class="n">analysis_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tab_analysis_file3</span><span class="p">),</span> <span class="s1">&#39;tab&#39;</span><span class="p">,</span> <span class="n">tab_analysis_file3_md5</span><span class="p">)</span>
+        <span class="n">analysis_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file4</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file4</span><span class="p">)):</span>
+        <span class="n">file5</span><span class="o">=</span> <span class="n">analysis_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">tab_analysis_file4</span><span class="p">),</span> <span class="s1">&#39;tab&#39;</span><span class="p">,</span> <span class="n">tab_analysis_file4_md5</span><span class="p">)</span>
+        <span class="n">analysis_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">file5</span><span class="p">)</span>
+
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Analysis files:</span><span class="se">\n</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">analysis_files</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">centre_name</span> <span class="o">=</span> <span class="s2">&quot;COMPARE&quot;</span>
+    <span class="n">alias</span> <span class="o">=</span> <span class="n">pipeline_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;_&quot;</span> <span class="o">+</span> <span class="n">analysis</span><span class="o">.</span><span class="n">process_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">analysis</span><span class="o">.</span><span class="n">selection_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;alias:&#39;</span><span class="p">,</span> <span class="n">alias</span><span class="p">)</span>
+    <span class="n">analysis_date</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2">T%H:%M:%S&quot;</span><span class="p">)</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s2">&quot;COMPARE project pathogen analysis, using </span><span class="si">{}</span><span class="s2"> pipeline on read data </span><span class="si">{}</span><span class="s2"> from sample </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">pipeline_name</span><span class="p">,</span>
+                                                                                                         <span class="n">run_accession</span><span class="p">,</span>
+                                                                                                         <span class="n">sample_accession</span><span class="p">)</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="s2">&quot;As part of the COMPARE project submitted data </span><span class="si">{}</span><span class="s2"> from sample </span><span class="si">{}</span><span class="s2"> organism name &#39;</span><span class="si">{}</span><span class="s2">&#39; has been processed by </span><span class="si">{}</span><span class="s2"> pipeline.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">run_accession</span><span class="p">,</span> <span class="n">sample_accession</span><span class="p">,</span> <span class="n">scientific_name</span><span class="p">,</span> <span class="n">pipeline_name</span><span class="p">)</span>
+    <span class="n">analysis_obj</span> <span class="o">=</span> <span class="n">analysis_pathogen_analysis</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">centre_name</span><span class="p">,</span> <span class="n">sample_accession</span><span class="p">,</span> <span class="n">run_accession</span><span class="p">,</span> <span class="n">study_accession</span><span class="p">,</span>
+                                              <span class="n">pipeline_name</span><span class="p">,</span> <span class="n">pipeline_version</span><span class="p">,</span> <span class="n">selecta_version</span><span class="p">,</span>  <span class="n">analysis_date</span><span class="p">,</span> <span class="n">analysis_files</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">description</span><span class="p">,</span>
+                                              <span class="n">analysis_xml</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">description</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">analysis_obj</span><span class="o">.</span><span class="n">build_analysis</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="create_submission_xml"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.create_submission_xml">[docs]</a><span class="k">def</span> <span class="nf">create_submission_xml</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">,</span> <span class="n">submission_xml</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+    <span class="n">alias</span> <span class="o">=</span> <span class="s2">&quot;sub_&quot;</span> <span class="o">+</span> <span class="n">analysis</span><span class="o">.</span><span class="n">process_id</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="s2">&quot;-&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">analysis</span><span class="o">.</span><span class="n">selection_id</span><span class="p">)</span>
+    <span class="n">centre_name</span> <span class="o">=</span> <span class="s1">&#39;COMPARE&#39;</span>
+    <span class="n">schema</span> <span class="o">=</span> <span class="s1">&#39;analysis&#39;</span>
+    <span class="n">submission_obj</span> <span class="o">=</span> <span class="n">submission</span><span class="p">(</span><span class="n">alias</span><span class="p">,</span> <span class="n">centre_name</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">submission_xml</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">,</span> <span class="n">schema</span><span class="p">)</span>
+    <span class="n">submission_obj</span><span class="o">.</span><span class="n">build_submission</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="get_account_pass"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.get_account_pass">[docs]</a><span class="k">def</span> <span class="nf">get_account_pass</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">user</span><span class="p">):</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;select password from account where account_id=&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">password</span> <span class="ow">in</span> <span class="n">cursor</span><span class="p">:</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">password</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64decode</span><span class="p">(</span><span class="n">p</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="uploadFileToEna"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.uploadFileToEna">[docs]</a><span class="k">def</span> <span class="nf">uploadFileToEna</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">passw</span><span class="p">):</span>
+    <span class="n">trialcount</span><span class="o">=</span><span class="mi">0</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;uploading </span><span class="si">{}</span><span class="s2"> &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;curl -T </span><span class="si">{}</span><span class="s2">  ftp://webin.ebi.ac.uk --user </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">passw</span><span class="p">)</span>
+    <span class="n">md5downloaded</span> <span class="o">=</span> <span class="s2">&quot;curl -s ftp://webin.ebi.ac.uk/</span><span class="si">{}</span><span class="s2"> --user </span><span class="si">{}</span><span class="s2">:</span><span class="si">{}</span><span class="s2"> | md5sum | cut -f1 -d &#39; &#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span> <span class="n">user</span><span class="p">,</span><span class="n">passw</span><span class="p">)</span>
+    <span class="n">md5uploaded</span> <span class="o">=</span> <span class="s2">&quot;md5sum </span><span class="si">{}</span><span class="s2"> | cut -f1 -d &#39; &#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CURL command:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">command</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Downlad command:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">md5downloaded</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;MD5 uploaded:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">md5uploaded</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">uploadmd5</span><span class="p">,</span><span class="n">uploaderr</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">md5uploaded</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="n">downloadmd5</span><span class="p">,</span><span class="n">downloaderr</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">md5downloaded</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="n">uploadmd5</span><span class="o">=</span><span class="n">uploadmd5</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; </span><span class="se">\t\n\r</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="n">downloadmd5</span><span class="o">=</span><span class="n">downloadmd5</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39; </span><span class="se">\t\n\r</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2"> </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span><span class="n">uploadmd5</span><span class="p">,</span><span class="n">downloadmd5</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;U:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">D:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">uploadmd5</span><span class="p">,</span><span class="n">downloadmd5</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">uploadmd5</span> <span class="o">==</span> <span class="n">downloadmd5</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;standard output of subprocess:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">err</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;standard error of subprocess:&quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sp</span><span class="o">.</span><span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;returncode of subprocess:&quot;</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">uploadFileToEna</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">passw</span><span class="p">)</span>
+        <span class="n">trialcount</span> <span class="o">+=</span><span class="mi">1</span>
+        <span class="k">if</span> <span class="n">trialcount</span> <span class="o">&gt;</span><span class="mi">10</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span></div>
+
+
+
+<div class="viewcode-block" id="submitAnalysis"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.submitAnalysis">[docs]</a><span class="k">def</span> <span class="nf">submitAnalysis</span><span class="p">(</span><span class="n">submission_xml</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">,</span> <span class="n">user</span><span class="p">,</span> <span class="n">passw</span><span class="p">,</span><span class="n">url</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Analysis submission started:&quot;</span><span class="p">)</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="s2">&quot;curl -k  -F </span><span class="se">\&quot;</span><span class="s2">SUBMISSION=@</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2"> -F </span><span class="se">\&quot;</span><span class="s2">ANALYSIS=@</span><span class="si">{}</span><span class="se">\&quot;</span><span class="s2"> </span><span class="se">\&quot;</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">submission_xml</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">,</span> <span class="n">url</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;%20&#39;</span> <span class="o">+</span> <span class="n">user</span> <span class="o">+</span> <span class="s1">&#39;%20&#39;</span> <span class="o">+</span> <span class="n">passw</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\&quot;</span><span class="s1">&#39;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;URL:&quot;</span><span class="p">,</span><span class="n">url</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;COMMAND:&quot;</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SYSOUT:&quot;</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SYSERR:&quot;</span><span class="p">,</span> <span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+    <span class="n">submission_error_messages</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">out</span><span class="p">:</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">XML</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">etree</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">messages</span> <span class="ow">in</span> <span class="n">root</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;MESSAGES&#39;</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">mess</span> <span class="ow">in</span> <span class="n">messages</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+                <span class="n">submission_error_messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;ERROR:&#39;</span> <span class="o">+</span> <span class="n">mess</span><span class="o">.</span><span class="n">text</span><span class="p">)</span>
+
+   
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;returncode of subprocess:&quot;</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">submission_error_messages</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">returncode</span><span class="p">,</span> <span class="n">out</span><span class="o">.</span><span class="n">decode</span><span class="p">(),</span> <span class="n">err</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="post_submission"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.post_submission">[docs]</a><span class="k">def</span> <span class="nf">post_submission</span><span class="p">(</span><span class="n">submission_error_messages</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span><span class="p">):</span>
+    <span class="n">submission_error</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">curl_error</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">submission_error_messages</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">submission_error</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">submission_error_messages</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">returncode</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">curl_error</span> <span class="o">=</span> <span class="n">err</span>
+    <span class="n">error</span> <span class="o">=</span> <span class="n">submission_error</span> <span class="o">+</span> <span class="n">curl_error</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">error</span></div>
+
+
+<div class="viewcode-block" id="terminate"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.terminate">[docs]</a><span class="k">def</span> <span class="nf">terminate</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Termination:&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">error_list</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">final_errors</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">submission_error_messages</span><span class="p">)</span>
+        <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">set_error</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">final_errors</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">))</span>
+        <span class="n">process_report_set_analysis</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
+        <span class="n">process_report_set_submission</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">set_finished</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="n">process_report_set_analysis</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
+        <span class="n">process_report_set_submission</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="extract_analysis_id"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.extract_analysis_id">[docs]</a><span class="k">def</span> <span class="nf">extract_analysis_id</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;ANALYSIS accession=&quot;(.+)&quot; alias=&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+        <span class="n">analysis_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;ANALYSIS accession=&quot;(.+)&quot; alias=&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#&lt;ERROR&gt;In object(ERZ529314) the file (ERR2187921_analysis_DTU_CGE_summary.tsv)</span>
+        <span class="c1"># has already been submitted and is waiting to be processed&lt;/ERROR&gt;</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;ERZ\d{6,7}&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+            <span class="n">analysis_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;ERZ\d{6,7}&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">analysis_id</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">analysis_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="process_report_set_analysis"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.process_report_set_analysis">[docs]</a><span class="k">def</span> <span class="nf">process_report_set_analysis</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_id</span><span class="p">,</span> <span class="n">process_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; info contains, process_report_id and analysis_id &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;Update process_report set analysis_id=&#39;</span><span class="si">{}</span><span class="s2">&#39; where process_id=&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">analysis_id</span><span class="p">,</span> <span class="n">process_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">analysis_id</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="c1">#cursor.close()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: can not set analysis_id to </span><span class="si">{}</span><span class="s2"> where process_id=</span><span class="si">{}</span><span class="s2"> in process_report table&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">analysis_id</span><span class="p">,</span> <span class="n">process_id</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span></div>
+        <span class="c1">#cursor.close()</span>
+
+
+<div class="viewcode-block" id="extract_submission_id"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.extract_submission_id">[docs]</a><span class="k">def</span> <span class="nf">extract_submission_id</span><span class="p">(</span><span class="n">out</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;SUBMISSION accession=&quot;(.+)&quot; alias=&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+        <span class="n">submission_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;SUBMISSION accession=&quot;(.+)&quot; alias=&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1">#&lt;ERROR&gt;In object(ERZ529314) the file (ERR2187921_analysis_DTU_CGE_summary.tsv)</span>
+        <span class="c1"># has already been submitted and is waiting to be processed&lt;/ERROR&gt;</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;ERA\d{6,7}&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+            <span class="n">submission_id</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="s1">&#39;ERA\d{6,7}&#39;</span><span class="p">,</span> <span class="n">out</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">submission_id</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">submission_id</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="process_report_set_submission"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.process_report_set_submission">[docs]</a><span class="k">def</span> <span class="nf">process_report_set_submission</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">submission_id</span><span class="p">,</span> <span class="n">process_id</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; info contains, process_report_id and analysis_id &quot;&quot;&quot;</span>
+    <span class="n">query</span> <span class="o">=</span> <span class="s2">&quot;Update process_report set submission_id=&#39;</span><span class="si">{}</span><span class="s2">&#39; where process_id=&#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">submission_id</span><span class="p">,</span> <span class="n">process_id</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">submission_id</span><span class="p">:</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+            <span class="n">conn</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>
+            <span class="n">cursor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Error: can not set submssion_id to </span><span class="si">{}</span><span class="s2"> where process_id=</span><span class="si">{}</span><span class="s2"> in process_report table&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">submission_id</span><span class="p">,</span> <span class="n">process_id</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">conn</span><span class="o">.</span><span class="n">rollback</span><span class="p">()</span></div>
+       <span class="c1">#cursor.close()</span>
+
+
+<div class="viewcode-block" id="prepare_and_submit_analysis"><a class="viewcode-back" href="../analysis_reporter.html#analysis_reporter.prepare_and_submit_analysis">[docs]</a><span class="k">def</span> <span class="nf">prepare_and_submit_analysis</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">default_attributes</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">check_started</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+        <span class="n">error_list</span><span class="o">=</span><span class="nb">list</span><span class="p">()</span>
+        <span class="n">timestamp</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{}</span><span class="s2">:  To be started job: process_id:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">timestamp</span><span class="p">),</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">,</span> <span class="s1">&#39;collection id:&#39;</span><span class="p">,</span>
+              <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">selection_id</span><span class="p">,</span> <span class="s1">&#39;stage name:&#39;</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">stage_list</span><span class="p">)</span>
+        <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">set_started</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="n">attributes</span> <span class="o">=</span> <span class="n">default_attributes</span><span class="o">.</span><span class="n">get_all_attributes</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
+        <span class="n">analyst_webin</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;analyst_webin&#39;</span><span class="p">]</span>
+        <span class="n">passw</span> <span class="o">=</span> <span class="n">get_account_pass</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analyst_webin</span><span class="p">)</span>
+        <span class="n">gzip_analysis_file</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;gzip_analysis_file&#39;</span><span class="p">]</span>
+        <span class="n">tab_analysis_file</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file&#39;</span><span class="p">]</span>
+        <span class="n">tab_analysis_file2</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file2&#39;</span><span class="p">]</span>
+        <span class="n">tab_analysis_file3</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file3&#39;</span><span class="p">]</span>
+        <span class="n">tab_analysis_file4</span> <span class="o">=</span> <span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file4&#39;</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ATTRIBUTES: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">attributes</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Should upload </span><span class="se">\n</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> and </span><span class="se">\n</span><span class="si">{}</span><span class="s1"> in ftp.webin but dry at the moment&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">gzip_analysis_file</span><span class="p">,</span> <span class="n">tab_analysis_file</span><span class="p">))</span>
+
+        <span class="n">uploadFileToEna</span><span class="p">(</span><span class="n">gzip_analysis_file</span><span class="p">,</span> <span class="n">analyst_webin</span><span class="p">,</span> <span class="n">passw</span><span class="p">)</span>
+        <span class="n">uploadFileToEna</span><span class="p">(</span><span class="n">tab_analysis_file</span><span class="p">,</span> <span class="n">analyst_webin</span><span class="p">,</span> <span class="n">passw</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file2</span><span class="p">)):</span>
+            <span class="n">uploadFileToEna</span><span class="p">(</span><span class="n">tab_analysis_file2</span><span class="p">,</span> <span class="n">analyst_webin</span><span class="p">,</span> <span class="n">passw</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file3</span><span class="p">)):</span>
+            <span class="n">uploadFileToEna</span><span class="p">(</span><span class="n">tab_analysis_file3</span><span class="p">,</span> <span class="n">analyst_webin</span><span class="p">,</span> <span class="n">passw</span><span class="p">)</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tab_analysis_file4</span><span class="p">)):</span>
+            <span class="n">uploadFileToEna</span><span class="p">(</span><span class="n">tab_analysis_file4</span><span class="p">,</span> <span class="n">analyst_webin</span><span class="p">,</span> <span class="n">passw</span><span class="p">)</span>
+
+        <span class="n">analysis_xml</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">workdir</span> <span class="o">+</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span> <span class="o">+</span> <span class="s1">&#39;/analysis.xml&#39;</span>
+        <span class="n">submission_xml</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">workdir</span> <span class="o">+</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span> <span class="o">+</span> <span class="s1">&#39;/submission.xml&#39;</span>
+        <span class="n">create_analysis_xml</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="p">,</span> <span class="n">prop</span><span class="p">,</span> <span class="n">attributes</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">)</span>
+        <span class="c1">#action = &#39;ADD&#39;</span>
+        <span class="n">analysis_xml_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">analysis_xml</span><span class="p">)</span>
+        <span class="n">create_submission_xml</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="p">,</span> <span class="n">analysis_xml_name</span><span class="p">,</span> <span class="n">submission_xml</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_action</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_mode</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span><span class="s1">&#39;prod&#39;</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">submission_error_messages</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">submitAnalysis</span><span class="p">(</span><span class="n">submission_xml</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">,</span>
+                                                                         <span class="n">analyst_webin</span><span class="p">,</span> <span class="n">passw</span><span class="p">,</span>
+                                                                             <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_url_prod</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">submission_error_messages</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span> <span class="o">=</span> <span class="n">submitAnalysis</span><span class="p">(</span><span class="n">submission_xml</span><span class="p">,</span> <span class="n">analysis_xml</span><span class="p">,</span>
+                                                                             <span class="n">analyst_webin</span><span class="p">,</span> <span class="n">passw</span><span class="p">,</span>
+                                                                             <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_url_dev</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Exception: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">message</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERR:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">OUT:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">RETURNCODE:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">Submission_error_messages:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">TYPE_OUTPUT:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">ANALYSIS_ID:</span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span>
+                                                                                                                     <span class="n">returncode</span><span class="p">,</span><span class="n">submission_error_messages</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">extract_analysis_id</span><span class="p">(</span><span class="n">out</span><span class="p">)))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">post_submission_error</span> <span class="o">=</span> <span class="n">post_submission</span><span class="p">(</span><span class="n">submission_error_messages</span><span class="p">,</span> <span class="n">returncode</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">post_submission_error</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="c1">#pass</span>
+            <span class="n">error_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">post_submission_error</span><span class="p">)</span>
+        <span class="n">terminate</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="p">,</span> <span class="n">extract_analysis_id</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="n">extract_submission_id</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+        <span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="c1">#get_args()</span>
+    <span class="c1">#prop = properties(properties_file)</span>
+    <span class="n">options</span> <span class="o">=</span> <span class="n">process_arguments</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+    <span class="n">properties_file</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">properties_file</span>
+    <span class="n">prop</span> <span class="o">=</span> <span class="n">properties</span><span class="p">(</span><span class="n">properties_file</span><span class="p">)</span>
+    <span class="n">lsf</span> <span class="o">=</span> <span class="n">prop</span><span class="o">.</span><span class="n">lsf</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">options</span><span class="o">.</span><span class="n">db_live</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PostGres DB is live and accepting connection&quot;</span><span class="p">)</span>
+            <span class="n">conn</span> <span class="o">=</span> <span class="n">get_connection</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">dbuser</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbpassword</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbhost</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbname</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbport</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">())</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">get_connection</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">dbuser</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbpassword</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbhost</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbname</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">dbport</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Pipeline_version:</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">uantwerp_bacpipe_version</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;analysis_submission_url_dev:&quot;</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_url_dev</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;analysis_submission_url_prod:&quot;</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_url_prod</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;analysis_submission_action:&quot;</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_action</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;analysis_submission_mode:&quot;</span><span class="p">,</span> <span class="n">prop</span><span class="o">.</span><span class="n">analysis_submission_mode</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DB_NAME: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">dbname</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;DB_HOST: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prop</span><span class="o">.</span><span class="n">dbhost</span><span class="p">))</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">analysis_reporter_list</span> <span class="o">=</span> <span class="n">get_list</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+        <span class="n">error_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="sd">&quot;&quot;&quot; multiprocessing.cpu_count() - 2&quot;&quot;&quot;</span>
+        <span class="n">num_cores</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Analysis to uploads: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">analysis_reporter_list</span><span class="p">)))</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">analysis_reporter_stage</span> <span class="ow">in</span> <span class="n">analysis_reporter_list</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">check_started</span><span class="p">(</span><span class="n">conn</span><span class="p">))</span>
+                <span class="n">attributes</span> <span class="o">=</span> <span class="n">default_attributes</span><span class="o">.</span><span class="n">get_all_attributes</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;gzip_analysis_file&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">attributes</span><span class="p">[</span><span class="s1">&#39;tab_analysis_file&#39;</span><span class="p">]):</span>
+                    <span class="n">outcome</span> <span class="o">=</span> <span class="n">prepare_and_submit_analysis</span><span class="p">(</span><span class="n">conn</span><span class="p">,</span> <span class="n">default_attributes</span><span class="p">,</span> <span class="n">analysis_reporter_stage</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Outcome of submission:&quot;</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">outcome</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">analysis_reporter_stage</span><span class="o">.</span><span class="n">process_id</span><span class="p">)</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="o">*</span><span class="mi">100</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;EXCEPT BLOCK IN __MAIN__&quot;</span><span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()))</span>
+            <span class="k">pass</span>
+
+
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2019, Blaise T.F. Alako
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
