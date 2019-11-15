@@ -1,1 +1,0 @@
-../scripts/input_to_selection.py

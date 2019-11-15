@@ -1,1 +1,0 @@
-../scripts/core_executor.py
