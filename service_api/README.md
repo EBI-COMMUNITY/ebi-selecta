@@ -351,7 +351,7 @@ Given a study accession returns the associated datahub, analysis id, submission 
 
 **Definition**
 
-`GET /analysis`
+`GET /studies`
 
 
 **Response**
@@ -439,7 +439,7 @@ Given a datahub return the associated project, analysis id, submission id and ru
 
 **Definition**
 
-`GET /analysis`
+`GET /datahubs`
 
 **Arguments**
 
