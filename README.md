@@ -1,7 +1,7 @@
 # ebi-selecta
 ![alt text](fig/docker_logo_horizontal.png)
 
-#### [Please follow this link for documentation specifically for developers](https://ebi-community.github.io/ebi-selecta/)
+#### [Please follow this link for documentation specifically for developers](https://github.com/EBI-COMMUNITY/ebi-selecta/blob/master/SELECTA_Developer_Documentation.pdf)
 #### Contents:
 1. [What is SELECTA?](#What-is-selecta?)
 2. [SELECTA framework Docker-Compose version](#SELECTA-framework-Docker-Compose-version)
