@@ -3,7 +3,7 @@
 
 #### Please follow these links for documentation specifically for developers
   - [Detail pdf documentation](https://github.com/EBI-COMMUNITY/ebi-selecta/blob/master/SELECTA_Developer_Documentation.pdf)
-  - [Source code documentation](https://ebi-community.github.io/ebi-selecta/)
+  - [Browse the source code documentation](https://ebi-community.github.io/ebi-selecta/)
 
 #### Contents:
 1. [What is SELECTA?](#What-is-selecta?)
