@@ -264,7 +264,7 @@ class DtuCge:
 
 		print('*' * 100)
 		print("Doing post process:.........")
-		command = 'chmod -R a+rw {}'.format(self.workdir)
+		command = 'chmod --silent -R a+rw {}'.format(self.workdir)
 		print(command)
 		print('*' * 100)
 		sub_process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -776,7 +776,7 @@ class UAntwerpBacpipe:
 		print('*' * 100)
 		print("Doing post process:.........")
 		print("Workind directory:\n{}".format(self.workdir))
-		command = 'chmod -R a+rw {}'.format(self.workdir)
+		command = 'chmod --silent -R a+rw {}'.format(self.workdir)
 		print(command)
 		print('*' * 100)
 		sub_process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -1039,11 +1039,16 @@ class RivmJovian:
 
 		return command
 
+	def command_builder_mock_2(self):
+		command = "ls"
+		return command
 
 	def post_process(self):
+		"""
+		# Do we need this block?
 		print('*' * 100)
 		print("\nProcessing in {}:.........".format(self.workdir))
-		command = 'chmod -R a+rw {}'.format(self.workdir)
+		command = 'chmod --silent -R a+rw {}'.format(self.workdir)
 		print(command)
 		print('*' * 100)
 		sub_process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -1052,7 +1057,7 @@ class RivmJovian:
 			self.error_list.append(out.decode().split('\n'))
 		if err:
 			self.error_list.append(err.decode().split('\n'))
-
+		"""
 		#DtuCge.delete_empty_files(self.workdir)
 		""" Might uncomment the above subsequently"""
 		# use process_id (new_run_process ) instead of run_id (self.run_accession) to account for problematic duplicate RUNS ids from different datahub
@@ -1099,8 +1104,7 @@ class RivmJovian:
 			self.copy_src_into_dest(logs_dir, all_result_name)
 
 		try:
-			"""Archive Jovian analysis"""
-			DtuCge.make_tar_gzip(all_result_name, self.workdir)
+
 			if os.path.exists(all_virusHost):
 				copyfile(all_virusHost, tab_result_name)
 			if os.path.exists(all_taxClassified):
@@ -1109,9 +1113,12 @@ class RivmJovian:
 				copyfile(all_taxUnclassified, tab_result_name3)
 			if os.path.exists(all_filtered_SNPs):
 				copyfile(all_filtered_SNPs, tab_result_name4)
+			"""Archive Jovian analysis"""
+			DtuCge.make_tar_gzip(all_result_name, self.workdir)
+
 		except Exception:
 			print('Could not make tar gzip archive, or copy src tsv to tab_result_name')
-		print("Post-process finished for {}".format(all_result_name))
+
 		tab_result_names = []
 		if os.path.exists(tab_result_name):
 			tab_result_names.append(tab_result_name)
@@ -1123,6 +1130,8 @@ class RivmJovian:
 			tab_result_names.append(tab_result_name4)
 		else:
 			tab_result_names.append('')
+		print("Post-process finished for {}".format(all_result_name))
+
 		return all_result_name_gzip, tab_result_names
 
 	def run(self, command):
@@ -1178,10 +1187,11 @@ class RivmJovian:
 		pass
 		:return:
 		"""
-		command = self.command_builder()
-		#command = self.command_builder_mock()
+		#command = self.command_builder()
+		command = self.command_builder_mock_2()
 
-		self.jovian_init()
+		# Uncomment this for the mock above to work
+		# self.jovian_init()
 
 
 		""" Make sure we are in the processing directory b4 jovian run """

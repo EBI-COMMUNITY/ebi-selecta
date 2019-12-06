@@ -613,7 +613,7 @@ if __name__ == '__main__':
 
 					try:
 
-						results = Parallel(n_jobs=num_cores, verbose=100, max_nbytes=None, batch_size=25)(delayed(post_process_lsf)(jobid_exe, jobid_pipeline_obj, jid, prop) for jid in done_jobs)
+						results = Parallel(n_jobs=5, verbose=100, max_nbytes=None, batch_size="auto")(delayed(post_process_lsf)(jobid_exe, jobid_pipeline_obj, jid, prop) for jid in done_jobs)
 
 					except Exception:
 						process_ids = Parallel(n_jobs=num_cores, verbose=100, max_nbytes=None, batch_size=25)(delayed(get_process_id)(jobid_exe, jid) for jid in done_jobs)
